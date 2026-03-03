@@ -1,3 +1,4 @@
 Flask
 SQLAlchemy
-# Add other backend dependencies here
+Flask-JWT-Extended
+python-dotenv
