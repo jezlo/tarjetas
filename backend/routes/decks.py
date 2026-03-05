@@ -1,52 +1,34 @@
 from flask import Blueprint, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+import csv
+import os
 
-# Assuming you have SQLAlchemy set up
-# Initialize SQLAlchemy instance
-# db = SQLAlchemy()
+# Create a blueprint for the deck routes
+routes = Blueprint('decks', __name__)
 
-# Blueprint for decks
-blueprint = Blueprint('decks', __name__)
+# Route to import decks from a CSV file
+@routes.route('/decks/import', methods=['POST'])
+def import_decks():
+    file = request.files['file']
+    if not file:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    decks = []
+    try:
+        # Read CSV file
+        csv_reader = csv.DictReader(file.stream)
+        for row in csv_reader:
+            decks.append(row)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    
+    return jsonify({'decks': decks}), 201
 
-class Deck(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(300))  # Optional description
-    # Add any other fields you need
-
-@blueprint.route('/decks', methods=['POST'])
-def create_deck():
-    data = request.get_json()
-    new_deck = Deck(name=data['name'], description=data.get('description'))
-    db.session.add(new_deck)
-    db.session.commit()
-    return jsonify({'message': 'Deck created', 'deck': {'id': new_deck.id, 'name': new_deck.name}}), 201
-
-@blueprint.route('/decks/<int:id>', methods=['GET'])
-def get_deck(id):
-    deck = Deck.query.get_or_404(id)
-    return jsonify({'id': deck.id, 'name': deck.name, 'description': deck.description})
-
-@blueprint.route('/decks/<int:id>', methods=['PUT'])
-def update_deck(id):
-    deck = Deck.query.get_or_404(id)
-    data = request.get_json()
-    deck.name = data['name']
-    deck.description = data.get('description', deck.description)
-    db.session.commit()
-    return jsonify({'message': 'Deck updated', 'deck': {'id': deck.id, 'name': deck.name}})
-
-@blueprint.route('/decks/<int:id>', methods=['DELETE'])
-def delete_deck(id):
-    deck = Deck.query.get_or_404(id)
-    db.session.delete(deck)
-    db.session.commit()
-    return jsonify({'message': 'Deck deleted'})
-
-@blueprint.route('/decks', methods=['GET'])
-def list_decks():
-    decks = Deck.query.all()
-    return jsonify([{'id': deck.id, 'name': deck.name} for deck in decks])
-
-# Make sure to register the blueprint in your app
-# app.register_blueprint(blueprint, url_prefix='/api')
+# Route to manage decks (a basic structure)
+@routes.route('/decks', methods=['GET', 'POST'])
+def manage_decks():
+    if request.method == 'GET':
+        return jsonify({'decks': []})  # This should return the list of decks
+    elif request.method == 'POST':
+        data = request.json
+        # Here you would save the new deck (data) into your datastore
+        return jsonify({'message': 'Deck created', 'deck': data}), 201
