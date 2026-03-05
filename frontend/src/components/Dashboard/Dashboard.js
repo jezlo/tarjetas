@@ -38,6 +38,7 @@ export default function Dashboard() {
         <p className="text-gray-500 mb-8">Ready to study?</p>
 
         {loadError && <p className="text-red-500 text-sm mb-4">{loadError}</p>}
+        {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total Reviews', value: stats.total_reviews },

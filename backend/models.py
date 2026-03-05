@@ -88,4 +88,4 @@ class CardStatistic(db.Model):
             'wrong_count': self.wrong_count,
             'last_reviewed': self.last_reviewed.isoformat(),
         }
-\n
+

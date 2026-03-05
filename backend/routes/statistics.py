@@ -7,10 +7,14 @@ from models import db, Card, CardStatistic, Deck
 statistics_bp = Blueprint('statistics', __name__)
 
 
+def _calculate_accuracy(correct, total):
+    return round(correct / total * 100, 1) if total else 0
+
+
 def _get_or_create_stat(card_id, user_id):
     stat = CardStatistic.query.filter_by(card_id=card_id, user_id=user_id).first()
     if not stat:
-        stat = CardStatistic(card_id=card_id, user_id=user_id)
+        stat = CardStatistic(card_id=card_id, user_id=user_id, correct_count=0, wrong_count=0)
         db.session.add(stat)
     return stat
 
@@ -27,7 +31,7 @@ def get_statistics():
         'total_reviews': total,
         'correct': total_correct,
         'wrong': total_wrong,
-        'accuracy': round(total_correct / total * 100, 1) if total else 0,
+        'accuracy': _calculate_accuracy(total_correct, total),
         'cards_reviewed': len(stats),
     }), 200
 
@@ -52,7 +56,7 @@ def get_deck_statistics(deck_id):
         'total_reviews': total,
         'correct': total_correct,
         'wrong': total_wrong,
-        'accuracy': round(total_correct / total * 100, 1) if total else 0,
+        'accuracy': _calculate_accuracy(total_correct, total),
         'cards': [s.to_dict() for s in stats],
     }), 200
 
