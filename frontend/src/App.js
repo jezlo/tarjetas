@@ -1,0 +1,57 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import Dashboard from './components/Dashboard/Dashboard';
+import DeckList from './components/Decks/DeckList';
+import DeckDetail from './components/Decks/DeckDetail';
+import Statistics from './components/Statistics/Statistics';
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('access_token');
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/decks"
+          element={
+            <ProtectedRoute>
+              <DeckList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/decks/:id"
+          element={
+            <ProtectedRoute>
+              <DeckDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/statistics"
+          element={
+            <ProtectedRoute>
+              <Statistics />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
