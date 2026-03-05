@@ -1,1 +1,91 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime\nfrom sqlalchemy.orm import relationship\nfrom datetime import datetime\n\nclass User(Base):\n    __tablename__ = 'users'\n\n    id = Column(Integer, primary_key=True)\n    username = Column(String, unique=True, nullable=False)\n    email = Column(String, unique=True, nullable=False)\n    created_at = Column(DateTime, default=datetime.utcnow)\n\n    decks = relationship('Deck', back_populates='owner')\n\nclass Deck(Base):\n    __tablename__ = 'decks'\n\n    id = Column(Integer, primary_key=True)\n    name = Column(String, nullable=False)\n    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)\n    created_at = Column(DateTime, default=datetime.utcnow)\n\n    owner = relationship('User', back_populates='decks')\n    cards = relationship('Card', back_populates='deck')\n\nclass Card(Base):\n    __tablename__ = 'cards'\n\n    id = Column(Integer, primary_key=True)\n    deck_id = Column(Integer, ForeignKey('decks.id'), nullable=False)\n    question = Column(String, nullable=False)\n    answer = Column(String, nullable=False)\n    created_at = Column(DateTime, default=datetime.utcnow)\n\n    deck = relationship('Deck', back_populates='cards')\n\nclass UserProgress(Base):\n    __tablename__ = 'user_progress'\n\n    id = Column(Integer, primary_key=True)\n    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)\n    deck_id = Column(Integer, ForeignKey('decks.id'), nullable=False)\n    progress_percentage = Column(Integer, default=0)\n    last_accessed = Column(DateTime, default=datetime.utcnow)\n\nclass CardStatistics(Base):\n    __tablename__ = 'card_statistics'\n\n    id = Column(Integer, primary_key=True)\n    card_id = Column(Integer, ForeignKey('cards.id'), nullable=False)\n    correct_answers = Column(Integer, default=0)\n    wrong_answers = Column(Integer, default=0)\n    last_reviewed = Column(DateTime, default=datetime.utcnow)\n
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+db = SQLAlchemy()
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    decks = db.relationship('Deck', back_populates='owner', cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {'id': self.id, 'username': self.username, 'email': self.email, 'created_at': self.created_at.isoformat()}
+
+
+class Deck(db.Model):
+    __tablename__ = 'decks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(500), default='')
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    owner = db.relationship('User', back_populates='decks')
+    cards = db.relationship('Card', back_populates='deck', cascade='all, delete-orphan')
+
+    def to_dict(self, include_cards=False):
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat(),
+            'card_count': len(self.cards),
+        }
+        if include_cards:
+            data['cards'] = [c.to_dict() for c in self.cards]
+        return data
+
+
+class Card(db.Model):
+    __tablename__ = 'cards'
+
+    id = db.Column(db.Integer, primary_key=True)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False)
+    question = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    deck = db.relationship('Deck', back_populates='cards')
+    statistics = db.relationship('CardStatistic', back_populates='card', cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'deck_id': self.deck_id,
+            'question': self.question,
+            'answer': self.answer,
+            'created_at': self.created_at.isoformat(),
+        }
+
+
+class CardStatistic(db.Model):
+    __tablename__ = 'card_statistics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    card_id = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    correct_count = db.Column(db.Integer, default=0)
+    wrong_count = db.Column(db.Integer, default=0)
+    last_reviewed = db.Column(db.DateTime, default=datetime.utcnow)
+
+    card = db.relationship('Card', back_populates='statistics')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'card_id': self.card_id,
+            'user_id': self.user_id,
+            'correct_count': self.correct_count,
+            'wrong_count': self.wrong_count,
+            'last_reviewed': self.last_reviewed.isoformat(),
+        }
+
