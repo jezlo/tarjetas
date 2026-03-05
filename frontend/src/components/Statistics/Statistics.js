@@ -7,9 +7,10 @@ export default function Statistics() {
   const [stats, setStats] = useState(null);
   const [decks, setDecks] = useState([]);
   const [deckStats, setDeckStats] = useState({});
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    api.get('/statistics').then(({ data }) => setStats(data)).catch(() => {});
+    api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError('Could not load statistics.'));
     api.get('/decks').then(({ data }) => setDecks(data)).catch(() => {});
   }, []);
 
@@ -36,6 +37,8 @@ export default function Statistics() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Statistics</h2>
+
+        {loadError && <p className="text-red-500 text-sm mb-4">{loadError}</p>}
 
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

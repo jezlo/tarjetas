@@ -13,9 +13,15 @@ def update_card(card_id):
     card = Card.query.join(Deck).filter(Card.id == card_id, Deck.user_id == user_id).first_or_404()
     data = request.get_json()
     if 'question' in data:
-        card.question = data['question'].strip() or card.question
+        stripped = data['question'].strip()
+        if not stripped:
+            return jsonify({'message': 'question cannot be empty'}), 400
+        card.question = stripped
     if 'answer' in data:
-        card.answer = data['answer'].strip() or card.answer
+        stripped = data['answer'].strip()
+        if not stripped:
+            return jsonify({'message': 'answer cannot be empty'}), 400
+        card.answer = stripped
     db.session.commit()
     return jsonify(card.to_dict()), 200
 

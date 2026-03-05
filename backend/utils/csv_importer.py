@@ -21,7 +21,7 @@ def import_cards_from_csv(stream, deck_id):
 
     count = 0
     for row in reader:
-        # Normalise keys to lower-case
+        # Normalize keys to lower-case
         normalised = {k.lower(): v for k, v in row.items()}
         question = normalised.get('question', '').strip()
         answer = normalised.get('answer', '').strip()

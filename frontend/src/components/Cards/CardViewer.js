@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
 
-export default function CardViewer({ cards, index, onNext, onPrev, deckId }) {
+export default function CardViewer({ cards, index, onNext, onPrev }) {
   const [flipped, setFlipped] = useState(false);
   const card = cards[index];
 

@@ -7,9 +7,10 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [stats, setStats] = useState(null);
   const [recentDecks, setRecentDecks] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    api.get('/statistics').then(({ data }) => setStats(data)).catch(() => {});
+    api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError('Could not load statistics.'));
     api.get('/decks').then(({ data }) => setRecentDecks(data.slice(0, 4))).catch(() => {});
   }, []);
 
@@ -36,7 +37,7 @@ export default function Dashboard() {
         </h2>
         <p className="text-gray-500 mb-8">Ready to study?</p>
 
-        {stats && (
+        {loadError && <p className="text-red-500 text-sm mb-4">{loadError}</p>}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total Reviews', value: stats.total_reviews },

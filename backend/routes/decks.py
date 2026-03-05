@@ -45,7 +45,10 @@ def update_deck(deck_id):
     deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
     data = request.get_json()
     if 'name' in data:
-        deck.name = data['name'].strip() or deck.name
+        stripped = data['name'].strip()
+        if not stripped:
+            return jsonify({'message': 'name cannot be empty'}), 400
+        deck.name = stripped
     if 'description' in data:
         deck.description = data['description']
     db.session.commit()

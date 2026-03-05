@@ -84,7 +84,6 @@ export default function DeckDetail() {
               index={studyIndex}
               onNext={() => setStudyIndex((i) => Math.min(i + 1, cards.length - 1))}
               onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-              deckId={id}
             />
           )
         )}
