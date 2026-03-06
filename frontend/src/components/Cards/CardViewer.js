@@ -64,6 +64,16 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
 
       <p className="text-sm text-gray-400">Click card to flip</p>
 
+      {!transitioning && (
+        <button
+          onClick={() => recordResult(true)}
+          aria-label="Mark card as known"
+          className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition"
+        >
+          ⭐ Known
+        </button>
+      )}
+
       {flipped && !transitioning && (
         <div className="flex gap-4">
           <button
