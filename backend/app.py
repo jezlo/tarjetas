@@ -27,6 +27,19 @@ def create_app(config_class=Config):
 
     with app.app_context():
         db.create_all()
+        _migrate_db(db)
 
     return app
+
+
+def _migrate_db(db):
+    """Apply lightweight schema migrations for columns added after initial release."""
+    from sqlalchemy import text, inspect
+    inspector = inspect(db.engine)
+    decks_columns = [col['name'] for col in inspector.get_columns('decks')]
+    if 'is_public' not in decks_columns:
+        with db.engine.connect() as conn:
+            # SQLite represents booleans as integers; DEFAULT 0 means False
+            conn.execute(text('ALTER TABLE decks ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0'))
+            conn.commit()
 

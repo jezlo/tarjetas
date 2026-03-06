@@ -26,20 +26,24 @@ class Deck(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(500), default='')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', back_populates='decks')
     cards = db.relationship('Card', back_populates='deck', cascade='all, delete-orphan')
 
-    def to_dict(self, include_cards=False):
+    def to_dict(self, include_cards=False, include_owner=False):
         data = {
             'id': self.id,
             'name': self.name,
             'description': self.description,
             'user_id': self.user_id,
+            'is_public': self.is_public,
             'created_at': self.created_at.isoformat(),
             'card_count': len(self.cards),
         }
+        if include_owner:
+            data['owner_username'] = self.owner.username if self.owner else None
         if include_cards:
             data['cards'] = [c.to_dict() for c in self.cards]
         return data
