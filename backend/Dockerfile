@@ -1,25 +1,22 @@
-# Dockerfile for Flask Backend Application
+# Use this Dockerfile to build the backend
 
-# Use the official Python image from the Docker Hub
-FROM python:3.9
+# Base image
+FROM python:3.8-slim
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements.txt file into the container at /app
-COPY requirements.txt .
+# Copy the requirements file from the parent directory
+COPY ../requirements.txt ./
 
-# Install any dependencies specified in requirements.txt
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application into the container
+# Copy the rest of the application code
 COPY . .
 
-# Set the environment variable for Flask
-ENV FLASK_APP=app.py
-
-# Expose the port the app runs on
+# Expose the application port
 EXPOSE 5000
 
-# Run the application
-CMD [ "flask", "run", "--host=0.0.0.0" ]
+# Command to run the application
+CMD ["python", "app.py"]
