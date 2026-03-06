@@ -27,6 +27,7 @@ class Deck(db.Model):
     description = db.Column(db.String(500), default='')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     is_public = db.Column(db.Boolean, default=False, nullable=False)
+    source_deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', back_populates='decks')
