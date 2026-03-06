@@ -1,24 +1,12 @@
-# Dockerfile for frontend
-
-FROM node:14
-
-# Set the working directory
+FROM node:14 AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY frontend/package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
-# Build the application
+RUN npm ci
+COPY frontend/ .
 RUN npm run build
-
-# Expose the port the app runs on
+FROM node:14-alpine
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=builder /app/build ./build
 EXPOSE 3000
-
-# Command to run the application
-CMD ["npm", "start"]
+CMD ["serve", "-s", "build", "-l", "3000"]
