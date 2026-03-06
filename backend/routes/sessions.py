@@ -38,8 +38,8 @@ def create_session():
         deck_id=deck.id,
         correct_count=int(data.get('correct_count', 0)),
         wrong_count=int(data.get('wrong_count', 0)),
-        started_at=datetime.fromisoformat(started_at) if started_at else datetime.utcnow(),
-        ended_at=datetime.fromisoformat(ended_at) if ended_at else None,
+        started_at=datetime.fromisoformat(started_at.replace('Z', '+00:00')) if started_at else datetime.utcnow(),
+        ended_at=datetime.fromisoformat(ended_at.replace('Z', '+00:00')) if ended_at else None,
     )
     db.session.add(session)
     db.session.commit()
