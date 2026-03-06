@@ -1,8 +1,1 @@
-version: '3'
-services:
-  frontend:
-    build:
-      context: ./frontend
-  backend:
-    build:
-      context: ./backend
+version: '3.8'\nservices:\n  backend:\n    build:\n      context: .\n      dockerfile: backend/Dockerfile\n  frontend:\n    build:\n      context: ./frontend\n      dockerfile: frontend/Dockerfile\n  database:\n    image: postgres:latest\n    environment:\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: password\n      POSTGRES_DB: database\n
