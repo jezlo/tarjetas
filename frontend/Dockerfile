@@ -1,29 +1,20 @@
-# Use an official Node.js runtime as a parent image
-FROM node:14 AS build
+# Use Node 14 as the base image
+FROM node:14
 
-# Set the working directory
+# Set the working directory to /app
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package.json to /app
+COPY package.json /app/
 
-# Install app dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the frontend files into the container
-COPY ./frontend ./frontend
+# Copy source code to /app
+COPY . /app
 
-# Build the frontend app
-RUN npm run build
+# Expose port 3000
+EXPOSE 3000
 
-# Create a new stage from the nginx base image
-FROM nginx:alpine
-
-# Copy the built frontend files from the previous stage
-COPY --from=build /app/frontend/dist /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-# Command to run the nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Run the application in development mode
+CMD ["npm", "start"]
