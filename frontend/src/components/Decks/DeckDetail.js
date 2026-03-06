@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import CardViewer from '../Cards/CardViewer';
+import TriviaViewer from '../Cards/TriviaViewer';
 import CardForm from '../Cards/CardForm';
 import CSVImporter from '../Cards/CSVImporter';
 import BulkAddCards from '../Cards/BulkAddCards';
@@ -18,12 +19,16 @@ function shuffleArray(arr) {
 export default function DeckDetail() {
   const { id } = useParams();
   const [deck, setDeck] = useState(null);
-  const [mode, setMode] = useState('list'); // list | study | add | bulk | import
+  const [mode, setMode] = useState('list'); // list | study | trivia | add | bulk | import
   const [studyIndex, setStudyIndex] = useState(0);
   const [shuffle, setShuffle] = useState(false);
   const [studyCards, setStudyCards] = useState([]);
   const [editingCard, setEditingCard] = useState(null); // { id, question, answer }
   const [editError, setEditError] = useState('');
+
+  // Session tracking
+  const sessionStartRef = useRef(null);
+  const sessionCountsRef = useRef({ correct: 0, wrong: 0 });
 
   const load = useCallback(() =>
     api.get(`/decks/${id}`).then(({ data }) => {
@@ -62,9 +67,34 @@ export default function DeckDetail() {
     setStudyIndex(0);
   }, []);
 
+  const beginSession = () => {
+    sessionStartRef.current = new Date().toISOString();
+    sessionCountsRef.current = { correct: 0, wrong: 0 };
+  };
+
+  const saveSession = async (deckId) => {
+    if (!sessionStartRef.current) return;
+    try {
+      await api.post('/sessions', {
+        deck_id: deckId,
+        correct_count: sessionCountsRef.current.correct,
+        wrong_count: sessionCountsRef.current.wrong,
+        started_at: sessionStartRef.current,
+        ended_at: new Date().toISOString(),
+      });
+    } catch (_) {}
+    sessionStartRef.current = null;
+    sessionCountsRef.current = { correct: 0, wrong: 0 };
+  };
+
   const handleModeChange = (m) => {
-    if (m === 'study' && deck) {
+    const isLeavingSession = (mode === 'study' || mode === 'trivia') && m !== 'study' && m !== 'trivia';
+    if (isLeavingSession && deck) {
+      saveSession(deck.id);
+    }
+    if ((m === 'study' || m === 'trivia') && deck) {
       startStudy(deck.cards || [], shuffle);
+      beginSession();
     }
     setMode(m);
   };
@@ -72,7 +102,7 @@ export default function DeckDetail() {
   const handleShuffleToggle = () => {
     const next = !shuffle;
     setShuffle(next);
-    if (mode === 'study' && deck) {
+    if ((mode === 'study' || mode === 'trivia') && deck) {
       startStudy(deck.cards || [], next);
     }
   };
@@ -116,7 +146,7 @@ export default function DeckDetail() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
-          {['list', 'study', 'add', 'bulk', 'import'].map((m) => (
+          {['list', 'study', 'trivia', 'add', 'bulk', 'import'].map((m) => (
             <button
               key={m}
               onClick={() => handleModeChange(m)}
@@ -126,7 +156,7 @@ export default function DeckDetail() {
                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
               }`}
             >
-              {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : 'Import CSV'}
+              {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : 'Import CSV'}
             </button>
           ))}
           <button
@@ -236,6 +266,35 @@ export default function DeckDetail() {
                 index={studyIndex}
                 onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                 onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                onResult={(correct) => { sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1; }}
+              />
+            </div>
+          )
+        )}
+
+        {mode === 'trivia' && (
+          cards.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
+          ) : (
+            <div>
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleShuffleToggle}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    shuffle
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
+                  }`}
+                >
+                  🔀 Shuffle {shuffle ? 'On' : 'Off'}
+                </button>
+              </div>
+              <TriviaViewer
+                cards={studyCards}
+                index={studyIndex}
+                onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
+                onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                onResult={(correct) => { sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1; }}
               />
             </div>
           )

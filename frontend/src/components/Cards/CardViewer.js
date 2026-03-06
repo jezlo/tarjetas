@@ -3,7 +3,7 @@ import api from '../../services/api';
 
 const FLIP_DURATION = 600;
 
-export default function CardViewer({ cards, index, onNext, onPrev }) {
+export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
   const [flipped, setFlipped] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const displayedCard = useRef(cards[index]);
@@ -36,6 +36,7 @@ export default function CardViewer({ cards, index, onNext, onPrev }) {
     try {
       await api.post(`/statistics/cards/${card.id}`, { correct });
     } catch (_) {}
+    if (onResult) onResult(correct);
     handleNext();
   };
 

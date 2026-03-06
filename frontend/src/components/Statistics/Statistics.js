@@ -7,17 +7,24 @@ export default function Statistics() {
   const [stats, setStats] = useState(null);
   const [decks, setDecks] = useState([]);
   const [deckStats, setDeckStats] = useState({});
+  const [sessions, setSessions] = useState([]);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError('Could not load statistics.'));
     api.get('/decks').then(({ data }) => setDecks(data)).catch(() => {});
+    api.get('/sessions').then(({ data }) => setSessions(data)).catch(() => {});
   }, []);
 
   const loadDeckStats = async (deckId) => {
     if (deckStats[deckId]) return;
     const { data } = await api.get(`/statistics/decks/${deckId}`);
     setDeckStats((prev) => ({ ...prev, [deckId]: data }));
+  };
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString();
   };
 
   return (
@@ -60,7 +67,7 @@ export default function Statistics() {
         {decks.length === 0 ? (
           <p className="text-gray-400">No decks yet.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 mb-8">
             {decks.map((deck) => {
               const ds = deckStats[deck.id];
               return (
@@ -95,6 +102,34 @@ export default function Statistics() {
                       </div>
                     </div>
                   )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Study Session History</h3>
+        {sessions.length === 0 ? (
+          <p className="text-gray-400">No study sessions recorded yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {sessions.map((s) => {
+              const total = s.correct_count + s.wrong_count;
+              const accuracy = total ? Math.round((s.correct_count / total) * 100) : 0;
+              return (
+                <div key={s.id} className="bg-white rounded-xl shadow p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-gray-800">{s.deck_name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(s.started_at)}</p>
+                    </div>
+                    <span className="text-sm font-bold text-indigo-600">{accuracy}%</span>
+                  </div>
+                  <div className="flex gap-4 mt-3 text-sm">
+                    <span className="text-green-600 font-medium">✓ {s.correct_count} correct</span>
+                    <span className="text-red-500 font-medium">✗ {s.wrong_count} wrong</span>
+                    <span className="text-gray-400">{total} total</span>
+                  </div>
                 </div>
               );
             })}

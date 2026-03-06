@@ -94,3 +94,29 @@ class CardStatistic(db.Model):
             'last_reviewed': self.last_reviewed.isoformat(),
         }
 
+
+class StudySession(db.Model):
+    __tablename__ = 'study_sessions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False)
+    correct_count = db.Column(db.Integer, default=0)
+    wrong_count = db.Column(db.Integer, default=0)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ended_at = db.Column(db.DateTime, nullable=True)
+
+    deck = db.relationship('Deck')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'deck_id': self.deck_id,
+            'deck_name': self.deck.name if self.deck else None,
+            'correct_count': self.correct_count,
+            'wrong_count': self.wrong_count,
+            'started_at': self.started_at.isoformat(),
+            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+        }
+
