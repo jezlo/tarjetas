@@ -1,4 +1,8 @@
-from flask import Blueprint, request, jsonify
+import csv
+import io
+import re
+
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models import db, Deck, Card, User
@@ -144,3 +148,25 @@ def import_csv(deck_id):
         return jsonify({'message': str(exc)}), 400
 
     return jsonify({'message': f'{count} cards imported'}), 201
+
+
+@decks_bp.route('/<int:deck_id>/export', methods=['GET'])
+@jwt_required()
+def export_csv(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['question', 'answer'])
+    for card in deck.cards:
+        writer.writerow([card.question, card.answer])
+
+    csv_bytes = output.getvalue().encode('utf-8')
+    safe_name = re.sub(r'[^\w\-]', '_', deck.name)
+    filename = f"{safe_name}.csv"
+    return Response(
+        csv_bytes,
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )

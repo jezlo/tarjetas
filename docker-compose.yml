@@ -6,6 +6,10 @@ services:
       dockerfile: backend/Dockerfile
     ports:
       - "5000:5000"
+    volumes:
+      - db_data:/app/data
+    environment:
+      - DATABASE_URI=sqlite:////app/data/tarjetas.db
   frontend:
     build:
       context: .
@@ -14,3 +18,6 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+
+volumes:
+  db_data:
