@@ -59,16 +59,25 @@ export default function BrowseDecks() {
             {decks.map((deck) => (
               <div key={deck.id} className="bg-white rounded-xl shadow p-5 flex justify-between items-center hover:shadow-md transition">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
+                    {deck.is_own && (
+                      <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Yours</span>
+                    )}
+                    {!deck.is_own && deck.already_imported && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Imported</span>
+                    )}
+                  </div>
                   <p className="text-gray-500 text-sm truncate">{deck.description || 'No description'}</p>
                   <p className="text-indigo-600 text-sm mt-1">{deck.card_count} cards · by {deck.owner_username}</p>
                 </div>
                 <button
                   onClick={() => handleImport(deck.id)}
-                  disabled={importing === deck.id}
-                  className="ml-4 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                  disabled={importing === deck.id || deck.is_own || deck.already_imported}
+                  title={deck.is_own ? 'This is your own deck' : deck.already_imported ? 'Already imported' : 'Import this deck'}
+                  className="ml-4 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {importing === deck.id ? 'Importing…' : 'Import'}
+                  {importing === deck.id ? 'Importing…' : deck.is_own ? 'Own' : deck.already_imported ? '✓ Imported' : 'Import'}
                 </button>
               </div>
             ))}

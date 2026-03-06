@@ -37,8 +37,23 @@ def create_deck():
 @decks_bp.route('/public/list', methods=['GET'])
 @jwt_required()
 def get_public_decks():
+    user_id = int(get_jwt_identity())
     decks = Deck.query.filter_by(is_public=True).order_by(Deck.created_at.desc()).all()
-    return jsonify([d.to_dict(include_owner=True) for d in decks]), 200
+    # Build a set of source_deck_ids the user has already imported (ignore NULLs)
+    imported_ids = {
+        d.source_deck_id
+        for d in Deck.query.filter(
+            Deck.user_id == user_id,
+            Deck.source_deck_id.isnot(None),
+        ).with_entities(Deck.source_deck_id).all()
+    }
+    result = []
+    for d in decks:
+        data = d.to_dict(include_owner=True)
+        data['is_own'] = d.user_id == user_id
+        data['already_imported'] = d.id in imported_ids
+        result.append(data)
+    return jsonify(result), 200
 
 
 @decks_bp.route('/import/<int:deck_id>', methods=['POST'])
@@ -46,10 +61,17 @@ def get_public_decks():
 def import_deck(deck_id):
     user_id = int(get_jwt_identity())
     source = Deck.query.filter_by(id=deck_id, is_public=True).first_or_404()
+    if source.user_id == user_id:
+        return jsonify({'message': 'Cannot import your own deck'}), 400
+    # Prevent duplicate imports of the same source deck
+    existing = Deck.query.filter_by(user_id=user_id, source_deck_id=deck_id).first()
+    if existing:
+        return jsonify({'message': 'You have already imported this deck'}), 400
     new_deck = Deck(
         name=source.name,
         description=source.description,
         user_id=user_id,
+        source_deck_id=source.id,
     )
     db.session.add(new_deck)
     db.session.flush()
