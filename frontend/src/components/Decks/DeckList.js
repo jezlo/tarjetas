@@ -38,6 +38,7 @@ export default function DeckList() {
         <Link to="/" className="text-2xl font-bold text-indigo-600">Tarjetas</Link>
         <div className="flex items-center gap-4">
           <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">Stats</Link>
+          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">Browse Decks</Link>
           <button
             onClick={() => { localStorage.removeItem('access_token'); localStorage.removeItem('user'); navigate('/login'); }}
             className="text-sm text-red-500 hover:underline"

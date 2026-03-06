@@ -26,6 +26,7 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-indigo-600">Tarjetas</h1>
         <div className="flex items-center gap-4">
           <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">Decks</Link>
+          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">Browse Decks</Link>
           <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">Stats</Link>
           <button onClick={logout} className="text-sm text-red-500 hover:underline">Logout</button>
         </div>

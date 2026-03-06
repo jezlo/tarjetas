@@ -5,6 +5,7 @@ import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
 import DeckList from './components/Decks/DeckList';
 import DeckDetail from './components/Decks/DeckDetail';
+import BrowseDecks from './components/Decks/BrowseDecks';
 import Statistics from './components/Statistics/Statistics';
 
 function ProtectedRoute({ children }) {
@@ -47,6 +48,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Statistics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <ProtectedRoute>
+              <BrowseDecks />
             </ProtectedRoute>
           }
         />

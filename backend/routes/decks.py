@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Deck, Card
+from models import db, Deck, Card, User
 from utils.csv_importer import import_cards_from_csv
 
 decks_bp = Blueprint('decks', __name__)
@@ -28,6 +28,41 @@ def create_deck():
     db.session.add(deck)
     db.session.commit()
     return jsonify(deck.to_dict()), 201
+
+
+@decks_bp.route('/public/list', methods=['GET'])
+@jwt_required()
+def get_public_decks():
+    decks = Deck.query.filter_by(is_public=True).order_by(Deck.created_at.desc()).all()
+    return jsonify([d.to_dict(include_owner=True) for d in decks]), 200
+
+
+@decks_bp.route('/import/<int:deck_id>', methods=['POST'])
+@jwt_required()
+def import_deck(deck_id):
+    user_id = int(get_jwt_identity())
+    source = Deck.query.filter_by(id=deck_id, is_public=True).first_or_404()
+    new_deck = Deck(
+        name=source.name,
+        description=source.description,
+        user_id=user_id,
+    )
+    db.session.add(new_deck)
+    db.session.flush()
+    for card in source.cards:
+        db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
+    db.session.commit()
+    return jsonify(new_deck.to_dict(include_cards=True)), 201
+
+
+@decks_bp.route('/<int:deck_id>/share', methods=['PUT'])
+@jwt_required()
+def toggle_share(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+    deck.is_public = not deck.is_public
+    db.session.commit()
+    return jsonify(deck.to_dict()), 200
 
 
 @decks_bp.route('/<int:deck_id>', methods=['GET'])
