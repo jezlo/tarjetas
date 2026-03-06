@@ -1,20 +1,12 @@
 version: '3.8'
-
 services:
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
     ports:
       - '5000:5000'
     environment:
-      - NODE_ENV=production
-
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - '3000:3000'
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - backend
+      - SOME_ENV_VAR=value
