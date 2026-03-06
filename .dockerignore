@@ -1,0 +1,23 @@
+# Ignore unwanted files and directories
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build output
+/dist/
+/build/
+
+# Docker files
+docker-compose.override.yml
