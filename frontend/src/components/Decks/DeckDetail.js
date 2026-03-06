@@ -349,9 +349,20 @@ export default function DeckDetail() {
             </div>
           ) : (
             <div>
-              <div className="flex justify-center gap-8 mb-4 text-sm font-semibold">
+              <div className="flex justify-center items-center gap-8 mb-4 text-sm font-semibold">
                 <span className="text-green-600">✓ Correct: {liveCounts.correct}</span>
                 <span className="text-red-500">✗ Wrong: {liveCounts.wrong}</span>
+                <button
+                  onClick={() => {
+                    saveSession(deck.id);
+                    setLiveCounts({ correct: 0, wrong: 0 });
+                    setStudyPhase('config');
+                  }}
+                  aria-label="End study session"
+                  className="px-4 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition"
+                >
+                  ■ End Session
+                </button>
               </div>
               {mode === 'study' ? (
                 <CardViewer
