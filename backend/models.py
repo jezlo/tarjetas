@@ -81,6 +81,7 @@ class CardStatistic(db.Model):
     correct_count = db.Column(db.Integer, default=0)
     wrong_count = db.Column(db.Integer, default=0)
     last_reviewed = db.Column(db.DateTime, default=datetime.utcnow)
+    is_known = db.Column(db.Boolean, default=False, nullable=False)
 
     card = db.relationship('Card', back_populates='statistics')
 
@@ -92,6 +93,7 @@ class CardStatistic(db.Model):
             'correct_count': self.correct_count,
             'wrong_count': self.wrong_count,
             'last_reviewed': self.last_reviewed.isoformat(),
+            'is_known': self.is_known,
         }
 
 

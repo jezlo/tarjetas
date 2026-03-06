@@ -68,12 +68,29 @@ def record_result(card_id):
     card = Card.query.join(Deck).filter(Card.id == card_id, Deck.user_id == user_id).first_or_404()
     data = request.get_json()
     correct = data.get('correct', False)
+    known = data.get('known', False)
 
     stat = _get_or_create_stat(card.id, user_id)
     if correct:
         stat.correct_count += 1
     else:
         stat.wrong_count += 1
+    if known:
+        stat.is_known = True
     stat.last_reviewed = datetime.utcnow()
     db.session.commit()
     return jsonify(stat.to_dict()), 200
+
+
+@statistics_bp.route('/decks/<int:deck_id>/known', methods=['GET'])
+@jwt_required()
+def get_known_cards(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+    card_ids = [c.id for c in deck.cards]
+    known_stats = CardStatistic.query.filter(
+        CardStatistic.card_id.in_(card_ids),
+        CardStatistic.user_id == user_id,
+        CardStatistic.is_known,
+    ).all()
+    return jsonify({'known_card_ids': [s.card_id for s in known_stats]}), 200
