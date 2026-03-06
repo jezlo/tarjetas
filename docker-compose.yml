@@ -1,10 +1,16 @@
-version: '3'
+version: '3.8'
 services:
-  frontend:
-    image: your-frontend-image
-    ports:
-      - "3000:3000"
   backend:
-    image: your-backend-image
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "5000:5000"
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
