@@ -1,12 +1,29 @@
-FROM node:14 AS builder
+# Use an official Node.js runtime as a parent image
+FROM node:14 AS build
+
+# Set the working directory
 WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ .
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Copy the frontend files into the container
+COPY ./frontend ./frontend
+
+# Build the frontend app
 RUN npm run build
-FROM node:14-alpine
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/build ./build
-EXPOSE 3000
-CMD ["serve", "-s", "build", "-l", "3000"]
+
+# Create a new stage from the nginx base image
+FROM nginx:alpine
+
+# Copy the built frontend files from the previous stage
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Command to run the nginx server
+CMD ["nginx", "-g", "daemon off;"]
