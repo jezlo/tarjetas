@@ -1,5 +1,3 @@
-# Update the Dockerfile to copy the requirements.txt and app.py appropriately
-
 # syntax=docker/dockerfile:1
 
 FROM python:3.8-slim
@@ -13,8 +11,8 @@ COPY requirements.txt .
 # Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the app.py file from the backend directory
-COPY backend/app.py .
+# Copy all backend source files (build context must be the repository root)
+COPY backend/ .
 
 # Set the command to run the application
-CMD ["python", "app.py"]
+CMD ["python", "run.py"]
