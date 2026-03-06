@@ -18,6 +18,27 @@ export default function DeckDetail() {
       setStudyIndex(0);
     });
 
+  const handleExport = () => {
+    if (!deck) return;
+    const token = localStorage.getItem('access_token');
+    fetch(`/api/decks/${id}/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob();
+      })
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${deck.name.replace(/\s+/g, '_')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(() => alert('Failed to export deck. Please try again.'));
+  };
+
   const handleToggleShare = async () => {
     const { data } = await api.put(`/decks/${id}/share`);
     setDeck(data);
@@ -61,6 +82,12 @@ export default function DeckDetail() {
               {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'add' ? '+ Add Card' : 'Import CSV'}
             </button>
           ))}
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50"
+          >
+            ⬇ Export CSV
+          </button>
         </div>
 
         {mode === 'list' && (
