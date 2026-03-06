@@ -26,13 +26,20 @@ export default function DeckDetail() {
   const [editingCard, setEditingCard] = useState(null); // { id, question, answer }
   const [editError, setEditError] = useState('');
 
+  // Study session setup
+  const [studyPhase, setStudyPhase] = useState(null); // null | 'config' | 'active'
+  const [configCardCount, setConfigCardCount] = useState('all');
+  const [liveCounts, setLiveCounts] = useState({ correct: 0, wrong: 0 });
+
   // Session tracking
   const sessionStartRef = useRef(null);
   const sessionCountsRef = useRef({ correct: 0, wrong: 0 });
+  const deckIdRef = useRef(null);
 
   const load = useCallback(() =>
     api.get(`/decks/${id}`).then(({ data }) => {
       setDeck(data);
+      deckIdRef.current = data.id;
       setStudyIndex(0);
     }), [id]);
 
@@ -74,37 +81,74 @@ export default function DeckDetail() {
 
   const saveSession = async (deckId) => {
     if (!sessionStartRef.current) return;
+    const started = sessionStartRef.current;
+    const counts = { ...sessionCountsRef.current };
+    sessionStartRef.current = null;
+    sessionCountsRef.current = { correct: 0, wrong: 0 };
     try {
       await api.post('/sessions', {
         deck_id: deckId,
-        correct_count: sessionCountsRef.current.correct,
-        wrong_count: sessionCountsRef.current.wrong,
-        started_at: sessionStartRef.current,
+        correct_count: counts.correct,
+        wrong_count: counts.wrong,
+        started_at: started,
         ended_at: new Date().toISOString(),
       });
     } catch (_) {}
-    sessionStartRef.current = null;
-    sessionCountsRef.current = { correct: 0, wrong: 0 };
   };
 
+  // Save session on component unmount (e.g. navigating away)
+  useEffect(() => {
+    return () => {
+      if (sessionStartRef.current && deckIdRef.current) {
+        const started = sessionStartRef.current;
+        const counts = { ...sessionCountsRef.current };
+        api.post('/sessions', {
+          deck_id: deckIdRef.current,
+          correct_count: counts.correct,
+          wrong_count: counts.wrong,
+          started_at: started,
+          ended_at: new Date().toISOString(),
+        }).catch(() => {});
+      }
+    };
+  }, []);
+
   const handleModeChange = (m) => {
-    const isLeavingSession = (mode === 'study' || mode === 'trivia') && m !== 'study' && m !== 'trivia';
-    if (isLeavingSession && deck) {
+    const wasActiveSession = (mode === 'study' || mode === 'trivia') && studyPhase === 'active';
+    if (wasActiveSession && m !== mode) {
       saveSession(deck.id);
+      setLiveCounts({ correct: 0, wrong: 0 });
     }
-    if ((m === 'study' || m === 'trivia') && deck) {
-      startStudy(deck.cards || [], shuffle);
-      beginSession();
+    if (m === 'study' || m === 'trivia') {
+      setStudyPhase('config');
+      setConfigCardCount('all');
+      setShuffle(false);
+    } else {
+      setStudyPhase(null);
     }
     setMode(m);
   };
 
-  const handleShuffleToggle = () => {
-    const next = !shuffle;
-    setShuffle(next);
-    if ((mode === 'study' || mode === 'trivia') && deck) {
-      startStudy(deck.cards || [], next);
+  const handleStartSession = () => {
+    const allCards = deck.cards || [];
+    let selectedCards;
+    if (configCardCount === 'all' || configCardCount >= allCards.length) {
+      selectedCards = allCards;
+    } else {
+      selectedCards = shuffleArray(allCards).slice(0, configCardCount);
     }
+    startStudy(selectedCards, shuffle);
+    beginSession();
+    setLiveCounts({ correct: 0, wrong: 0 });
+    setStudyPhase('active');
+  };
+
+  const handleResult = (correct) => {
+    sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1;
+    setLiveCounts((prev) => ({
+      ...prev,
+      [correct ? 'correct' : 'wrong']: prev[correct ? 'correct' : 'wrong'] + 1,
+    }));
   };
 
   const handleEditSave = async () => {
@@ -244,58 +288,88 @@ export default function DeckDetail() {
           </div>
         )}
 
-        {mode === 'study' && (
+        {(mode === 'study' || mode === 'trivia') && (
           cards.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
-          ) : (
-            <div>
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={handleShuffleToggle}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    shuffle
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
-                  }`}
-                >
-                  🔀 Shuffle {shuffle ? 'On' : 'Off'}
-                </button>
+          ) : studyPhase === 'config' ? (
+            <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                {mode === 'study' ? 'Study Session Setup' : 'Trivia Session Setup'}
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cards to study</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={configCardCount === 'all'}
+                        onChange={() => setConfigCardCount('all')}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm">All cards ({cards.length})</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={configCardCount !== 'all'}
+                        onChange={() => setConfigCardCount(Math.min(10, cards.length))}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm">Random selection:</span>
+                      {configCardCount !== 'all' && (
+                        <input
+                          type="number"
+                          min={1}
+                          max={cards.length}
+                          value={configCardCount}
+                          onChange={(e) => setConfigCardCount(Math.max(1, Math.min(cards.length, parseInt(e.target.value) || 1)))}
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        />
+                      )}
+                    </label>
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={shuffle}
+                    onChange={() => setShuffle(!shuffle)}
+                    className="text-indigo-600"
+                  />
+                  <span className="text-sm">🔀 Shuffle cards</span>
+                </label>
               </div>
-              <CardViewer
-                cards={studyCards}
-                index={studyIndex}
-                onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
-                onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                onResult={(correct) => { sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1; }}
-              />
+              <button
+                onClick={handleStartSession}
+                className="mt-6 w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+              >
+                Start Session
+              </button>
             </div>
-          )
-        )}
-
-        {mode === 'trivia' && (
-          cards.length === 0 ? (
-            <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
           ) : (
             <div>
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={handleShuffleToggle}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    shuffle
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
-                  }`}
-                >
-                  🔀 Shuffle {shuffle ? 'On' : 'Off'}
-                </button>
+              <div className="flex justify-center gap-8 mb-4 text-sm font-semibold">
+                <span className="text-green-600">✓ Correct: {liveCounts.correct}</span>
+                <span className="text-red-500">✗ Wrong: {liveCounts.wrong}</span>
               </div>
-              <TriviaViewer
-                cards={studyCards}
-                index={studyIndex}
-                onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
-                onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                onResult={(correct) => { sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1; }}
-              />
+              {mode === 'study' ? (
+                <CardViewer
+                  cards={studyCards}
+                  index={studyIndex}
+                  onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
+                  onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                  onResult={handleResult}
+                />
+              ) : (
+                <TriviaViewer
+                  cards={studyCards}
+                  index={studyIndex}
+                  onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
+                  onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                  onResult={handleResult}
+                />
+              )}
             </div>
           )
         )}
