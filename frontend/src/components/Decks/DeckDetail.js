@@ -30,6 +30,8 @@ export default function DeckDetail() {
   const [studyPhase, setStudyPhase] = useState(null); // null | 'config' | 'active'
   const [configCardCount, setConfigCardCount] = useState('all');
   const [liveCounts, setLiveCounts] = useState({ correct: 0, wrong: 0 });
+  const [invertCards, setInvertCards] = useState(false);
+  const [hideKnown, setHideKnown] = useState(false);
 
   // Session tracking
   const sessionStartRef = useRef(null);
@@ -123,19 +125,32 @@ export default function DeckDetail() {
       setStudyPhase('config');
       setConfigCardCount('all');
       setShuffle(false);
+      setInvertCards(false);
+      setHideKnown(false);
     } else {
       setStudyPhase(null);
     }
     setMode(m);
   };
 
-  const handleStartSession = () => {
+  const handleStartSession = async () => {
     const allCards = deck.cards || [];
+    let baseCards = allCards;
+    if (hideKnown) {
+      try {
+        const { data } = await api.get(`/statistics/decks/${id}/known`);
+        const knownIds = new Set(data.known_card_ids);
+        baseCards = allCards.filter((c) => !knownIds.has(c.id));
+      } catch (err) {
+        console.error('Failed to fetch known cards, showing all cards:', err);
+        baseCards = allCards;
+      }
+    }
     let selectedCards;
-    if (configCardCount === 'all' || configCardCount >= allCards.length) {
-      selectedCards = allCards;
+    if (configCardCount === 'all' || configCardCount >= baseCards.length) {
+      selectedCards = baseCards;
     } else {
-      selectedCards = shuffleArray(allCards).slice(0, configCardCount);
+      selectedCards = shuffleArray(baseCards).slice(0, configCardCount);
     }
     startStudy(selectedCards, shuffle);
     beginSession();
@@ -339,6 +354,24 @@ export default function DeckDetail() {
                   />
                   <span className="text-sm">🔀 Shuffle cards</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={invertCards}
+                    onChange={() => setInvertCards(!invertCards)}
+                    className="text-indigo-600"
+                  />
+                  <span className="text-sm">🔄 Invert questions and answers</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hideKnown}
+                    onChange={() => setHideKnown(!hideKnown)}
+                    className="text-indigo-600"
+                  />
+                  <span className="text-sm">⭐ Hide known cards</span>
+                </label>
               </div>
               <button
                 onClick={handleStartSession}
@@ -371,6 +404,7 @@ export default function DeckDetail() {
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
+                  invertCards={invertCards}
                 />
               ) : (
                 <TriviaViewer
@@ -379,6 +413,7 @@ export default function DeckDetail() {
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
+                  invertCards={invertCards}
                 />
               )}
             </div>

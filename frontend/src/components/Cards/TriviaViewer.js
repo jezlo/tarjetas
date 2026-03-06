@@ -1,8 +1,10 @@
 import React from 'react';
 import api from '../../services/api';
 
-export default function TriviaViewer({ cards, index, onNext, onPrev, onResult }) {
+export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, invertCards }) {
   const card = cards[index];
+  const questionText = invertCards ? card.answer : card.question;
+  const answerText = invertCards ? card.question : card.answer;
 
   const handleResult = async (correct) => {
     try {
@@ -21,12 +23,12 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult })
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">Question</p>
-          <p className="text-xl font-semibold text-gray-800">{card.question}</p>
+          <p className="text-xl font-semibold text-gray-800">{questionText}</p>
         </div>
         <hr className="border-gray-200" />
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-green-500 mb-1">Answer</p>
-          <p className="text-xl font-semibold text-gray-700">{card.answer}</p>
+          <p className="text-xl font-semibold text-gray-700">{answerText}</p>
         </div>
       </div>
 

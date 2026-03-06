@@ -3,7 +3,7 @@ import api from '../../services/api';
 
 const FLIP_DURATION = 600;
 
-export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
+export default function CardViewer({ cards, index, onNext, onPrev, onResult, invertCards }) {
   const [flipped, setFlipped] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const displayedCard = useRef(cards[index]);
@@ -13,6 +13,8 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
   }
 
   const card = displayedCard.current;
+  const frontText = invertCards ? card.answer : card.question;
+  const backText = invertCards ? card.question : card.answer;
 
   const handleFlip = () => {
     if (!transitioning) setFlipped((f) => !f);
@@ -32,9 +34,9 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
     onPrev();
   };
 
-  const recordResult = async (correct) => {
+  const recordResult = async (correct, known = false) => {
     try {
-      await api.post(`/statistics/cards/${card.id}`, { correct });
+      await api.post(`/statistics/cards/${card.id}`, { correct, known });
     } catch (_) {}
     if (onResult) onResult(correct);
     handleNext();
@@ -53,11 +55,11 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
         <div className={`card-flip ${flipped ? 'flipped' : ''} w-full h-full`}>
           {/* Front */}
           <div className="card-face bg-white rounded-2xl shadow-lg flex items-center justify-center p-6">
-            <p className="text-xl font-semibold text-gray-800 text-center">{card.question}</p>
+            <p className="text-xl font-semibold text-gray-800 text-center">{frontText}</p>
           </div>
           {/* Back */}
           <div className="card-face card-back bg-indigo-600 rounded-2xl shadow-lg flex items-center justify-center p-6">
-            <p className="text-xl font-semibold text-white text-center">{card.answer}</p>
+            <p className="text-xl font-semibold text-white text-center">{backText}</p>
           </div>
         </div>
       </div>
@@ -66,7 +68,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult }) {
 
       {!transitioning && (
         <button
-          onClick={() => recordResult(true)}
+          onClick={() => recordResult(true, true)}
           aria-label="Mark card as known"
           className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition"
         >
