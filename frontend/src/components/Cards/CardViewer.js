@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import api from '../../services/api';
+
+const FLIP_DURATION = 600;
 
 export default function CardViewer({ cards, index, onNext, onPrev }) {
   const [flipped, setFlipped] = useState(false);
-  const card = cards[index];
+  const [transitioning, setTransitioning] = useState(false);
+  const displayedCard = useRef(cards[index]);
 
-  const handleFlip = () => setFlipped((f) => !f);
+  if (!transitioning) {
+    displayedCard.current = cards[index];
+  }
+
+  const card = displayedCard.current;
+
+  const handleFlip = () => {
+    if (!transitioning) setFlipped((f) => !f);
+  };
 
   const handleNext = () => {
     setFlipped(false);
-    onNext();
+    setTransitioning(true);
+    setTimeout(() => {
+      setTransitioning(false);
+      onNext();
+    }, FLIP_DURATION);
   };
 
   const handlePrev = () => {
@@ -30,7 +45,10 @@ export default function CardViewer({ cards, index, onNext, onPrev }) {
         Card {index + 1} of {cards.length}
       </p>
 
-      <div className="card-scene w-full max-w-lg h-56 cursor-pointer" onClick={handleFlip}>
+      <div
+        className={`card-scene w-full max-w-lg h-56 cursor-pointer transition-opacity ${transitioning ? 'opacity-50 cursor-not-allowed' : ''}`}
+        onClick={handleFlip}
+      >
         <div className={`card-flip ${flipped ? 'flipped' : ''} w-full h-full`}>
           {/* Front */}
           <div className="card-face bg-white rounded-2xl shadow-lg flex items-center justify-center p-6">
@@ -45,7 +63,7 @@ export default function CardViewer({ cards, index, onNext, onPrev }) {
 
       <p className="text-sm text-gray-400">Click card to flip</p>
 
-      {flipped && (
+      {flipped && !transitioning && (
         <div className="flex gap-4">
           <button
             onClick={() => recordResult(false)}
@@ -65,14 +83,14 @@ export default function CardViewer({ cards, index, onNext, onPrev }) {
       <div className="flex gap-4">
         <button
           onClick={handlePrev}
-          disabled={index === 0}
+          disabled={index === 0 || transitioning}
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
         >
           ← Prev
         </button>
         <button
           onClick={handleNext}
-          disabled={index === cards.length - 1}
+          disabled={index === cards.length - 1 || transitioning}
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
         >
           Next →

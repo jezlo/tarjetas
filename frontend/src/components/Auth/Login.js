@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 
+const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
+
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '' });
@@ -62,12 +64,14 @@ export default function Login() {
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          No account?{' '}
-          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
-            Register
-          </Link>
-        </p>
+        {REGISTRATION_ENABLED && (
+          <p className="mt-4 text-center text-sm text-gray-600">
+            No account?{' '}
+            <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+              Register
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );
