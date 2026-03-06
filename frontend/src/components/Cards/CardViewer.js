@@ -66,32 +66,41 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
 
       <p className="text-sm text-gray-400">Click card to flip</p>
 
-      {!transitioning && (
+      <div className="flex gap-3">
         <button
           onClick={() => recordResult(true, true)}
+          disabled={transitioning}
           aria-label="Mark card as known"
-          className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition"
+          className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           ⭐ Known
         </button>
-      )}
+        <button
+          onClick={() => recordResult(true, false)}
+          disabled={transitioning}
+          aria-label="Mark as easy"
+          className="px-5 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ✓ Easy
+        </button>
+      </div>
 
-      {flipped && !transitioning && (
-        <div className="flex gap-4">
-          <button
-            onClick={() => recordResult(false)}
-            className="px-6 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition"
-          >
-            ✗ Wrong
-          </button>
-          <button
-            onClick={() => recordResult(true)}
-            className="px-6 py-2 bg-green-100 text-green-600 font-semibold rounded-lg hover:bg-green-200 transition"
-          >
-            ✓ Correct
-          </button>
-        </div>
-      )}
+      <div className="flex gap-4">
+        <button
+          onClick={() => recordResult(false)}
+          disabled={!flipped || transitioning}
+          className="px-6 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ✗ Wrong
+        </button>
+        <button
+          onClick={() => recordResult(true)}
+          disabled={!flipped || transitioning}
+          className="px-6 py-2 bg-green-100 text-green-600 font-semibold rounded-lg hover:bg-green-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ✓ Correct
+        </button>
+      </div>
 
       <div className="flex gap-4">
         <button
