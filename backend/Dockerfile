@@ -1,22 +1,20 @@
-# Use this Dockerfile to build the backend
+# Update the Dockerfile to copy the requirements.txt and app.py appropriately
 
-# Base image
+# syntax=docker/dockerfile:1
+
 FROM python:3.8-slim
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file from the parent directory
-COPY ../requirements.txt ./
+# Copy the requirements.txt file from the root of the project
+COPY requirements.txt .
 
-# Install dependencies
+# Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY . .
+# Copy the app.py file from the backend directory
+COPY backend/app.py .
 
-# Expose the application port
-EXPOSE 5000
-
-# Command to run the application
+# Set the command to run the application
 CMD ["python", "app.py"]
