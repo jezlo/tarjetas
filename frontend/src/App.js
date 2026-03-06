@@ -8,6 +8,8 @@ import DeckDetail from './components/Decks/DeckDetail';
 import BrowseDecks from './components/Decks/BrowseDecks';
 import Statistics from './components/Statistics/Statistics';
 
+const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('access_token');
   return token ? children : <Navigate to="/login" replace />;
@@ -18,7 +20,10 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/register"
+          element={REGISTRATION_ENABLED ? <Register /> : <Navigate to="/login" replace />}
+        />
         <Route
           path="/"
           element={
