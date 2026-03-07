@@ -172,6 +172,32 @@ def import_csv(deck_id):
     return jsonify({'message': f'{count} cards imported'}), 201
 
 
+@decks_bp.route('/combine', methods=['POST'])
+@jwt_required()
+def combine_decks():
+    user_id = int(get_jwt_identity())
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    deck_ids = data.get('deck_ids', [])
+    if not name:
+        return jsonify({'message': 'name is required'}), 400
+    if not deck_ids or len(deck_ids) < 2:
+        return jsonify({'message': 'At least 2 decks are required'}), 400
+
+    source_decks = Deck.query.filter(Deck.id.in_(deck_ids), Deck.user_id == user_id).all()
+    if len(source_decks) != len(deck_ids):
+        return jsonify({'message': 'Some decks were not found'}), 404
+
+    new_deck = Deck(name=name, description=data.get('description', ''), user_id=user_id)
+    db.session.add(new_deck)
+    db.session.flush()
+    for source in source_decks:
+        for card in source.cards:
+            db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
+    db.session.commit()
+    return jsonify(new_deck.to_dict()), 201
+
+
 @decks_bp.route('/<int:deck_id>/export', methods=['GET'])
 @jwt_required()
 def export_csv(deck_id):

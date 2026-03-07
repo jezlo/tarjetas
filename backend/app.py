@@ -53,4 +53,8 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE card_statistics ADD COLUMN is_known BOOLEAN NOT NULL DEFAULT 0'))
             conn.commit()
+    if 'is_marked' not in card_statistics_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE card_statistics ADD COLUMN is_marked BOOLEAN NOT NULL DEFAULT 0'))
+            conn.commit()
 
