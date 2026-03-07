@@ -19,7 +19,7 @@ function shuffleArray(arr) {
 export default function DeckDetail() {
   const { id } = useParams();
   const [deck, setDeck] = useState(null);
-  const [mode, setMode] = useState('list'); // list | study | trivia | add | bulk | import
+  const [mode, setMode] = useState('list'); // list | study | trivia | add | bulk | import | duplicates
   const [studyIndex, setStudyIndex] = useState(0);
   const [shuffle, setShuffle] = useState(false);
   const [studyCards, setStudyCards] = useState([]);
@@ -36,6 +36,10 @@ export default function DeckDetail() {
 
   // Marked cards
   const [markedCardIds, setMarkedCardIds] = useState(new Set());
+
+  // Duplicate cards
+  const [duplicateGroups, setDuplicateGroups] = useState(null);
+  const [duplicateLoading, setDuplicateLoading] = useState(false);
 
   // Session tracking
   const sessionStartRef = useRef(null);
@@ -125,6 +129,24 @@ export default function DeckDetail() {
     };
   }, []);
 
+  const loadDuplicates = useCallback(() => {
+    setDuplicateLoading(true);
+    api.get(`/decks/${id}/duplicates`)
+      .then(({ data }) => setDuplicateGroups(data))
+      .catch(() => setDuplicateGroups({ groups: [], duplicate_card_ids: [], total_duplicates: 0 }))
+      .finally(() => setDuplicateLoading(false));
+  }, [id]);
+
+  const handleMarkDuplicates = async () => {
+    try {
+      await api.post(`/decks/${id}/duplicates/mark`);
+      loadMarkedCards();
+      loadDuplicates();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to mark duplicates. Please try again.');
+    }
+  };
+
   const handleModeChange = (m) => {
     const wasActiveSession = (mode === 'study' || mode === 'trivia') && studyPhase === 'active';
     if (wasActiveSession && m !== mode) {
@@ -140,6 +162,9 @@ export default function DeckDetail() {
       setAutoFlipDelay(0);
     } else {
       setStudyPhase(null);
+    }
+    if (m === 'duplicates') {
+      setDuplicateGroups(null);
     }
     setMode(m);
   };
@@ -252,7 +277,7 @@ export default function DeckDetail() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
-          {['list', 'study', 'trivia', 'add', 'bulk', 'import'].map((m) => (
+          {['list', 'study', 'trivia', 'add', 'bulk', 'import', 'duplicates'].map((m) => (
             <button
               key={m}
               onClick={() => handleModeChange(m)}
@@ -262,7 +287,7 @@ export default function DeckDetail() {
                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
               }`}
             >
-              {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : 'Import CSV'}
+              {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
             </button>
           ))}
           <button
@@ -560,6 +585,84 @@ export default function DeckDetail() {
         {mode === 'add' && <CardForm deckId={id} onSaved={() => { load(); setMode('list'); }} />}
         {mode === 'bulk' && <BulkAddCards deckId={id} onSaved={() => { load(); setMode('list'); }} />}
         {mode === 'import' && <CSVImporter deckId={id} onImported={() => { load(); setMode('list'); }} />}
+
+        {mode === 'duplicates' && (
+          <div>
+            {duplicateGroups === null ? (
+              <div className="bg-white rounded-xl shadow p-8 text-center">
+                <p className="text-gray-500 mb-4">Find cards with the same question so you can review and clean them up.</p>
+                <button
+                  onClick={loadDuplicates}
+                  disabled={duplicateLoading}
+                  className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                >
+                  {duplicateLoading ? 'Searching…' : '🔍 Search for duplicates'}
+                </button>
+              </div>
+            ) : duplicateGroups.total_duplicates === 0 ? (
+              <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                ✅ No duplicate cards found in this deck.
+              </div>
+            ) : (
+              <div>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 text-sm text-yellow-800 flex flex-wrap justify-between items-center gap-2">
+                  <span>⚠️ <span className="font-medium">{duplicateGroups.total_duplicates} duplicate card{duplicateGroups.total_duplicates !== 1 ? 's' : ''}</span> found across <span className="font-medium">{duplicateGroups.groups.length} group{duplicateGroups.groups.length !== 1 ? 's' : ''}</span></span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleMarkDuplicates}
+                      className="text-xs bg-orange-500 text-white border border-orange-400 rounded px-3 py-1 hover:bg-orange-600 transition"
+                    >
+                      📌 Mark all duplicates
+                    </button>
+                    <button
+                      onClick={loadDuplicates}
+                      className="text-xs text-yellow-700 border border-yellow-300 rounded px-2 py-1 hover:bg-yellow-100 transition"
+                    >
+                      🔄 Refresh
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {duplicateGroups.groups.map((group, gi) => (
+                    <div key={gi} className="bg-white rounded-xl shadow p-4">
+                      <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-2">
+                        Group {gi + 1} — {group.length} cards with the same question
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {group.map((card) => (
+                          <div key={card.id} className={`rounded-lg border p-3 ${markedCardIds.has(card.id) ? 'bg-orange-50 border-orange-300' : 'bg-gray-50 border-gray-200'}`}>
+                            <p className="font-medium text-gray-800 text-sm">{card.question}</p>
+                            <p className="text-gray-500 text-xs mt-1">{card.answer}</p>
+                            <div className="flex gap-3 mt-2">
+                              <button
+                                onClick={() => handleTogglePin(card.id)}
+                                className={`text-xs ${markedCardIds.has(card.id) ? 'text-orange-500 hover:text-orange-700' : 'text-gray-400 hover:text-orange-500'}`}
+                                title={markedCardIds.has(card.id) ? 'Remove pin' : 'Pin card'}
+                              >
+                                {markedCardIds.has(card.id) ? '📌 Pinned' : '📌 Pin'}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm('Delete this card?')) return;
+                                  await api.delete(`/cards/${card.id}`);
+                                  load();
+                                  loadDuplicates();
+                                }}
+                                className="text-xs text-red-400 hover:text-red-600"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
