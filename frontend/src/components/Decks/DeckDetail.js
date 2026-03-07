@@ -257,6 +257,8 @@ export default function DeckDetail() {
   if (!deck) return <div className="p-8 text-center text-gray-400">Loading…</div>;
 
   const cards = deck.cards || [];
+  const isActiveSession = (mode === 'study' || mode === 'trivia') && studyPhase === 'active';
+  const hiddenDuringSession = new Set(['add', 'bulk', 'import', 'duplicates']);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -277,25 +279,29 @@ export default function DeckDetail() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
-          {['list', 'study', 'trivia', 'add', 'bulk', 'import', 'duplicates'].map((m) => (
+          {['list', 'study', 'trivia', 'add', 'bulk', 'import', 'duplicates']
+            .filter((m) => !(isActiveSession && hiddenDuringSession.has(m)))
+            .map((m) => (
+              <button
+                key={m}
+                onClick={() => handleModeChange(m)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  mode === m
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
+                }`}
+              >
+                {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
+              </button>
+            ))}
+          {!isActiveSession && (
             <button
-              key={m}
-              onClick={() => handleModeChange(m)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                mode === m
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
-              }`}
+              onClick={handleExport}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50"
             >
-              {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
+              ⬇ Export CSV
             </button>
-          ))}
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50"
-          >
-            ⬇ Export CSV
-          </button>
+          )}
         </div>
 
         {mode === 'list' && (
