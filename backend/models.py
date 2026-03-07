@@ -70,6 +70,7 @@ class Card(db.Model):
     deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False)
     question = db.Column(db.Text, nullable=False)
     answer = db.Column(db.Text, nullable=False)
+    context = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     deck = db.relationship('Deck', back_populates='cards')
@@ -81,6 +82,7 @@ class Card(db.Model):
             'deck_id': self.deck_id,
             'question': self.question,
             'answer': self.answer,
+            'context': self.context,
             'created_at': self.created_at.isoformat(),
         }
 

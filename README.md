@@ -113,12 +113,27 @@ npm start   # runs on http://localhost:3000, proxies /api → localhost:5000
 
 ## CSV Import Format
 
-The CSV file must have `question` and `answer` columns (case-insensitive):
+The CSV file must have `question` and `answer` columns (case-insensitive). An optional `context` column can be included to store additional information such as examples, explanations, or alternative answers.
 
+**Without context (existing format – still supported):**
 ```csv
 question,answer
 What is the capital of France?,Paris
 What is 2 + 2?,4
+```
+
+**With context:**
+```csv
+question,answer,context
+"What is the capital of France?","Paris","Largest city in France, known for the Eiffel Tower"
+"What is 2 + 2?","4","Basic arithmetic"
+```
+
+**Mixed (some rows with context, some without):**
+```csv
+question,answer,context
+"What is the capital of France?","Paris","Largest city"
+Simple question,Simple answer,
 ```
 
 ---

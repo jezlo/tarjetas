@@ -22,6 +22,8 @@ def update_card(card_id):
         if not stripped:
             return jsonify({'message': 'answer cannot be empty'}), 400
         card.answer = stripped
+    if 'context' in data:
+        card.context = data['context'].strip() or None
     db.session.commit()
     return jsonify(card.to_dict()), 200
 
