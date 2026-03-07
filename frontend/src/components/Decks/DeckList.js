@@ -9,9 +9,9 @@ export default function DeckList() {
   const [form, setForm] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
 
-  // Rename state
-  const [renamingDeck, setRenamingDeck] = useState(null); // { id, name }
-  const [renameError, setRenameError] = useState('');
+  // Edit deck state
+  const [editingDeck, setEditingDeck] = useState(null); // { id, name, description }
+  const [editDeckError, setEditDeckError] = useState('');
 
   // Combine state
   const [showCombine, setShowCombine] = useState(false);
@@ -42,18 +42,18 @@ export default function DeckList() {
     load();
   };
 
-  const handleRename = async () => {
-    setRenameError('');
-    if (!renamingDeck.name.trim()) {
-      setRenameError('Name cannot be empty');
+  const handleEditDeck = async () => {
+    setEditDeckError('');
+    if (!editingDeck.name.trim()) {
+      setEditDeckError('Name cannot be empty');
       return;
     }
     try {
-      await api.put(`/decks/${renamingDeck.id}`, { name: renamingDeck.name.trim() });
-      setRenamingDeck(null);
+      await api.put(`/decks/${editingDeck.id}`, { name: editingDeck.name.trim(), description: editingDeck.description });
+      setEditingDeck(null);
       load();
     } catch (err) {
-      setRenameError(err.response?.data?.message || 'Failed to rename deck');
+      setEditDeckError(err.response?.data?.message || 'Failed to update deck');
     }
   };
 
@@ -181,19 +181,26 @@ export default function DeckList() {
           <div className="space-y-3">
             {decks.map((deck) => (
               <div key={deck.id} className="bg-white rounded-xl shadow p-5 hover:shadow-md transition">
-                {renamingDeck && renamingDeck.id === deck.id ? (
+                {editingDeck && editingDeck.id === deck.id ? (
                   <div className="space-y-2">
-                    {renameError && <p className="text-red-500 text-sm">{renameError}</p>}
+                    {editDeckError && <p className="text-red-500 text-sm">{editDeckError}</p>}
                     <input
-                      value={renamingDeck.name}
-                      onChange={(e) => setRenamingDeck({ ...renamingDeck, name: e.target.value })}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenamingDeck(null); }}
+                      value={editingDeck.name}
+                      onChange={(e) => setEditingDeck({ ...editingDeck, name: e.target.value })}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleEditDeck(); if (e.key === 'Escape') setEditingDeck(null); }}
                       autoFocus
+                      placeholder="Deck name"
                       className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     />
+                    <input
+                      value={editingDeck.description}
+                      onChange={(e) => setEditingDeck({ ...editingDeck, description: e.target.value })}
+                      placeholder="Description (optional)"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
                     <div className="flex gap-2">
-                      <button onClick={handleRename} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
-                      <button onClick={() => { setRenamingDeck(null); setRenameError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                      <button onClick={handleEditDeck} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
+                      <button onClick={() => { setEditingDeck(null); setEditDeckError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
                     </div>
                   </div>
                 ) : (
@@ -205,10 +212,10 @@ export default function DeckList() {
                     </Link>
                     <div className="ml-4 flex gap-3 items-center shrink-0">
                       <button
-                        onClick={() => { setRenamingDeck({ id: deck.id, name: deck.name }); setRenameError(''); }}
+                        onClick={() => { setEditingDeck({ id: deck.id, name: deck.name, description: deck.description || '' }); setEditDeckError(''); }}
                         className="text-xs text-indigo-500 hover:text-indigo-700"
                       >
-                        Rename
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDelete(deck.id)}

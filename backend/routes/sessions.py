@@ -44,3 +44,22 @@ def create_session():
     db.session.add(session)
     db.session.commit()
     return jsonify(session.to_dict()), 201
+
+
+@sessions_bp.route('/<int:session_id>', methods=['DELETE'])
+@jwt_required()
+def delete_session(session_id):
+    user_id = int(get_jwt_identity())
+    session = StudySession.query.filter_by(id=session_id, user_id=user_id).first_or_404()
+    db.session.delete(session)
+    db.session.commit()
+    return jsonify({'message': 'Session deleted'}), 200
+
+
+@sessions_bp.route('', methods=['DELETE'])
+@jwt_required()
+def delete_all_sessions():
+    user_id = int(get_jwt_identity())
+    StudySession.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
+    return jsonify({'message': 'All sessions deleted'}), 200
