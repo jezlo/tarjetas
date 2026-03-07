@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../../services/api';
 
-const FLIP_DURATION = 600;
 const SLIDE_DURATION = 500;
 
 export default function CardViewer({ cards, index, onNext, onPrev, onResult, invertCards, autoFlipDelay, onMark, markedCardIds }) {
