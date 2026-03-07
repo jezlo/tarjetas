@@ -5,7 +5,7 @@ import re
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Deck, Card, User
+from models import db, Deck, Card, CardStatistic, User
 from utils.csv_importer import import_cards_from_csv
 
 decks_bp = Blueprint('decks', __name__)
@@ -196,6 +196,61 @@ def combine_decks():
             db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
     db.session.commit()
     return jsonify(new_deck.to_dict()), 201
+
+
+def _find_duplicate_groups(deck):
+    """Return a list of groups (each group is a list of cards) that share the same normalised question."""
+    groups = {}
+    for card in deck.cards:
+        key = card.question.strip().lower()
+        groups.setdefault(key, []).append(card)
+    return [group for group in groups.values() if len(group) > 1]
+
+
+@decks_bp.route('/<int:deck_id>/duplicates', methods=['GET'])
+@jwt_required()
+def get_duplicate_cards(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+
+    duplicate_groups = _find_duplicate_groups(deck)
+    duplicate_card_ids = [card.id for group in duplicate_groups for card in group]
+    return jsonify({
+        'groups': [[card.to_dict() for card in group] for group in duplicate_groups],
+        'duplicate_card_ids': duplicate_card_ids,
+        'total_duplicates': len(duplicate_card_ids),
+    }), 200
+
+
+@decks_bp.route('/<int:deck_id>/duplicates/mark', methods=['POST'])
+@jwt_required()
+def mark_duplicate_cards(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+
+    duplicate_cards = [card for group in _find_duplicate_groups(deck) for card in group]
+    duplicate_ids = [c.id for c in duplicate_cards]
+
+    existing_stats = {
+        s.card_id: s
+        for s in CardStatistic.query.filter(
+            CardStatistic.card_id.in_(duplicate_ids),
+            CardStatistic.user_id == user_id,
+        ).all()
+    }
+
+    for card in duplicate_cards:
+        stat = existing_stats.get(card.id)
+        if not stat:
+            stat = CardStatistic(card_id=card.id, user_id=user_id, correct_count=0, wrong_count=0)
+            db.session.add(stat)
+        stat.is_marked = True
+    db.session.commit()
+
+    return jsonify({
+        'message': f'{len(duplicate_cards)} duplicate cards marked',
+        'duplicate_card_ids': duplicate_ids,
+    }), 200
 
 
 @decks_bp.route('/<int:deck_id>/export', methods=['GET'])
