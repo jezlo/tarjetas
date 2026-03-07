@@ -48,6 +48,10 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE decks ADD COLUMN source_deck_id INTEGER REFERENCES decks(id)'))
             conn.commit()
+    if 'import_count' not in decks_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE decks ADD COLUMN import_count INTEGER NOT NULL DEFAULT 0'))
+            conn.commit()
     card_statistics_columns = [col['name'] for col in inspector.get_columns('card_statistics')]
     if 'is_known' not in card_statistics_columns:
         with db.engine.connect() as conn:
