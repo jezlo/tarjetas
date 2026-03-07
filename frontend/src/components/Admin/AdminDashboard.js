@@ -13,6 +13,11 @@ export default function AdminDashboard() {
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetTarget, setResetTarget] = useState(null); // { id, username }
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   const currentUser = getCurrentUser();
 
@@ -69,6 +74,30 @@ export default function AdminDashboard() {
         setCreateError(err.response?.data?.message || 'Could not create user.');
         setCreating(false);
       });
+  };
+
+  const handleResetPassword = (e) => {
+    e.preventDefault();
+    setResetError('');
+    setResetting(true);
+    api.put(`/admin/users/${resetTarget.id}`, { password: resetPassword })
+      .then(() => {
+        setShowResetModal(false);
+        setResetTarget(null);
+        setResetPassword('');
+        setResetting(false);
+      })
+      .catch((err) => {
+        setResetError(err.response?.data?.message || 'Could not reset password.');
+        setResetting(false);
+      });
+  };
+
+  const handleOpenResetModal = (user) => {
+    setResetTarget({ id: user.id, username: user.username });
+    setResetPassword('');
+    setResetError('');
+    setShowResetModal(true);
   };
 
   const formatDate = (iso) => {
@@ -179,13 +208,21 @@ export default function AdminDashboard() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => handleDelete(u.id)}
-                          disabled={deletingId === u.id || u.id === currentUser.id}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          {deletingId === u.id ? 'Deleting…' : 'Delete'}
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenResetModal(u)}
+                            className="text-indigo-500 hover:text-indigo-700 text-xs font-medium"
+                          >
+                            Reset Password
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.id)}
+                            disabled={deletingId === u.id || u.id === currentUser.id}
+                            className="text-red-500 hover:text-red-700 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {deletingId === u.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -258,6 +295,50 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => { setShowCreateModal(false); setCreateError(''); }}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reset password modal */}
+      {showResetModal && resetTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-1">Reset Password</h3>
+            <p className="text-sm text-gray-500 mb-4">Set a new password for <span className="font-semibold text-gray-700">{resetTarget.username}</span></p>
+            {resetError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
+                {resetError}
+              </div>
+            )}
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={resetting}
+                  className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-60"
+                >
+                  {resetting ? 'Saving…' : 'Reset Password'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowResetModal(false); setResetTarget(null); setResetError(''); }}
                   className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
                 >
                   Cancel

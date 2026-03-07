@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import UserProfile from './components/Auth/UserProfile';
 import Dashboard from './components/Dashboard/Dashboard';
 import DeckList from './components/Decks/DeckList';
 import DeckDetail from './components/Decks/DeckDetail';
@@ -59,6 +60,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Statistics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           }
         />
