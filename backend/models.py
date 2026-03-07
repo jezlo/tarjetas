@@ -28,10 +28,12 @@ class Deck(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     is_public = db.Column(db.Boolean, default=False, nullable=False)
     source_deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
+    import_count = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', back_populates='decks')
     cards = db.relationship('Card', back_populates='deck', cascade='all, delete-orphan')
+    likes = db.relationship('DeckLike', back_populates='deck', cascade='all, delete-orphan')
 
     def to_dict(self, include_cards=False, include_owner=False):
         data = {
@@ -42,6 +44,8 @@ class Deck(db.Model):
             'is_public': self.is_public,
             'created_at': self.created_at.isoformat(),
             'card_count': len(self.cards),
+            'import_count': self.import_count,
+            'like_count': len(self.likes),
         }
         if include_owner:
             data['owner_username'] = self.owner.username if self.owner else None
@@ -123,4 +127,17 @@ class StudySession(db.Model):
             'started_at': self.started_at.isoformat(),
             'ended_at': self.ended_at.isoformat() if self.ended_at else None,
         }
+
+
+class DeckLike(db.Model):
+    __tablename__ = 'deck_likes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint('deck_id', 'user_id', name='uq_deck_like'),)
+
+    deck = db.relationship('Deck', back_populates='likes')
 

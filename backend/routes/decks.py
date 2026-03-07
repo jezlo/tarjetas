@@ -5,7 +5,7 @@ import re
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Deck, Card, CardStatistic, User
+from models import db, Deck, Card, CardStatistic, User, DeckLike
 from utils.csv_importer import import_cards_from_csv
 
 decks_bp = Blueprint('decks', __name__)
@@ -38,7 +38,11 @@ def create_deck():
 @jwt_required()
 def get_public_decks():
     user_id = int(get_jwt_identity())
-    decks = Deck.query.filter_by(is_public=True).order_by(Deck.created_at.desc()).all()
+    sort = request.args.get('sort', 'recent')
+    if sort == 'popular':
+        decks = Deck.query.filter_by(is_public=True).order_by(Deck.import_count.desc(), Deck.created_at.desc()).all()
+    else:
+        decks = Deck.query.filter_by(is_public=True).order_by(Deck.created_at.desc()).all()
     # Build a set of source_deck_ids the user has already imported (ignore NULLs)
     imported_ids = {
         d.source_deck_id
@@ -47,11 +51,16 @@ def get_public_decks():
             Deck.source_deck_id.isnot(None),
         ).with_entities(Deck.source_deck_id).all()
     }
+    liked_ids = {
+        lk.deck_id
+        for lk in DeckLike.query.filter_by(user_id=user_id).with_entities(DeckLike.deck_id).all()
+    }
     result = []
     for d in decks:
         data = d.to_dict(include_owner=True)
         data['is_own'] = d.user_id == user_id
         data['already_imported'] = d.id in imported_ids
+        data['user_has_liked'] = d.id in liked_ids
         result.append(data)
     return jsonify(result), 200
 
@@ -77,6 +86,7 @@ def import_deck(deck_id):
     db.session.flush()
     for card in source.cards:
         db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
+    source.import_count += 1
     db.session.commit()
     return jsonify(new_deck.to_dict(include_cards=True)), 201
 
@@ -89,6 +99,23 @@ def toggle_share(deck_id):
     deck.is_public = not deck.is_public
     db.session.commit()
     return jsonify(deck.to_dict()), 200
+
+
+@decks_bp.route('/<int:deck_id>/like', methods=['POST'])
+@jwt_required()
+def toggle_like(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, is_public=True).first_or_404()
+    existing = DeckLike.query.filter_by(deck_id=deck_id, user_id=user_id).first()
+    if existing:
+        db.session.delete(existing)
+        liked = False
+    else:
+        db.session.add(DeckLike(deck_id=deck_id, user_id=user_id))
+        liked = True
+    db.session.commit()
+    like_count = DeckLike.query.filter_by(deck_id=deck_id).count()
+    return jsonify({'liked': liked, 'like_count': like_count}), 200
 
 
 @decks_bp.route('/<int:deck_id>', methods=['GET'])
