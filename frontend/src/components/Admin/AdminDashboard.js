@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getCurrentUser } from '../../utils/authUtils';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function AdminDashboard() {
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUser = getCurrentUser();
 
   const fetchUsers = useCallback(() => {
     setLoading(true);

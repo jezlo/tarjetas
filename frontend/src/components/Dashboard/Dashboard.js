@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getCurrentUser } from '../../utils/authUtils';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = getCurrentUser();
   const [stats, setStats] = useState(null);
   const [recentDecks, setRecentDecks] = useState([]);
   const [loadError, setLoadError] = useState('');
