@@ -74,6 +74,31 @@ def create_user():
     return jsonify(result), 201
 
 
+@admin_bp.route('/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def update_user(user_id):
+    admin = _require_admin()
+    if not admin:
+        return jsonify({'message': 'Admin access required'}), 403
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    data = request.get_json()
+    new_password = data.get('password', '').strip()
+
+    if not new_password:
+        return jsonify({'message': 'Password is required'}), 400
+
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+
+    result = user.to_dict()
+    result['deck_count'] = Deck.query.filter_by(user_id=user.id).count()
+    return jsonify(result), 200
+
+
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):

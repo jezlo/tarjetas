@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import CardViewer from '../Cards/CardViewer';
 import TriviaViewer from '../Cards/TriviaViewer';
+import FillViewer from '../Cards/FillViewer';
 import CardForm from '../Cards/CardForm';
 import CSVImporter from '../Cards/CSVImporter';
 import BulkAddCards from '../Cards/BulkAddCards';
@@ -19,7 +20,7 @@ function shuffleArray(arr) {
 export default function DeckDetail() {
   const { id } = useParams();
   const [deck, setDeck] = useState(null);
-  const [mode, setMode] = useState('list'); // list | study | trivia | add | bulk | import | duplicates
+  const [mode, setMode] = useState('list'); // list | study | trivia | fill | add | bulk | import | duplicates
   const [studyIndex, setStudyIndex] = useState(0);
   const [shuffle, setShuffle] = useState(false);
   const [studyCards, setStudyCards] = useState([]);
@@ -148,12 +149,12 @@ export default function DeckDetail() {
   };
 
   const handleModeChange = (m) => {
-    const wasActiveSession = (mode === 'study' || mode === 'trivia') && studyPhase === 'active';
+    const wasActiveSession = (mode === 'study' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
     if (wasActiveSession && m !== mode) {
       saveSession(deck.id);
       setLiveCounts({ correct: 0, wrong: 0 });
     }
-    if (m === 'study' || m === 'trivia') {
+    if (m === 'study' || m === 'trivia' || m === 'fill') {
       setStudyPhase('config');
       setConfigCardCount('all');
       setShuffle(false);
@@ -172,14 +173,16 @@ export default function DeckDetail() {
   const handleStartSession = async () => {
     const allCards = deck.cards || [];
     let baseCards = allCards;
+    if (mode === 'fill') {
+      baseCards = allCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+    }
     if (hideKnown) {
       try {
         const { data } = await api.get(`/statistics/decks/${id}/known`);
         const knownIds = new Set(data.known_card_ids);
-        baseCards = allCards.filter((c) => !knownIds.has(c.id));
+        baseCards = baseCards.filter((c) => !knownIds.has(c.id));
       } catch (err) {
         console.error('Failed to fetch known cards, showing all cards:', err);
-        baseCards = allCards;
       }
     }
     let selectedCards;
@@ -257,7 +260,7 @@ export default function DeckDetail() {
   if (!deck) return <div className="p-8 text-center text-gray-400">Loading…</div>;
 
   const cards = deck.cards || [];
-  const isActiveSession = (mode === 'study' || mode === 'trivia') && studyPhase === 'active';
+  const isActiveSession = (mode === 'study' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
   const hiddenDuringSession = new Set(['add', 'bulk', 'import', 'duplicates']);
 
   return (
@@ -279,7 +282,7 @@ export default function DeckDetail() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
-          {['list', 'study', 'trivia', 'add', 'bulk', 'import', 'duplicates']
+          {['list', 'study', 'trivia', 'fill', 'add', 'bulk', 'import', 'duplicates']
             .filter((m) => !(isActiveSession && hiddenDuringSession.has(m)))
             .map((m) => (
               <button
@@ -291,7 +294,7 @@ export default function DeckDetail() {
                     : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
                 }`}
               >
-                {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
+                {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'fill' ? '✏️ Fill' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
               </button>
             ))}
           {!isActiveSession && (
@@ -401,110 +404,129 @@ export default function DeckDetail() {
           </div>
         )}
 
-        {(mode === 'study' || mode === 'trivia') && (
+        {(mode === 'study' || mode === 'trivia' || mode === 'fill') && (
           cards.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
           ) : studyPhase === 'config' ? (
-            <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                {mode === 'study' ? 'Study Session Setup' : 'Trivia Session Setup'}
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cards to study</label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={configCardCount === 'all'}
-                        onChange={() => setConfigCardCount('all')}
-                        className="text-indigo-600"
-                      />
-                      <span className="text-sm">All cards ({cards.length})</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={configCardCount !== 'all'}
-                        onChange={() => setConfigCardCount(Math.min(10, cards.length))}
-                        className="text-indigo-600"
-                      />
-                      <span className="text-sm">Random selection:</span>
-                      {configCardCount !== 'all' && (
-                        <input
-                          type="number"
-                          min={1}
-                          max={cards.length}
-                          value={configCardCount}
-                          onChange={(e) => setConfigCardCount(Math.max(1, Math.min(cards.length, parseInt(e.target.value) || 1)))}
-                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                        />
-                      )}
-                    </label>
+            (() => {
+              const fillEligible = cards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+              if (mode === 'fill' && fillEligible.length === 0) {
+                return (
+                  <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                    No cards with a single-word answer found. Fill mode only works with 1-word answers.
                   </div>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={shuffle}
-                    onChange={() => setShuffle(!shuffle)}
-                    className="text-indigo-600"
-                  />
-                  <span className="text-sm">🔀 Shuffle cards</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={invertCards}
-                    onChange={() => setInvertCards(!invertCards)}
-                    className="text-indigo-600"
-                  />
-                  <span className="text-sm">🔄 Invert questions and answers</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hideKnown}
-                    onChange={() => setHideKnown(!hideKnown)}
-                    className="text-indigo-600"
-                  />
-                  <span className="text-sm">⭐ Hide known cards</span>
-                </label>
-                {mode === 'study' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ⏱ Auto-flip timer
-                    </label>
-                    <div className="flex items-center gap-2">
+                );
+              }
+              return (
+                <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    {mode === 'study' ? 'Study Session Setup' : mode === 'trivia' ? 'Trivia Session Setup' : 'Fill-in Session Setup'}
+                  </h3>
+                  {mode === 'fill' && (
+                    <p className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4">
+                      ✏️ Only cards with a single-word answer will be included ({fillEligible.length} of {cards.length} cards).
+                    </p>
+                  )}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Cards to study</label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={configCardCount === 'all'}
+                            onChange={() => setConfigCardCount('all')}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">All cards ({mode === 'fill' ? fillEligible.length : cards.length})</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={configCardCount !== 'all'}
+                            onChange={() => setConfigCardCount(Math.min(10, mode === 'fill' ? fillEligible.length : cards.length))}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">Random selection:</span>
+                          {configCardCount !== 'all' && (
+                            <input
+                              type="number"
+                              min={1}
+                              max={mode === 'fill' ? fillEligible.length : cards.length}
+                              value={configCardCount}
+                              onChange={(e) => setConfigCardCount(Math.max(1, Math.min(mode === 'fill' ? fillEligible.length : cards.length, parseInt(e.target.value) || 1)))}
+                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            />
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={autoFlipDelay > 0}
-                        onChange={() => setAutoFlipDelay(autoFlipDelay > 0 ? 0 : 5)}
+                        checked={shuffle}
+                        onChange={() => setShuffle(!shuffle)}
                         className="text-indigo-600"
                       />
-                      <span className="text-sm">Flip card automatically after</span>
-                      {autoFlipDelay > 0 && (
+                      <span className="text-sm">🔀 Shuffle cards</span>
+                    </label>
+                    {mode !== 'fill' && (
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <input
-                          type="number"
-                          min={1}
-                          max={60}
-                          value={autoFlipDelay}
-                          onChange={(e) => setAutoFlipDelay(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
-                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                          type="checkbox"
+                          checked={invertCards}
+                          onChange={() => setInvertCards(!invertCards)}
+                          className="text-indigo-600"
                         />
-                      )}
-                      {autoFlipDelay > 0 && <span className="text-sm text-gray-500">seconds</span>}
-                    </div>
+                        <span className="text-sm">🔄 Invert questions and answers</span>
+                      </label>
+                    )}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={hideKnown}
+                        onChange={() => setHideKnown(!hideKnown)}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm">⭐ Hide known cards</span>
+                    </label>
+                    {mode === 'study' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          ⏱ Auto-flip timer
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={autoFlipDelay > 0}
+                            onChange={() => setAutoFlipDelay(autoFlipDelay > 0 ? 0 : 5)}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">Flip card automatically after</span>
+                          {autoFlipDelay > 0 && (
+                            <input
+                              type="number"
+                              min={1}
+                              max={60}
+                              value={autoFlipDelay}
+                              onChange={(e) => setAutoFlipDelay(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
+                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            />
+                          )}
+                          {autoFlipDelay > 0 && <span className="text-sm text-gray-500">seconds</span>}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <button
-                onClick={handleStartSession}
-                className="mt-6 w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
-              >
-                Start Session
-              </button>
-            </div>
+                  <button
+                    onClick={handleStartSession}
+                    className="mt-6 w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+                  >
+                    Start Session
+                  </button>
+                </div>
+              );
+            })()
           ) : studyPhase === 'complete' ? (
             <div className="bg-white rounded-xl shadow p-8 text-center max-w-md mx-auto">
               <h3 className="text-2xl font-bold text-indigo-700 mb-2"><span aria-hidden="true">🎉 </span>¡Práctica terminada!</h3>
@@ -573,6 +595,14 @@ export default function DeckDetail() {
                   autoFlipDelay={autoFlipDelay > 0 ? autoFlipDelay : undefined}
                   onMark={handleCardMark}
                   markedCardIds={markedCardIds}
+                />
+              ) : mode === 'fill' ? (
+                <FillViewer
+                  cards={studyCards}
+                  index={studyIndex}
+                  onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
+                  onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                  onResult={handleResult}
                 />
               ) : (
                 <TriviaViewer
