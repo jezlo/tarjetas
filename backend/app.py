@@ -20,12 +20,14 @@ def create_app(config_class=Config):
     from routes.cards import cards_bp
     from routes.statistics import statistics_bp
     from routes.sessions import sessions_bp
+    from routes.admin import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(decks_bp, url_prefix='/api/decks')
     app.register_blueprint(cards_bp, url_prefix='/api/cards')
     app.register_blueprint(statistics_bp, url_prefix='/api/statistics')
     app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
     with app.app_context():
         db.create_all()
@@ -60,5 +62,14 @@ def _migrate_db(db):
     if 'is_marked' not in card_statistics_columns:
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE card_statistics ADD COLUMN is_marked BOOLEAN NOT NULL DEFAULT 0'))
+            conn.commit()
+    users_columns = [col['name'] for col in inspector.get_columns('users')]
+    if 'is_admin' not in users_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0'))
+            conn.commit()
+    if 'last_login' not in users_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE users ADD COLUMN last_login DATETIME'))
             conn.commit()
 

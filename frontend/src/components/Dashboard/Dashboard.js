@@ -28,6 +28,9 @@ export default function Dashboard() {
           <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">Decks</Link>
           <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">Browse Decks</Link>
           <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">Stats</Link>
+          {user.is_admin && (
+            <Link to="/admin" className="text-gray-600 hover:text-indigo-600 font-medium">Admin</Link>
+          )}
           <button onClick={logout} className="text-sm text-red-500 hover:underline">Logout</button>
         </div>
       </nav>
