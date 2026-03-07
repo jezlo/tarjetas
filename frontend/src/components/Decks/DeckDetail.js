@@ -35,6 +35,8 @@ export default function DeckDetail() {
   const [hideKnown, setHideKnown] = useState(false);
   const [autoFlipDelay, setAutoFlipDelay] = useState(0); // 0 = disabled
   const [fillWeakMode, setFillWeakMode] = useState(false);
+  const [includeFillCards, setIncludeFillCards] = useState(false);
+  const [fillCardPercentage, setFillCardPercentage] = useState(20);
 
   // Marked cards
   const [markedCardIds, setMarkedCardIds] = useState(new Set());
@@ -163,6 +165,8 @@ export default function DeckDetail() {
       setHideKnown(false);
       setAutoFlipDelay(0);
       setFillWeakMode(false);
+      setIncludeFillCards(false);
+      setFillCardPercentage(20);
     } else {
       setStudyPhase(null);
     }
@@ -192,6 +196,18 @@ export default function DeckDetail() {
       selectedCards = baseCards;
     } else {
       selectedCards = shuffleArray(baseCards).slice(0, configCardCount);
+    }
+    if (mode === 'study' && includeFillCards) {
+      const fillEligibleInSelected = selectedCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+      const fillCount = Math.min(
+        Math.round(selectedCards.length * fillCardPercentage / 100),
+        fillEligibleInSelected.length,
+      );
+      if (fillCount > 0) {
+        const shuffledEligible = shuffleArray(fillEligibleInSelected);
+        const fillCardIds = new Set(shuffledEligible.slice(0, fillCount).map((c) => c.id));
+        selectedCards = selectedCards.map((c) => fillCardIds.has(c.id) ? { ...c, _isFill: true } : c);
+      }
     }
     startStudy(selectedCards, shuffle);
     beginSession();
@@ -529,6 +545,34 @@ export default function DeckDetail() {
                         />
                         <span className="text-sm">🔤 Modo débil (ignorar acentos)</span>
                       </label>
+                    )}
+                    {mode === 'study' && fillEligible.length > 0 && (
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer mb-2">
+                          <input
+                            type="checkbox"
+                            checked={includeFillCards}
+                            onChange={() => setIncludeFillCards(!includeFillCards)}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">🔀 Mix Fill cards (random)</span>
+                        </label>
+                        {includeFillCards && (
+                          <div className="ml-6 flex items-center gap-2">
+                            <span className="text-sm text-gray-600">Percentage of Fill cards:</span>
+                            <input
+                              type="number"
+                              min={10}
+                              max={50}
+                              step={10}
+                              value={fillCardPercentage}
+                              onChange={(e) => setFillCardPercentage(Math.max(10, Math.min(50, parseInt(e.target.value) || 10)))}
+                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            />
+                            <span className="text-sm text-gray-500">%</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                   <button
