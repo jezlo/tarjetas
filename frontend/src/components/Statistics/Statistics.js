@@ -10,16 +10,50 @@ export default function Statistics() {
   const [sessions, setSessions] = useState([]);
   const [loadError, setLoadError] = useState('');
 
+  const loadStats = () => api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError('Could not load statistics.'));
+  const loadSessions = () => api.get('/sessions').then(({ data }) => setSessions(data)).catch(() => {});
+
   useEffect(() => {
-    api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError('Could not load statistics.'));
+    loadStats();
     api.get('/decks').then(({ data }) => setDecks(data)).catch(() => {});
-    api.get('/sessions').then(({ data }) => setSessions(data)).catch(() => {});
+    loadSessions();
   }, []);
 
   const loadDeckStats = async (deckId) => {
     if (deckStats[deckId]) return;
     const { data } = await api.get(`/statistics/decks/${deckId}`);
     setDeckStats((prev) => ({ ...prev, [deckId]: data }));
+  };
+
+  const handleDeleteSession = async (id) => {
+    if (!window.confirm('Delete this study session?')) return;
+    try {
+      await api.delete(`/sessions/${id}`);
+      loadSessions();
+    } catch {
+      alert('Failed to delete session. Please try again.');
+    }
+  };
+
+  const handleDeleteAllSessions = async () => {
+    if (!window.confirm('Delete all study sessions?')) return;
+    try {
+      await api.delete('/sessions');
+      loadSessions();
+    } catch {
+      alert('Failed to delete sessions. Please try again.');
+    }
+  };
+
+  const handleClearStatistics = async () => {
+    if (!window.confirm('Clear all statistics? This cannot be undone.')) return;
+    try {
+      await api.delete('/statistics');
+      setDeckStats({});
+      loadStats();
+    } catch {
+      alert('Failed to clear statistics. Please try again.');
+    }
   };
 
   const formatDate = (iso) => {
@@ -43,7 +77,15 @@ export default function Statistics() {
       </nav>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Statistics</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800">Statistics</h2>
+          <button
+            onClick={handleClearStatistics}
+            className="text-sm text-red-500 hover:text-red-700 border border-red-300 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+          >
+            🗑 Clear statistics
+          </button>
+        </div>
 
         {loadError && <p className="text-red-500 text-sm mb-4">{loadError}</p>}
 
@@ -108,7 +150,17 @@ export default function Statistics() {
           </div>
         )}
 
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Study Session History</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-700">Study Session History</h3>
+          {sessions.length > 0 && (
+            <button
+              onClick={handleDeleteAllSessions}
+              className="text-sm text-red-500 hover:text-red-700 border border-red-300 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+            >
+              🗑 Delete all sessions
+            </button>
+          )}
+        </div>
         {sessions.length === 0 ? (
           <p className="text-gray-400">No study sessions recorded yet.</p>
         ) : (
@@ -123,7 +175,16 @@ export default function Statistics() {
                       <p className="font-semibold text-gray-800">{s.deck_name}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDate(s.started_at)}</p>
                     </div>
-                    <span className="text-sm font-bold text-indigo-600">{accuracy}%</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-indigo-600">{accuracy}%</span>
+                      <button
+                        onClick={() => handleDeleteSession(s.id)}
+                        className="text-xs text-red-400 hover:text-red-600"
+                        title="Delete session"
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </div>
                   <div className="flex gap-4 mt-3 text-sm">
                     <span className="text-green-600 font-medium">✓ {s.correct_count} correct</span>

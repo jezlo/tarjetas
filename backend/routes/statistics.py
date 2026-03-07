@@ -119,3 +119,26 @@ def toggle_mark(card_id):
     stat.is_marked = not stat.is_marked
     db.session.commit()
     return jsonify(stat.to_dict()), 200
+
+
+@statistics_bp.route('/decks/<int:deck_id>/marks', methods=['DELETE'])
+@jwt_required()
+def clear_deck_marks(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+    card_ids = [c.id for c in deck.cards]
+    CardStatistic.query.filter(
+        CardStatistic.card_id.in_(card_ids),
+        CardStatistic.user_id == user_id,
+    ).update({CardStatistic.is_marked: False}, synchronize_session=False)
+    db.session.commit()
+    return jsonify({'message': 'All pins cleared'}), 200
+
+
+@statistics_bp.route('', methods=['DELETE'])
+@jwt_required()
+def clear_statistics():
+    user_id = int(get_jwt_identity())
+    CardStatistic.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
+    return jsonify({'message': 'Statistics cleared'}), 200

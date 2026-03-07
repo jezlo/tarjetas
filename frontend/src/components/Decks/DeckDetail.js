@@ -193,6 +193,25 @@ export default function DeckDetail() {
     });
   };
 
+  const handleTogglePin = async (cardId) => {
+    try {
+      await api.post(`/statistics/cards/${cardId}/mark`);
+      loadMarkedCards();
+    } catch {
+      alert('Failed to update pin. Please try again.');
+    }
+  };
+
+  const handleClearAllPins = async () => {
+    if (!window.confirm('Clear all pins for this deck?')) return;
+    try {
+      await api.delete(`/statistics/decks/${id}/marks`);
+      loadMarkedCards();
+    } catch {
+      alert('Failed to clear pins. Please try again.');
+    }
+  };
+
   const handleEditSave = async () => {
     setEditError('');
     try {
@@ -257,8 +276,14 @@ export default function DeckDetail() {
         {mode === 'list' && (
           <div>
             {markedCardIds.size > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 text-sm text-orange-700">
-                📌 <span className="font-medium">{markedCardIds.size} pinned card{markedCardIds.size !== 1 ? 's' : ''}</span> — scroll down to find them highlighted
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 text-sm text-orange-700 flex justify-between items-center">
+                <span>📌 <span className="font-medium">{markedCardIds.size} pinned card{markedCardIds.size !== 1 ? 's' : ''}</span> — scroll down to find them highlighted</span>
+                <button
+                  onClick={handleClearAllPins}
+                  className="ml-4 text-xs text-orange-600 hover:text-orange-800 border border-orange-300 rounded px-2 py-1 hover:bg-orange-100 transition"
+                >
+                  Clear all pins
+                </button>
               </div>
             )}
             {cards.length === 0 ? (
@@ -309,7 +334,13 @@ export default function DeckDetail() {
                       <>
                         <div className="flex justify-between items-start mb-1">
                           <p className="font-medium text-gray-800">{card.question}</p>
-                          {markedCardIds.has(card.id) && <span className="text-orange-500 ml-1 shrink-0" title="Pinned">📌</span>}
+                          <button
+                            onClick={() => handleTogglePin(card.id)}
+                            className={`ml-1 shrink-0 text-base leading-none ${markedCardIds.has(card.id) ? 'text-orange-500' : 'text-gray-300 hover:text-orange-400'}`}
+                            title={markedCardIds.has(card.id) ? 'Remove pin' : 'Pin card'}
+                          >
+                            📌
+                          </button>
                         </div>
                         <p className="text-gray-500 text-sm mt-1">{card.answer}</p>
                         <div className="flex gap-3 mt-2">
