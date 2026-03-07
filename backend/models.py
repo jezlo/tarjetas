@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
 
 db = SQLAlchemy()
 
@@ -138,6 +139,24 @@ class StudySession(db.Model):
             'started_at': self.started_at.isoformat(),
             'ended_at': self.ended_at.isoformat() if self.ended_at else None,
         }
+
+
+class AppSettings(db.Model):
+    __tablename__ = 'app_settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    registration_enabled = db.Column(db.Boolean, default=True, nullable=False)
+
+    @classmethod
+    def get(cls):
+        """Return the singleton settings row, creating it if it does not exist."""
+        settings = cls.query.first()
+        if settings is None:
+            enabled = os.getenv('REGISTRATION_ENABLED', 'true').lower() != 'false'
+            settings = cls(registration_enabled=enabled)
+            db.session.add(settings)
+            db.session.commit()
+        return settings
 
 
 class DeckLike(db.Model):

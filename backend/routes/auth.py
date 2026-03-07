@@ -4,13 +4,17 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from models import db, User
+from models import db, User, AppSettings
 
 auth_bp = Blueprint('auth', __name__)
 
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
+    settings = AppSettings.get()
+    if not settings.registration_enabled:
+        return jsonify({'message': 'El registro se encuentra deshabilitado temporalmente, favor de comunicarse con el administrador'}), 409
+
     data = request.get_json()
     username = data.get('username', '').strip()
     email = data.get('email', '').strip()

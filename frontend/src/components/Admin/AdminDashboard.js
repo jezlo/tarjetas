@@ -18,6 +18,10 @@ export default function AdminDashboard() {
   const [resetPassword, setResetPassword] = useState('');
   const [resetError, setResetError] = useState('');
   const [resetting, setResetting] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsUpdating, setSettingsUpdating] = useState(false);
 
   const currentUser = getCurrentUser();
 
@@ -35,9 +39,23 @@ export default function AdminDashboard() {
       });
   }, [navigate]);
 
+  const fetchSettings = useCallback(() => {
+    setSettingsLoading(true);
+    api.get('/admin/settings')
+      .then(({ data }) => {
+        setRegistrationEnabled(data.registration_enabled);
+        setSettingsLoading(false);
+      })
+      .catch(() => {
+        setSettingsError('Could not load settings.');
+        setSettingsLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchSettings();
+  }, [fetchUsers, fetchSettings]);
 
   const logout = () => {
     localStorage.removeItem('access_token');
@@ -98,6 +116,20 @@ export default function AdminDashboard() {
     setResetPassword('');
     setResetError('');
     setShowResetModal(true);
+  };
+
+  const handleToggleRegistration = () => {
+    setSettingsError('');
+    setSettingsUpdating(true);
+    api.put('/admin/settings', { registration_enabled: !registrationEnabled })
+      .then(({ data }) => {
+        setRegistrationEnabled(data.registration_enabled);
+        setSettingsUpdating(false);
+      })
+      .catch(() => {
+        setSettingsError('Could not update settings.');
+        setSettingsUpdating(false);
+      });
   };
 
   const formatDate = (iso) => {
@@ -230,6 +262,40 @@ export default function AdminDashboard() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Global Settings */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Global Settings</h3>
+          {settingsError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              {settingsError}
+            </div>
+          )}
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-800">User Registration</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {settingsLoading
+                    ? 'Loading…'
+                    : registrationEnabled
+                      ? 'New users can currently register.'
+                      : 'Registration is currently disabled.'}
+                </p>
+              </div>
+              <button
+                onClick={handleToggleRegistration}
+                disabled={settingsLoading || settingsUpdating}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${registrationEnabled ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                aria-label="Toggle user registration"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${registrationEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 
