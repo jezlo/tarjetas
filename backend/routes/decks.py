@@ -5,7 +5,7 @@ import re
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Deck, Card, CardStatistic, User, DeckLike
+from models import db, Deck, Card, CardStatistic, User, DeckLike, get_or_create_default_categories
 from utils.csv_importer import import_cards_from_csv
 
 decks_bp = Blueprint('decks', __name__)
@@ -29,6 +29,8 @@ def create_deck():
         return jsonify({'message': 'name is required'}), 400
 
     deck = Deck(name=name, description=data.get('description', ''), user_id=user_id)
+    sin_cat, _ = get_or_create_default_categories(user_id)
+    deck.category_id = sin_cat.id
     db.session.add(deck)
     db.session.commit()
     return jsonify(deck.to_dict()), 201
@@ -82,6 +84,8 @@ def import_deck(deck_id):
         user_id=user_id,
         source_deck_id=source.id,
     )
+    sin_cat, _ = get_or_create_default_categories(user_id)
+    new_deck.category_id = sin_cat.id
     db.session.add(new_deck)
     db.session.flush()
     for card in source.cards:
@@ -217,6 +221,8 @@ def combine_decks():
         return jsonify({'message': 'Some decks were not found'}), 404
 
     new_deck = Deck(name=name, description=data.get('description', ''), user_id=user_id)
+    sin_cat, _ = get_or_create_default_categories(user_id)
+    new_deck.category_id = sin_cat.id
     db.session.add(new_deck)
     db.session.flush()
     for source in source_decks:

@@ -21,6 +21,7 @@ def create_app(config_class=Config):
     from routes.statistics import statistics_bp
     from routes.sessions import sessions_bp
     from routes.admin import admin_bp
+    from routes.categories import categories_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(decks_bp, url_prefix='/api/decks')
@@ -28,12 +29,29 @@ def create_app(config_class=Config):
     app.register_blueprint(statistics_bp, url_prefix='/api/statistics')
     app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(categories_bp, url_prefix='/api/categories')
 
     with app.app_context():
         db.create_all()
         _migrate_db(db)
 
     return app
+
+
+def _assign_existing_decks_to_default_category(db):
+    """After adding category_id column, assign all existing decks to their user's 'Sin Categoría'."""
+    from models import Deck, get_or_create_default_categories
+    from sqlalchemy import text
+
+    user_ids = [row[0] for row in db.session.execute(text('SELECT DISTINCT user_id FROM decks')).fetchall()]
+    for user_id in user_ids:
+        sin_cat, _ = get_or_create_default_categories(user_id)
+        db.session.flush()
+        db.session.execute(
+            text('UPDATE decks SET category_id = :cat_id WHERE user_id = :uid AND category_id IS NULL'),
+            {'cat_id': sin_cat.id, 'uid': user_id},
+        )
+    db.session.commit()
 
 
 def _migrate_db(db):
@@ -77,4 +95,11 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE cards ADD COLUMN context TEXT'))
             conn.commit()
+    decks_columns = [col['name'] for col in inspector.get_columns('decks')]
+    if 'category_id' not in decks_columns:
+        # deck_categories table already exists at this point because db.create_all() ran first
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE decks ADD COLUMN category_id INTEGER REFERENCES deck_categories(id)'))
+            conn.commit()
+        _assign_existing_decks_to_default_category(db)
 

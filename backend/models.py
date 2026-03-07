@@ -3,6 +3,10 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+CATEGORY_SIN_CATEGORIA = 'Sin Categoría'
+CATEGORY_GENERAL = 'General'
+_RESERVED_CATEGORY_NAMES = frozenset({CATEGORY_SIN_CATEGORIA, CATEGORY_GENERAL})
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -16,6 +20,7 @@ class User(db.Model):
     last_login = db.Column(db.DateTime, nullable=True)
 
     decks = db.relationship('Deck', back_populates='owner', cascade='all, delete-orphan')
+    categories = db.relationship('DeckCategory', back_populates='user', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -25,6 +30,28 @@ class User(db.Model):
             'created_at': self.created_at.isoformat(),
             'is_admin': self.is_admin,
             'last_login': self.last_login.isoformat() if self.last_login else None,
+        }
+
+
+class DeckCategory(db.Model):
+    __tablename__ = 'deck_categories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    is_default = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='categories')
+    decks = db.relationship('Deck', back_populates='category')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'user_id': self.user_id,
+            'is_default': self.is_default,
+            'created_at': self.created_at.isoformat(),
         }
 
 
@@ -38,11 +65,13 @@ class Deck(db.Model):
     is_public = db.Column(db.Boolean, default=False, nullable=False)
     source_deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
     import_count = db.Column(db.Integer, default=0, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('deck_categories.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', back_populates='decks')
     cards = db.relationship('Card', back_populates='deck', cascade='all, delete-orphan')
     likes = db.relationship('DeckLike', back_populates='deck', cascade='all, delete-orphan')
+    category = db.relationship('DeckCategory', back_populates='decks')
 
     def to_dict(self, include_cards=False, include_owner=False):
         data = {
@@ -55,6 +84,7 @@ class Deck(db.Model):
             'card_count': len(self.cards),
             'import_count': self.import_count,
             'like_count': len(self.likes),
+            'category_id': self.category_id,
         }
         if include_owner:
             data['owner_username'] = self.owner.username if self.owner else None
@@ -151,4 +181,26 @@ class DeckLike(db.Model):
     __table_args__ = (db.UniqueConstraint('deck_id', 'user_id', name='uq_deck_like'),)
 
     deck = db.relationship('Deck', back_populates='likes')
+
+
+def get_or_create_default_categories(user_id):
+    """Ensure 'Sin Categoría' and 'General' exist for the user.
+
+    Returns a tuple (sin_categoria, general).  The function calls
+    ``db.session.flush()`` internally so that IDs are available on the returned
+    objects even before the caller issues a commit.  The caller is still
+    responsible for calling ``db.session.commit()`` to persist the changes.
+    """
+    sin_cat = DeckCategory.query.filter_by(user_id=user_id, name=CATEGORY_SIN_CATEGORIA).first()
+    if not sin_cat:
+        sin_cat = DeckCategory(name=CATEGORY_SIN_CATEGORIA, user_id=user_id, is_default=True)
+        db.session.add(sin_cat)
+
+    general = DeckCategory.query.filter_by(user_id=user_id, name=CATEGORY_GENERAL).first()
+    if not general:
+        general = DeckCategory(name=CATEGORY_GENERAL, user_id=user_id, is_default=True)
+        db.session.add(general)
+
+    db.session.flush()
+    return sin_cat, general
 
