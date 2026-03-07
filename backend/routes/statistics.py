@@ -94,3 +94,28 @@ def get_known_cards(deck_id):
         CardStatistic.is_known,
     ).all()
     return jsonify({'known_card_ids': [s.card_id for s in known_stats]}), 200
+
+
+@statistics_bp.route('/decks/<int:deck_id>/marked', methods=['GET'])
+@jwt_required()
+def get_marked_cards(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+    card_ids = [c.id for c in deck.cards]
+    marked_stats = CardStatistic.query.filter(
+        CardStatistic.card_id.in_(card_ids),
+        CardStatistic.user_id == user_id,
+        CardStatistic.is_marked,
+    ).all()
+    return jsonify({'marked_card_ids': [s.card_id for s in marked_stats]}), 200
+
+
+@statistics_bp.route('/cards/<int:card_id>/mark', methods=['POST'])
+@jwt_required()
+def toggle_mark(card_id):
+    user_id = int(get_jwt_identity())
+    card = Card.query.join(Deck).filter(Card.id == card_id, Deck.user_id == user_id).first_or_404()
+    stat = _get_or_create_stat(card.id, user_id)
+    stat.is_marked = not stat.is_marked
+    db.session.commit()
+    return jsonify(stat.to_dict()), 200

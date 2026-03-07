@@ -9,6 +9,16 @@ export default function DeckList() {
   const [form, setForm] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
 
+  // Rename state
+  const [renamingDeck, setRenamingDeck] = useState(null); // { id, name }
+  const [renameError, setRenameError] = useState('');
+
+  // Combine state
+  const [showCombine, setShowCombine] = useState(false);
+  const [combineSelected, setCombineSelected] = useState([]);
+  const [combineName, setCombineName] = useState('');
+  const [combineError, setCombineError] = useState('');
+
   const load = () => api.get('/decks').then(({ data }) => setDecks(data));
 
   useEffect(() => { load(); }, []);
@@ -32,6 +42,49 @@ export default function DeckList() {
     load();
   };
 
+  const handleRename = async () => {
+    setRenameError('');
+    if (!renamingDeck.name.trim()) {
+      setRenameError('Name cannot be empty');
+      return;
+    }
+    try {
+      await api.put(`/decks/${renamingDeck.id}`, { name: renamingDeck.name.trim() });
+      setRenamingDeck(null);
+      load();
+    } catch (err) {
+      setRenameError(err.response?.data?.message || 'Failed to rename deck');
+    }
+  };
+
+  const toggleCombineSelect = (id) => {
+    setCombineSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleCombine = async (e) => {
+    e.preventDefault();
+    setCombineError('');
+    if (!combineName.trim()) {
+      setCombineError('New deck name is required');
+      return;
+    }
+    if (combineSelected.length < 2) {
+      setCombineError('Select at least 2 decks to combine');
+      return;
+    }
+    try {
+      await api.post('/decks/combine', { name: combineName.trim(), deck_ids: combineSelected });
+      setShowCombine(false);
+      setCombineSelected([]);
+      setCombineName('');
+      load();
+    } catch (err) {
+      setCombineError(err.response?.data?.message || 'Failed to combine decks');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
@@ -49,14 +102,22 @@ export default function DeckList() {
       </nav>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-wrap justify-between items-center mb-6 gap-2">
           <h2 className="text-2xl font-semibold text-gray-800">My Decks</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
-          >
-            {showForm ? 'Cancel' : '+ New Deck'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setShowCombine(!showCombine); setCombineSelected([]); setCombineName(''); setCombineError(''); }}
+              className="bg-white text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-indigo-50 transition text-sm font-medium"
+            >
+              {showCombine ? 'Cancel Combine' : '⊕ Combine Decks'}
+            </button>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
+            >
+              {showForm ? 'Cancel' : '+ New Deck'}
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -81,6 +142,37 @@ export default function DeckList() {
           </form>
         )}
 
+        {showCombine && (
+          <form onSubmit={handleCombine} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
+            <h3 className="font-semibold text-gray-800">Combine Decks</h3>
+            <p className="text-sm text-gray-500">Select 2 or more decks to merge into a new one. Originals are kept.</p>
+            {combineError && <p className="text-red-500 text-sm">{combineError}</p>}
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {decks.map((deck) => (
+                <label key={deck.id} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={combineSelected.includes(deck.id)}
+                    onChange={() => toggleCombineSelect(deck.id)}
+                    className="text-indigo-600"
+                  />
+                  <span className="text-sm">{deck.name} <span className="text-gray-400">({deck.card_count} cards)</span></span>
+                </label>
+              ))}
+            </div>
+            <input
+              placeholder="New deck name"
+              value={combineName}
+              onChange={(e) => setCombineName(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
+              ⊕ Create Combined Deck
+            </button>
+          </form>
+        )}
+
         {decks.length === 0 ? (
           <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
             No decks yet. Create your first one!
@@ -88,18 +180,45 @@ export default function DeckList() {
         ) : (
           <div className="space-y-3">
             {decks.map((deck) => (
-              <div key={deck.id} className="bg-white rounded-xl shadow p-5 flex justify-between items-center hover:shadow-md transition">
-                <Link to={`/decks/${deck.id}`} className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
-                  <p className="text-gray-500 text-sm truncate">{deck.description || 'No description'}</p>
-                  <p className="text-indigo-600 text-sm mt-1">{deck.card_count} cards</p>
-                </Link>
-                <button
-                  onClick={() => handleDelete(deck.id)}
-                  className="ml-4 text-red-400 hover:text-red-600 text-sm"
-                >
-                  Delete
-                </button>
+              <div key={deck.id} className="bg-white rounded-xl shadow p-5 hover:shadow-md transition">
+                {renamingDeck && renamingDeck.id === deck.id ? (
+                  <div className="space-y-2">
+                    {renameError && <p className="text-red-500 text-sm">{renameError}</p>}
+                    <input
+                      value={renamingDeck.name}
+                      onChange={(e) => setRenamingDeck({ ...renamingDeck, name: e.target.value })}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenamingDeck(null); }}
+                      autoFocus
+                      className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={handleRename} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
+                      <button onClick={() => { setRenamingDeck(null); setRenameError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <Link to={`/decks/${deck.id}`} className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
+                      <p className="text-gray-500 text-sm truncate">{deck.description || 'No description'}</p>
+                      <p className="text-indigo-600 text-sm mt-1">{deck.card_count} cards</p>
+                    </Link>
+                    <div className="ml-4 flex gap-3 items-center shrink-0">
+                      <button
+                        onClick={() => { setRenamingDeck({ id: deck.id, name: deck.name }); setRenameError(''); }}
+                        className="text-xs text-indigo-500 hover:text-indigo-700"
+                      >
+                        Rename
+                      </button>
+                      <button
+                        onClick={() => handleDelete(deck.id)}
+                        className="text-xs text-red-400 hover:text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

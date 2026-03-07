@@ -30,3 +30,13 @@
 .card-back {
   transform: rotateY(180deg);
 }
+
+/* Card slide-out animation when advancing to next card */
+@keyframes slideOutLeft {
+  0%   { opacity: 1; transform: translateX(0) rotateY(0deg); }
+  100% { opacity: 0; transform: translateX(-60px) rotateY(0deg); }
+}
+
+.card-slide-out {
+  animation: slideOutLeft 0.5s ease-in forwards;
+}

@@ -32,6 +32,10 @@ export default function DeckDetail() {
   const [liveCounts, setLiveCounts] = useState({ correct: 0, wrong: 0 });
   const [invertCards, setInvertCards] = useState(false);
   const [hideKnown, setHideKnown] = useState(false);
+  const [autoFlipDelay, setAutoFlipDelay] = useState(0); // 0 = disabled
+
+  // Marked cards
+  const [markedCardIds, setMarkedCardIds] = useState(new Set());
 
   // Session tracking
   const sessionStartRef = useRef(null);
@@ -44,6 +48,12 @@ export default function DeckDetail() {
       deckIdRef.current = data.id;
       setStudyIndex(0);
     }), [id]);
+
+  const loadMarkedCards = useCallback(() => {
+    api.get(`/statistics/decks/${id}/marked`)
+      .then(({ data }) => setMarkedCardIds(new Set(data.marked_card_ids)))
+      .catch(() => {});
+  }, [id]);
 
   const handleExport = () => {
     if (!deck) return;
@@ -127,6 +137,7 @@ export default function DeckDetail() {
       setShuffle(false);
       setInvertCards(false);
       setHideKnown(false);
+      setAutoFlipDelay(0);
     } else {
       setStudyPhase(null);
     }
@@ -170,6 +181,18 @@ export default function DeckDetail() {
     }
   };
 
+  const handleCardMark = (cardId) => {
+    setMarkedCardIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) {
+        next.delete(cardId);
+      } else {
+        next.add(cardId);
+      }
+      return next;
+    });
+  };
+
   const handleEditSave = async () => {
     setEditError('');
     try {
@@ -185,6 +208,7 @@ export default function DeckDetail() {
   };
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadMarkedCards(); }, [loadMarkedCards]);
 
   if (!deck) return <div className="p-8 text-center text-gray-400">Loading…</div>;
 
@@ -232,6 +256,11 @@ export default function DeckDetail() {
 
         {mode === 'list' && (
           <div>
+            {markedCardIds.size > 0 && (
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 text-sm text-orange-700">
+                📌 <span className="font-medium">{markedCardIds.size} pinned card{markedCardIds.size !== 1 ? 's' : ''}</span> — scroll down to find them highlighted
+              </div>
+            )}
             {cards.length === 0 ? (
               <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
                 No cards yet. Add some or import a CSV!
@@ -239,7 +268,7 @@ export default function DeckDetail() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {cards.map((card) => (
-                  <div key={card.id} className="bg-white rounded-xl shadow p-4">
+                  <div key={card.id} className={`rounded-xl shadow p-4 ${markedCardIds.has(card.id) ? 'bg-orange-50 border-2 border-orange-300' : 'bg-white'}`}>
                     {editingCard && editingCard.id === card.id ? (
                       <div className="space-y-3">
                         {editError && <p className="text-red-500 text-sm">{editError}</p>}
@@ -278,7 +307,10 @@ export default function DeckDetail() {
                       </div>
                     ) : (
                       <>
-                        <p className="font-medium text-gray-800">{card.question}</p>
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="font-medium text-gray-800">{card.question}</p>
+                          {markedCardIds.has(card.id) && <span className="text-orange-500 ml-1 shrink-0" title="Pinned">📌</span>}
+                        </div>
                         <p className="text-gray-500 text-sm mt-1">{card.answer}</p>
                         <div className="flex gap-3 mt-2">
                           <button
@@ -376,6 +408,33 @@ export default function DeckDetail() {
                   />
                   <span className="text-sm">⭐ Hide known cards</span>
                 </label>
+                {mode === 'study' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      ⏱ Auto-flip timer
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={autoFlipDelay > 0}
+                        onChange={() => setAutoFlipDelay(autoFlipDelay > 0 ? 0 : 5)}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm">Flip card automatically after</span>
+                      {autoFlipDelay > 0 && (
+                        <input
+                          type="number"
+                          min={1}
+                          max={60}
+                          value={autoFlipDelay}
+                          onChange={(e) => setAutoFlipDelay(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        />
+                      )}
+                      {autoFlipDelay > 0 && <span className="text-sm text-gray-500">seconds</span>}
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleStartSession}
@@ -449,6 +508,9 @@ export default function DeckDetail() {
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
                   invertCards={invertCards}
+                  autoFlipDelay={autoFlipDelay > 0 ? autoFlipDelay : undefined}
+                  onMark={handleCardMark}
+                  markedCardIds={markedCardIds}
                 />
               ) : (
                 <TriviaViewer
@@ -471,3 +533,4 @@ export default function DeckDetail() {
     </div>
   );
 }
+
