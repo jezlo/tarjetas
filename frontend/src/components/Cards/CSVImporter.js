@@ -34,7 +34,8 @@ export default function CSVImporter({ deckId, onImported }) {
       <h3 className="text-lg font-semibold text-gray-800 mb-2">Import CSV</h3>
       <p className="text-sm text-gray-500 mb-4">
         The CSV must have <code className="bg-gray-100 px-1 rounded">question</code> and{' '}
-        <code className="bg-gray-100 px-1 rounded">answer</code> columns.
+        <code className="bg-gray-100 px-1 rounded">answer</code> columns. An optional{' '}
+        <code className="bg-gray-100 px-1 rounded">context</code> column can also be included.
       </p>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {message && <p className="text-green-600 text-sm mb-3">{message}</p>}

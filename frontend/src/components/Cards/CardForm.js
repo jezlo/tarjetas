@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import api from '../../services/api';
 
 export default function CardForm({ deckId, onSaved }) {
-  const [form, setForm] = useState({ question: '', answer: '' });
+  const [form, setForm] = useState({ question: '', answer: '', context: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +12,7 @@ export default function CardForm({ deckId, onSaved }) {
     setLoading(true);
     try {
       await api.post(`/decks/${deckId}/cards`, form);
-      setForm({ question: '', answer: '' });
+      setForm({ question: '', answer: '', context: '' });
       onSaved();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save card');
@@ -43,6 +43,18 @@ export default function CardForm({ deckId, onSaved }) {
             onChange={(e) => setForm({ ...form, answer: e.target.value })}
             required
             rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Context <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <textarea
+            value={form.context}
+            onChange={(e) => setForm({ ...form, context: e.target.value })}
+            rows={2}
+            placeholder="Examples, explanation, alternative answers…"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>

@@ -150,6 +150,11 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
                   Correct answer: <span className="font-semibold">{card.answer}</span>
                 </p>
               )}
+              {card.context ? (
+                <p className="text-sm text-gray-500 mt-1">
+                  Context: <span className="italic">{card.context}</span>
+                </p>
+              ) : null}
               <p className="text-sm text-gray-500 mt-1">Your answer: {fillInput}</p>
             </div>
           )}
@@ -166,8 +171,11 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
                 <p className="text-xl font-semibold text-gray-800 text-center">{frontText}</p>
               </div>
               {/* Back */}
-              <div className="card-face card-back bg-indigo-600 rounded-2xl shadow-lg flex items-center justify-center p-6">
+              <div className="card-face card-back bg-indigo-600 rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 gap-3">
                 <p className="text-xl font-semibold text-white text-center">{backText}</p>
+                {card.context ? (
+                  <p className="text-sm text-indigo-200 text-center mt-1">{card.context}</p>
+                ) : null}
               </div>
             </div>
           </div>

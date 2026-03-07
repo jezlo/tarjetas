@@ -8,6 +8,7 @@ def import_cards_from_csv(stream, deck_id):
     """Read a CSV file stream and bulk-insert cards into the given deck.
 
     The CSV must have 'question' and 'answer' columns (case-insensitive).
+    An optional 'context' column is also supported.
     Rows whose question already exists in the deck are skipped as duplicates.
     Returns the number of cards created.
     """
@@ -32,8 +33,9 @@ def import_cards_from_csv(stream, deck_id):
         normalised = {k.lower(): v for k, v in row.items()}
         question = normalised.get('question', '').strip()
         answer = normalised.get('answer', '').strip()
+        context = normalised.get('context', '').strip() or None
         if question and answer and question.lower() not in existing_questions:
-            db.session.add(Card(deck_id=deck_id, question=question, answer=answer))
+            db.session.add(Card(deck_id=deck_id, question=question, answer=answer, context=context))
             existing_questions.add(question.lower())
             count += 1
 

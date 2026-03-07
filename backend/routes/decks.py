@@ -85,7 +85,7 @@ def import_deck(deck_id):
     db.session.add(new_deck)
     db.session.flush()
     for card in source.cards:
-        db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
+        db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer, context=card.context))
     source.import_count += 1
     db.session.commit()
     return jsonify(new_deck.to_dict(include_cards=True)), 201
@@ -171,8 +171,9 @@ def create_card(deck_id):
     answer = data.get('answer', '').strip()
     if not question or not answer:
         return jsonify({'message': 'question and answer are required'}), 400
+    context = data.get('context', '').strip() or None
 
-    card = Card(deck_id=deck.id, question=question, answer=answer)
+    card = Card(deck_id=deck.id, question=question, answer=answer, context=context)
     db.session.add(card)
     db.session.commit()
     return jsonify(card.to_dict()), 201
@@ -220,7 +221,7 @@ def combine_decks():
     db.session.flush()
     for source in source_decks:
         for card in source.cards:
-            db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer))
+            db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer, context=card.context))
     db.session.commit()
     return jsonify(new_deck.to_dict()), 201
 
@@ -288,9 +289,9 @@ def export_csv(deck_id):
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['question', 'answer'])
+    writer.writerow(['question', 'answer', 'context'])
     for card in deck.cards:
-        writer.writerow([card.question, card.answer])
+        writer.writerow([card.question, card.answer, card.context or ''])
 
     csv_bytes = output.getvalue().encode('utf-8')
     safe_name = re.sub(r'[^\w\-]', '_', deck.name)

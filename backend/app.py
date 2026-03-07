@@ -72,4 +72,9 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE users ADD COLUMN last_login DATETIME'))
             conn.commit()
+    cards_columns = [col['name'] for col in inspector.get_columns('cards')]
+    if 'context' not in cards_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE cards ADD COLUMN context TEXT'))
+            conn.commit()
 
