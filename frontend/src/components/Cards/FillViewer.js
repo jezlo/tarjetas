@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../../services/api';
 
-export default function FillViewer({ cards, index, onNext, onPrev, onResult }) {
+function normalizeAnswer(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode }) {
   const [inputValue, setInputValue] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
@@ -20,7 +24,9 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult }) {
     e.preventDefault();
     const userAnswer = inputValue.trim().toLowerCase();
     const correctAnswer = card.answer.trim().toLowerCase();
-    const correct = userAnswer === correctAnswer;
+    const correct = weakMode
+      ? normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer)
+      : userAnswer === correctAnswer;
     setIsCorrect(correct);
     setSubmitted(true);
     try {
@@ -39,6 +45,7 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult }) {
     <div className="flex flex-col items-center gap-6">
       <p className="text-sm text-gray-500">
         Card {index + 1} of {cards.length}
+        {weakMode && <span className="ml-2 text-xs font-medium bg-blue-100 text-blue-700 rounded px-2 py-0.5">weak</span>}
       </p>
 
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
