@@ -8,23 +8,17 @@ import DeckDetail from './components/Decks/DeckDetail';
 import BrowseDecks from './components/Decks/BrowseDecks';
 import Statistics from './components/Statistics/Statistics';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import { isAuthenticated, isAdmin } from './utils/authUtils';
 
 const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('access_token');
-  return token ? children : <Navigate to="/login" replace />;
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
 function AdminRoute({ children }) {
-  const token = localStorage.getItem('access_token');
-  if (!token) return <Navigate to="/login" replace />;
-  try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.is_admin ? children : <Navigate to="/" replace />;
-  } catch {
-    return <Navigate to="/" replace />;
-  }
+  if (!isAuthenticated()) return <Navigate to="/login" replace />;
+  return isAdmin() ? children : <Navigate to="/" replace />;
 }
 
 export default function App() {
