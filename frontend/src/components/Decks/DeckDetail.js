@@ -34,6 +34,7 @@ export default function DeckDetail() {
   const [invertCards, setInvertCards] = useState(false);
   const [hideKnown, setHideKnown] = useState(false);
   const [autoFlipDelay, setAutoFlipDelay] = useState(0); // 0 = disabled
+  const [fillWeakMode, setFillWeakMode] = useState(false);
 
   // Marked cards
   const [markedCardIds, setMarkedCardIds] = useState(new Set());
@@ -161,6 +162,7 @@ export default function DeckDetail() {
       setInvertCards(false);
       setHideKnown(false);
       setAutoFlipDelay(0);
+      setFillWeakMode(false);
     } else {
       setStudyPhase(null);
     }
@@ -517,6 +519,17 @@ export default function DeckDetail() {
                         </div>
                       </div>
                     )}
+                    {mode === 'fill' && (
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={fillWeakMode}
+                          onChange={() => setFillWeakMode(!fillWeakMode)}
+                          className="text-indigo-600"
+                        />
+                        <span className="text-sm">🔤 Modo débil (ignorar acentos)</span>
+                      </label>
+                    )}
                   </div>
                   <button
                     onClick={handleStartSession}
@@ -603,6 +616,7 @@ export default function DeckDetail() {
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
+                  weakMode={fillWeakMode}
                 />
               ) : (
                 <TriviaViewer
