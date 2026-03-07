@@ -12,11 +12,20 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    last_login = db.Column(db.DateTime, nullable=True)
 
     decks = db.relationship('Deck', back_populates='owner', cascade='all, delete-orphan')
 
     def to_dict(self):
-        return {'id': self.id, 'username': self.username, 'email': self.email, 'created_at': self.created_at.isoformat()}
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'created_at': self.created_at.isoformat(),
+            'is_admin': self.is_admin,
+            'last_login': self.last_login.isoformat() if self.last_login else None,
+        }
 
 
 class Deck(db.Model):
