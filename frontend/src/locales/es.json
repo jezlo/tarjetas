@@ -210,7 +210,12 @@
     "couldNotDelete": "No se pudo eliminar el usuario.",
     "couldNotCreate": "No se pudo crear el usuario.",
     "couldNotReset": "No se pudo restablecer la contraseña.",
-    "couldNotUpdate": "No se pudieron actualizar los ajustes."
+    "couldNotUpdate": "No se pudieron actualizar los ajustes.",
+    "timezone": "Zona horaria",
+    "timezoneDesc": "Selecciona la zona horaria para mostrar las fechas y horas.",
+    "timezoneSave": "Guardar",
+    "timezoneSaving": "Guardando…",
+    "timezoneCouldNotUpdate": "No se pudo actualizar la zona horaria."
   },
   "deckDetail": {
     "public": "🌐 Público",

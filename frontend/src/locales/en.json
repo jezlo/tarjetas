@@ -210,7 +210,12 @@
     "couldNotDelete": "Could not delete user.",
     "couldNotCreate": "Could not create user.",
     "couldNotReset": "Could not reset password.",
-    "couldNotUpdate": "Could not update settings."
+    "couldNotUpdate": "Could not update settings.",
+    "timezone": "Timezone",
+    "timezoneDesc": "Select the timezone for displaying dates and times.",
+    "timezoneSave": "Save",
+    "timezoneSaving": "Saving…",
+    "timezoneCouldNotUpdate": "Could not update timezone."
   },
   "deckDetail": {
     "public": "🌐 Public",

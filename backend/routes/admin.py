@@ -2,6 +2,10 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
+try:
+    from zoneinfo import available_timezones
+except ImportError:
+    available_timezones = None
 
 from models import db, User, Deck, AppSettings
 
@@ -126,7 +130,10 @@ def get_settings():
         return jsonify({'message': 'Admin access required'}), 403
 
     settings = AppSettings.get()
-    return jsonify({'registration_enabled': settings.registration_enabled}), 200
+    return jsonify({
+        'registration_enabled': settings.registration_enabled,
+        'timezone': settings.timezone,
+    }), 200
 
 
 @admin_bp.route('/settings', methods=['PUT'])
@@ -137,10 +144,27 @@ def update_settings():
         return jsonify({'message': 'Admin access required'}), 403
 
     data = request.get_json()
-    if 'registration_enabled' not in data:
-        return jsonify({'message': 'registration_enabled is required'}), 400
 
     settings = AppSettings.get()
-    settings.registration_enabled = bool(data['registration_enabled'])
+    if 'registration_enabled' in data:
+        settings.registration_enabled = bool(data['registration_enabled'])
+    if 'timezone' in data:
+        tz = str(data['timezone']).strip()
+        if not tz:
+            return jsonify({'message': 'timezone cannot be empty'}), 400
+        if available_timezones is not None and tz not in available_timezones():
+            return jsonify({'message': f'Invalid timezone: {tz}'}), 400
+        settings.timezone = tz
     db.session.commit()
-    return jsonify({'registration_enabled': settings.registration_enabled}), 200
+    return jsonify({
+        'registration_enabled': settings.registration_enabled,
+        'timezone': settings.timezone,
+    }), 200
+
+
+@admin_bp.route('/public-settings', methods=['GET'])
+@jwt_required()
+def get_public_settings():
+    """Return app settings accessible to all authenticated users."""
+    settings = AppSettings.get()
+    return jsonify({'timezone': settings.timezone}), 200

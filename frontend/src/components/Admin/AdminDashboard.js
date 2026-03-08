@@ -4,6 +4,84 @@ import api from '../../services/api';
 import { getCurrentUser } from '../../utils/authUtils';
 import { useTranslation } from '../../hooks/useTranslation';
 
+const TIMEZONES = [
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'America/Mexico_City',
+  'America/Bogota',
+  'America/Lima',
+  'America/Santiago',
+  'America/Buenos_Aires',
+  'America/Sao_Paulo',
+  'America/Caracas',
+  'America/Halifax',
+  'America/St_Johns',
+  'Europe/London',
+  'Europe/Dublin',
+  'Europe/Lisbon',
+  'Europe/Madrid',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Rome',
+  'Europe/Amsterdam',
+  'Europe/Brussels',
+  'Europe/Vienna',
+  'Europe/Warsaw',
+  'Europe/Prague',
+  'Europe/Budapest',
+  'Europe/Bucharest',
+  'Europe/Athens',
+  'Europe/Helsinki',
+  'Europe/Stockholm',
+  'Europe/Oslo',
+  'Europe/Copenhagen',
+  'Europe/Zurich',
+  'Europe/Moscow',
+  'Europe/Istanbul',
+  'Africa/Cairo',
+  'Africa/Nairobi',
+  'Africa/Johannesburg',
+  'Africa/Lagos',
+  'Africa/Casablanca',
+  'Asia/Dubai',
+  'Asia/Karachi',
+  'Asia/Kolkata',
+  'Asia/Dhaka',
+  'Asia/Bangkok',
+  'Asia/Jakarta',
+  'Asia/Singapore',
+  'Asia/Kuala_Lumpur',
+  'Asia/Hong_Kong',
+  'Asia/Shanghai',
+  'Asia/Taipei',
+  'Asia/Seoul',
+  'Asia/Tokyo',
+  'Asia/Manila',
+  'Asia/Kabul',
+  'Asia/Tehran',
+  'Asia/Baghdad',
+  'Asia/Riyadh',
+  'Asia/Tashkent',
+  'Asia/Almaty',
+  'Asia/Yekaterinburg',
+  'Asia/Novosibirsk',
+  'Asia/Vladivostok',
+  'Australia/Perth',
+  'Australia/Darwin',
+  'Australia/Adelaide',
+  'Australia/Brisbane',
+  'Australia/Sydney',
+  'Australia/Melbourne',
+  'Pacific/Auckland',
+  'Pacific/Fiji',
+  'Pacific/Honolulu',
+  'Pacific/Tahiti',
+];
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -24,6 +102,10 @@ export default function AdminDashboard() {
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsError, setSettingsError] = useState('');
   const [settingsUpdating, setSettingsUpdating] = useState(false);
+  const [timezone, setTimezone] = useState('UTC');
+  const [timezoneInput, setTimezoneInput] = useState('UTC');
+  const [timezoneSaving, setTimezoneSaving] = useState(false);
+  const [timezoneError, setTimezoneError] = useState('');
 
   const currentUser = getCurrentUser();
 
@@ -46,6 +128,9 @@ export default function AdminDashboard() {
     api.get('/admin/settings')
       .then(({ data }) => {
         setRegistrationEnabled(data.registration_enabled);
+        const tz = data.timezone || 'UTC';
+        setTimezone(tz);
+        setTimezoneInput(tz);
         setSettingsLoading(false);
       })
       .catch(() => {
@@ -134,10 +219,29 @@ export default function AdminDashboard() {
       });
   };
 
+  const handleSaveTimezone = () => {
+    setTimezoneError('');
+    setTimezoneSaving(true);
+    api.put('/admin/settings', { timezone: timezoneInput })
+      .then(({ data }) => {
+        const tz = data.timezone || 'UTC';
+        setTimezone(tz);
+        setTimezoneInput(tz);
+        setTimezoneSaving(false);
+      })
+      .catch(() => {
+        setTimezoneError(t('admin.timezoneCouldNotUpdate'));
+        setTimezoneSaving(false);
+      });
+  };
+
   const formatDate = (iso) => {
     if (!iso) return t('admin.never');
-    const d = new Date(iso);
-    return d.toLocaleString();
+    try {
+      return new Date(iso).toLocaleString(undefined, { timeZone: timezone });
+    } catch {
+      return new Date(iso).toLocaleString();
+    }
   };
 
   return (
@@ -296,6 +400,36 @@ export default function AdminDashboard() {
                   className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${registrationEnabled ? 'translate-x-6' : 'translate-x-1'}`}
                 />
               </button>
+            </div>
+            <div className="border-t border-gray-100 mt-6 pt-6">
+              <div>
+                <p className="font-medium text-gray-800">{t('admin.timezone')}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('admin.timezoneDesc')}</p>
+              </div>
+              {timezoneError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mt-3 text-sm">
+                  {timezoneError}
+                </div>
+              )}
+              <div className="flex items-center gap-3 mt-3">
+                <select
+                  value={timezoneInput}
+                  onChange={(e) => setTimezoneInput(e.target.value)}
+                  disabled={settingsLoading || timezoneSaving}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                >
+                  {TIMEZONES.map((tz) => (
+                    <option key={tz} value={tz}>{tz}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleSaveTimezone}
+                  disabled={settingsLoading || timezoneSaving || timezoneInput === timezone}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {timezoneSaving ? t('admin.timezoneSaving') : t('admin.timezoneSave')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
