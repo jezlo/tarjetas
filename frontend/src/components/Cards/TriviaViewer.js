@@ -14,6 +14,7 @@ function shuffleArray(arr) {
 export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, invertCards, optionCount = 3, allCards }) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState(null);
+  const [pendingResult, setPendingResult] = useState(null);
 
   const card = cards[index];
   const questionText = invertCards ? card.answer : card.question;
@@ -51,15 +52,18 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
     try {
       await api.post(`/statistics/cards/${card.id}`, { correct });
     } catch (_) {}
-    onResult(correct);
+    setPendingResult(correct);
   };
 
   const handleNext = () => {
+    if (pendingResult !== null) onResult(pendingResult);
+    setPendingResult(null);
     setSelected(null);
     onNext();
   };
 
   const handlePrev = () => {
+    setPendingResult(null);
     setSelected(null);
     onPrev();
   };
@@ -130,10 +134,9 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
         {selected !== null && (
           <button
             onClick={handleNext}
-            disabled={index === cards.length - 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition"
           >
-            {t('viewer.next')}
+            {index === cards.length - 1 ? t('viewer.finish') : t('viewer.next')}
           </button>
         )}
       </div>
