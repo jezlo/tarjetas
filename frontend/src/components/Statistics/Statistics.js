@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useTranslation } from '../../hooks/useTranslation';
+import { formatDateWithTimezone } from '../../utils/dateUtils';
 
 export default function Statistics() {
   const navigate = useNavigate();
@@ -62,14 +63,7 @@ export default function Statistics() {
     }
   };
 
-  const formatDate = (iso) => {
-    if (!iso) return '—';
-    try {
-      return new Date(iso).toLocaleString(undefined, { timeZone: timezone });
-    } catch {
-      return new Date(iso).toLocaleString();
-    }
-  };
+  const formatDate = (iso) => formatDateWithTimezone(iso, timezone);
 
   return (
     <div className="min-h-screen bg-gray-50">

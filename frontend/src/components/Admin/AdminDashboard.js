@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { getCurrentUser } from '../../utils/authUtils';
+import { formatDateWithTimezone } from '../../utils/dateUtils';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const TIMEZONES = [
@@ -235,14 +236,7 @@ export default function AdminDashboard() {
       });
   };
 
-  const formatDate = (iso) => {
-    if (!iso) return t('admin.never');
-    try {
-      return new Date(iso).toLocaleString(undefined, { timeZone: timezone });
-    } catch {
-      return new Date(iso).toLocaleString();
-    }
-  };
+  const formatDate = (iso) => formatDateWithTimezone(iso, timezone, t('admin.never'));
 
   return (
     <div className="min-h-screen bg-gray-50">
