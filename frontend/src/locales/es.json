@@ -104,6 +104,7 @@
     "sessionTypes": {
       "study": "Estudio",
       "trivia": "Trivia",
+      "questionnaire": "Cuestionario",
       "fill": "Rellenar"
     }
   },
@@ -216,7 +217,8 @@
     "private": "🔒 Privado",
     "modeCards": "Tarjetas",
     "modeStudy": "Estudiar",
-    "modeTrivia": "🎯 Trivia",
+    "modeQuestionnaire": "❓ Cuestionario",
+    "modeTrivia": "🎮 Trivia",
     "modeFill": "✏️ Rellenar",
     "modeAdd": "+ Añadir tarjeta",
     "modeBulk": "⚡ Añadir en masa",
@@ -234,6 +236,7 @@
     "noSingleWord": "Sin tarjetas con respuesta de una sola palabra. El modo rellenar solo funciona con respuestas de 1 palabra.",
     "studySetup": "Configuración de sesión de estudio",
     "triviaSetup": "Configuración de sesión de trivia",
+    "questionnaireSetup": "Configuración de sesión de cuestionario",
     "fillSetup": "Configuración de sesión de rellenar",
     "fillOnly": "✏️ Solo se incluirán tarjetas con respuesta de una sola palabra ({n} de {total} tarjetas).",
     "cardsToStudy": "Tarjetas a estudiar",
@@ -249,6 +252,7 @@
     "fillCharCount": "🔢 Mostrar contador de caracteres",
     "mixFill": "🔀 Mezclar tarjetas Fill (aleatorio)",
     "fillPercentage": "Porcentaje de tarjetas Fill:",
+    "triviaOptions": "Número de opciones de respuesta",
     "startSession": "Iniciar sesión",
     "endSession": "■ Terminar sesión",
     "correctCount": "✓ Correctas: {n}",
