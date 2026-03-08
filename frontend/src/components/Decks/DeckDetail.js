@@ -9,6 +9,7 @@ import FillViewer from '../Cards/FillViewer';
 import CardForm from '../Cards/CardForm';
 import CSVImporter from '../Cards/CSVImporter';
 import BulkAddCards from '../Cards/BulkAddCards';
+import { useSessionPreferences } from '../../contexts/SessionPreferencesContext';
 
 function shuffleArray(arr) {
   const a = [...arr];
@@ -22,6 +23,7 @@ function shuffleArray(arr) {
 export default function DeckDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
+  const { preferences, updatePreferences } = useSessionPreferences();
   const [deck, setDeck] = useState(null);
   const [mode, setMode] = useState('list'); // list | study | questionnaire | trivia | fill | add | bulk | import | duplicates
   const [studyIndex, setStudyIndex] = useState(0);
@@ -168,16 +170,16 @@ export default function DeckDetail() {
     }
     if (m === 'study' || m === 'questionnaire' || m === 'trivia' || m === 'fill') {
       setStudyPhase('config');
-      setConfigCardCount('all');
-      setShuffle(false);
-      setInvertCards(false);
-      setHideKnown(false);
-      setAutoFlipDelay(0);
-      setFillWeakMode(false);
-      setFillShowCharCount(false);
-      setIncludeFillCards(false);
-      setFillCardPercentage(20);
-      setTriviaOptionCount(3);
+      setConfigCardCount(preferences.num_cards ?? 'all');
+      setShuffle(preferences.shuffle ?? false);
+      setInvertCards(preferences.invert_cards ?? false);
+      setHideKnown(preferences.hide_known ?? false);
+      setAutoFlipDelay(preferences.auto_flip_delay ?? 0);
+      setFillWeakMode(preferences.fill_weak_mode ?? false);
+      setFillShowCharCount(preferences.fill_show_char_count ?? false);
+      setIncludeFillCards(preferences.include_fill_cards ?? false);
+      setFillCardPercentage(preferences.fill_card_percentage ?? 20);
+      setTriviaOptionCount(preferences.trivia_option_count ?? 3);
     } else {
       setStudyPhase(null);
     }
@@ -188,6 +190,19 @@ export default function DeckDetail() {
   };
 
   const handleStartSession = async () => {
+    updatePreferences({
+      session_type: mode,
+      num_cards: configCardCount,
+      shuffle,
+      invert_cards: invertCards,
+      hide_known: hideKnown,
+      auto_flip_delay: autoFlipDelay,
+      fill_weak_mode: fillWeakMode,
+      fill_show_char_count: fillShowCharCount,
+      include_fill_cards: includeFillCards,
+      fill_card_percentage: fillCardPercentage,
+      trivia_option_count: triviaOptionCount,
+    });
     const allCards = deck.cards || [];
     let baseCards = allCards;
     if (mode === 'fill') {
