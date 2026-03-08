@@ -178,6 +178,48 @@ npm start   # runs on http://localhost:3000, proxies /api → localhost:5000
 | GET | `/api/statistics/decks/<id>` | Per-deck statistics |
 | POST | `/api/statistics/cards/<id>` | Record result `{correct: true/false}` |
 
+### Health (no authentication required)
+| Method | URL | Description |
+|---|---|---|
+| GET | `/api/health` | Returns API and database status |
+
+**Successful response (HTTP 200):**
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "timestamp": "2026-03-08T12:34:56Z"
+}
+```
+
+**Error response (HTTP 503):**
+```json
+{
+  "status": "unhealthy",
+  "database": "disconnected",
+  "error": "Database connection failed",
+  "timestamp": "2026-03-08T12:34:56Z"
+}
+```
+
+---
+
+## 🩺 Uptime Kuma Monitoring
+
+[Uptime Kuma](https://github.com/louislam/uptime-kuma) can use the `/api/health` endpoint to monitor the API without any authentication.
+
+**Steps:**
+
+1. In Uptime Kuma, click **Add New Monitor**.
+2. Set **Monitor Type** to `HTTP(s)`.
+3. Set **URL** to `http://<your-server>:5000/api/health` (replace with your actual host/port or domain).
+4. Set **Heartbeat Interval** to your desired frequency (e.g. `60` seconds).
+5. Under **Advanced**, set **Expected Status Code** to `200`.
+6. Optionally enable **Keyword Monitoring** and set the keyword to `healthy` to also validate the response body.
+7. Click **Save**.
+
+Uptime Kuma will now poll the endpoint regularly and alert you if the API or database becomes unavailable.
+
 ---
 
 ## 📊 CSV Import Format
