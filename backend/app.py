@@ -5,7 +5,6 @@ from flask_jwt_extended import JWTManager
 from config import Config
 from models import db
 
-
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -37,7 +36,6 @@ def create_app(config_class=Config):
 
     return app
 
-
 def _assign_existing_decks_to_default_category(db):
     """After adding category_id column, assign all existing decks to their user's 'Sin Categoría'."""
     from models import Deck, get_or_create_default_categories
@@ -53,7 +51,6 @@ def _assign_existing_decks_to_default_category(db):
         )
     db.session.commit()
 
-
 def _migrate_db(db):
     """Apply lightweight schema migrations for columns added after initial release."""
     from sqlalchemy import text, inspect
@@ -61,7 +58,6 @@ def _migrate_db(db):
     decks_columns = [col['name'] for col in inspector.get_columns('decks')]
     if 'is_public' not in decks_columns:
         with db.engine.connect() as conn:
-            # SQLite represents booleans as integers; DEFAULT 0 means False
             conn.execute(text('ALTER TABLE decks ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0'))
             conn.commit()
     if 'source_deck_id' not in decks_columns:
@@ -105,4 +101,3 @@ def _migrate_db(db):
     # Ensure the singleton AppSettings row exists (initialised from env var).
     from models import AppSettings
     AppSettings.get()
-
