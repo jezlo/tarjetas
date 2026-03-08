@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatDateWithTimezone } from '../../utils/dateUtils';
+import Navbar from '../Navbar';
 
 export default function Statistics() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [decks, setDecks] = useState([]);
@@ -67,19 +66,7 @@ export default function Statistics() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600">{t('app.name')}</Link>
-        <div className="flex items-center gap-4">
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
-          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
-          <button
-            onClick={() => { localStorage.removeItem('access_token'); localStorage.removeItem('user'); navigate('/login'); }}
-            className="text-sm text-red-500 hover:underline"
-          >
-            {t('nav.logout')}
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">

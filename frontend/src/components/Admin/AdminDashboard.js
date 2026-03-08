@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { getCurrentUser } from '../../utils/authUtils';
 import { formatDateWithTimezone } from '../../utils/dateUtils';
 import { useTranslation } from '../../hooks/useTranslation';
+import Navbar from '../Navbar';
 
 const TIMEZONES = [
   'UTC',
@@ -145,12 +146,6 @@ export default function AdminDashboard() {
     fetchSettings();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
-
   const handleDelete = (userId) => {
     if (!window.confirm(t('admin.deleteConfirm'))) return;
     setDeletingId(userId);
@@ -241,16 +236,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-indigo-600">{t('app.name')}</h1>
-        <div className="flex items-center gap-4">
-          <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.dashboard')}</Link>
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
-          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
-          <Link to="/admin" className="text-indigo-600 font-medium">{t('nav.admin')}</Link>
-          <button onClick={logout} className="text-sm text-red-500 hover:underline">{t('nav.logout')}</button>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">

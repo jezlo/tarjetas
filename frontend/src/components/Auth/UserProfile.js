@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { getCurrentUser } from '../../utils/authUtils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLanguage } from '../../contexts/LanguageContext';
+import Navbar from '../Navbar';
 
 export default function UserProfile() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const { language, setLanguage } = useLanguage();
   const user = getCurrentUser();
@@ -19,12 +18,6 @@ export default function UserProfile() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,19 +68,7 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-indigo-600">{t('app.name')}</h1>
-        <div className="flex items-center gap-4">
-          <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.dashboard')}</Link>
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
-          <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.stats')}</Link>
-          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
-          {user?.is_admin && (
-            <Link to="/admin" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.admin')}</Link>
-          )}
-          <button onClick={logout} className="text-sm text-red-500 hover:underline">{t('nav.logout')}</button>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-lg mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-1">{t('profile.title')}</h2>
