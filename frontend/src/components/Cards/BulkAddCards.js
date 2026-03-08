@@ -13,11 +13,21 @@ export default function BulkAddCards({ deckId, onSaved }) {
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
       .map((line) => {
-        const commaIdx = line.indexOf(',');
-        if (commaIdx === -1) return null;
-        const question = line.slice(0, commaIdx).trim();
-        const answer = line.slice(commaIdx + 1).trim();
-        return question && answer ? { question, answer } : null;
+        const firstComma = line.indexOf(',');
+        if (firstComma === -1) return null;
+        const question = line.slice(0, firstComma).trim();
+        const rest = line.slice(firstComma + 1);
+        const secondComma = rest.indexOf(',');
+        let answer;
+        let context;
+        if (secondComma === -1) {
+          answer = rest.trim();
+          context = undefined;
+        } else {
+          answer = rest.slice(0, secondComma).trim();
+          context = rest.slice(secondComma + 1).trim();
+        }
+        return question && answer ? { question, answer, ...(context ? { context } : {}) } : null;
       })
       .filter(Boolean);
   };
@@ -29,7 +39,7 @@ export default function BulkAddCards({ deckId, onSaved }) {
 
     const cards = parseCards(text);
     if (cards.length === 0) {
-      setError('No valid cards found. Each line must be: question, answer');
+      setError('No valid cards found. Each line must be: question, answer[, context]');
       return;
     }
 
@@ -53,7 +63,8 @@ export default function BulkAddCards({ deckId, onSaved }) {
       <h3 className="text-lg font-semibold text-gray-800 mb-2">Bulk Add Cards</h3>
       <p className="text-sm text-gray-500 mb-4">
         Enter one card per line in the format:{' '}
-        <code className="bg-gray-100 px-1 rounded">question, answer</code>
+        <code className="bg-gray-100 px-1 rounded">question, answer[, context]</code>
+        {' '}— the <code className="bg-gray-100 px-1 rounded">context</code> column is optional.
       </p>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {message && <p className="text-green-600 text-sm mb-3">{message}</p>}
@@ -62,7 +73,7 @@ export default function BulkAddCards({ deckId, onSaved }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={12}
-          placeholder={"What is the capital of France?, Paris\nWhat is 2+2?, 4\nWho wrote Hamlet?, Shakespeare"}
+          placeholder={"What is the capital of France?, Paris, Largest city in France\nWhat is 2+2?, 4\nWho wrote Hamlet?, Shakespeare, Written around 1600"}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         <div className="flex items-center justify-between">
