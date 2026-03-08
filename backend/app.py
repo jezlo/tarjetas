@@ -77,4 +77,7 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE cards ADD COLUMN context TEXT'))
             conn.commit()
+    # Ensure the singleton AppSettings row exists (initialised from env var).
+    from models import AppSettings
+    AppSettings.get()
 

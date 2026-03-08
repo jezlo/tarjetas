@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
-from models import db, User, Deck
+from models import db, User, Deck, AppSettings
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -116,3 +116,31 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({'message': 'User deleted'}), 200
+
+
+@admin_bp.route('/settings', methods=['GET'])
+@jwt_required()
+def get_settings():
+    admin = _require_admin()
+    if not admin:
+        return jsonify({'message': 'Admin access required'}), 403
+
+    settings = AppSettings.get()
+    return jsonify({'registration_enabled': settings.registration_enabled}), 200
+
+
+@admin_bp.route('/settings', methods=['PUT'])
+@jwt_required()
+def update_settings():
+    admin = _require_admin()
+    if not admin:
+        return jsonify({'message': 'Admin access required'}), 403
+
+    data = request.get_json()
+    if 'registration_enabled' not in data:
+        return jsonify({'message': 'registration_enabled is required'}), 400
+
+    settings = AppSettings.get()
+    settings.registration_enabled = bool(data['registration_enabled'])
+    db.session.commit()
+    return jsonify({'registration_enabled': settings.registration_enabled}), 200
