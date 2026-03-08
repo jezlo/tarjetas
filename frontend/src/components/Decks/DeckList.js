@@ -5,12 +5,14 @@ import api from '../../services/api';
 export default function DeckList() {
   const navigate = useNavigate();
   const [decks, setDecks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // null = show all
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '' });
+  const [form, setForm] = useState({ name: '', description: '', category_id: '' });
   const [error, setError] = useState('');
 
   // Edit deck state
-  const [editingDeck, setEditingDeck] = useState(null); // { id, name, description }
+  const [editingDeck, setEditingDeck] = useState(null); // { id, name, description, category_id }
   const [editDeckError, setEditDeckError] = useState('');
 
   // Combine state
@@ -19,21 +21,66 @@ export default function DeckList() {
   const [combineName, setCombineName] = useState('');
   const [combineError, setCombineError] = useState('');
 
-  const load = () => api.get('/decks').then(({ data }) => setDecks(data));
+  const load = async () => {
+    const [decksRes, catsRes] = await Promise.all([
+      api.get('/decks'),
+      api.get('/categories'),
+    ]);
+    setDecks(decksRes.data);
+    setCategories(catsRes.data);
+  };
 
   useEffect(() => { load(); }, []);
+
+  // When categories load, default form category to "Sin Categoría"
+  useEffect(() => {
+    if (categories.length > 0) {
+      const sinCat = categories.find((c) => c.name === 'Sin Categoría');
+      if (sinCat) setForm((f) => f.category_id ? f : { ...f, category_id: sinCat.id });
+    }
+  }, [categories]);
+
+  const sinCategoryId = categories.find((c) => c.name === 'Sin Categoría')?.id;
+  const generalCategoryId = categories.find((c) => c.name === 'General')?.id;
+
+  const getCategoryName = (categoryId) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat ? cat.name : '';
+  };
+
+  const deckCountForCategory = (cat) => {
+    if (cat.name === 'General') return decks.length;
+    return decks.filter((d) => d.category_id === cat.id).length;
+  };
+
+  const filteredDecks = selectedCategoryId === null
+    ? decks
+    : selectedCategoryId === generalCategoryId
+      ? decks
+      : decks.filter((d) => d.category_id === selectedCategoryId);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     setError('');
+    let deckId;
     try {
-      await api.post('/decks', form);
-      setForm({ name: '', description: '' });
-      setShowForm(false);
-      load();
+      const res = await api.post('/decks', { name: form.name, description: form.description });
+      deckId = res.data.id;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create deck');
+      return;
     }
+    // Assign category if not default "Sin Categoría"
+    if (form.category_id && form.category_id !== sinCategoryId) {
+      try {
+        await api.put(`/categories/${form.category_id}/decks/${deckId}`);
+      } catch {
+        setError('Deck created but failed to assign category');
+      }
+    }
+    setForm({ name: '', description: '', category_id: sinCategoryId || '' });
+    setShowForm(false);
+    load();
   };
 
   const handleDelete = async (id) => {
@@ -50,11 +97,20 @@ export default function DeckList() {
     }
     try {
       await api.put(`/decks/${editingDeck.id}`, { name: editingDeck.name.trim(), description: editingDeck.description });
-      setEditingDeck(null);
-      load();
     } catch (err) {
       setEditDeckError(err.response?.data?.message || 'Failed to update deck');
+      return;
     }
+    // Update category assignment
+    if (editingDeck.category_id) {
+      try {
+        await api.put(`/categories/${editingDeck.category_id}/decks/${editingDeck.id}`);
+      } catch {
+        setEditDeckError('Deck updated but failed to assign category');
+      }
+    }
+    setEditingDeck(null);
+    load();
   };
 
   const toggleCombineSelect = (id) => {
@@ -85,6 +141,9 @@ export default function DeckList() {
     }
   };
 
+  // Non-default categories (user-created)
+  const userCategories = categories.filter((c) => !c.is_default);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
@@ -101,136 +160,230 @@ export default function DeckList() {
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex flex-wrap justify-between items-center mb-6 gap-2">
-          <h2 className="text-2xl font-semibold text-gray-800">My Decks</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setShowCombine(!showCombine); setCombineSelected([]); setCombineName(''); setCombineError(''); }}
-              className="bg-white text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-indigo-50 transition text-sm font-medium"
-            >
-              {showCombine ? 'Cancel Combine' : '⊕ Combine Decks'}
-            </button>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
-            >
-              {showForm ? 'Cancel' : '+ New Deck'}
-            </button>
+      <div className="max-w-5xl mx-auto px-4 py-8 flex gap-6">
+        {/* Category Sidebar */}
+        <aside className="w-48 shrink-0">
+          <div className="bg-white rounded-xl shadow p-4 sticky top-8">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Categories</h3>
+              <Link to="/categories" className="text-xs text-indigo-500 hover:text-indigo-700">Manage</Link>
+            </div>
+            <ul className="space-y-1">
+              <li>
+                <button
+                  onClick={() => setSelectedCategoryId(null)}
+                  className={`w-full text-left px-2 py-1.5 rounded-lg text-sm flex justify-between items-center transition ${
+                    selectedCategoryId === null
+                      ? 'bg-indigo-50 text-indigo-700 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <span>All Decks</span>
+                  <span className={`text-xs ${selectedCategoryId === null ? 'text-indigo-500' : 'text-gray-400'}`}>{decks.length}</span>
+                </button>
+              </li>
+              {categories
+                .filter((c) => c.name !== 'General')
+                .map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      onClick={() => setSelectedCategoryId(cat.id)}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-sm flex justify-between items-center transition ${
+                        selectedCategoryId === cat.id
+                          ? 'bg-indigo-50 text-indigo-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="truncate mr-1">{cat.name}</span>
+                      <span className={`text-xs shrink-0 ${selectedCategoryId === cat.id ? 'text-indigo-500' : 'text-gray-400'}`}>
+                        {deckCountForCategory(cat)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+            </ul>
+            {userCategories.length === 0 && (
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                <Link to="/categories" className="hover:underline">Add categories</Link>
+              </p>
+            )}
           </div>
-        </div>
+        </aside>
 
-        {showForm && (
-          <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <input
-              placeholder="Deck name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <input
-              placeholder="Description (optional)"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
-              Create Deck
-            </button>
-          </form>
-        )}
+        {/* Main content */}
+        <main className="flex-1 min-w-0">
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-2">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {selectedCategoryId === null
+                ? 'My Decks'
+                : getCategoryName(selectedCategoryId)}
+            </h2>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowCombine(!showCombine); setCombineSelected([]); setCombineName(''); setCombineError(''); }}
+                className="bg-white text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-indigo-50 transition text-sm font-medium"
+              >
+                {showCombine ? 'Cancel Combine' : '⊕ Combine Decks'}
+              </button>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
+              >
+                {showForm ? 'Cancel' : '+ New Deck'}
+              </button>
+            </div>
+          </div>
 
-        {showCombine && (
-          <form onSubmit={handleCombine} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
-            <h3 className="font-semibold text-gray-800">Combine Decks</h3>
-            <p className="text-sm text-gray-500">Select 2 or more decks to merge into a new one. Originals are kept.</p>
-            {combineError && <p className="text-red-500 text-sm">{combineError}</p>}
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {decks.map((deck) => (
-                <label key={deck.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={combineSelected.includes(deck.id)}
-                    onChange={() => toggleCombineSelect(deck.id)}
-                    className="text-indigo-600"
-                  />
-                  <span className="text-sm">{deck.name} <span className="text-gray-400">({deck.card_count} cards)</span></span>
-                </label>
+          {showForm && (
+            <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <input
+                placeholder="Deck name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <input
+                placeholder="Description (optional)"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              {categories.length > 0 && (
+                <select
+                  value={form.category_id}
+                  onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+                >
+                  {categories
+                    .filter((c) => c.name !== 'General')
+                    .map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                </select>
+              )}
+              <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
+                Create Deck
+              </button>
+            </form>
+          )}
+
+          {showCombine && (
+            <form onSubmit={handleCombine} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
+              <h3 className="font-semibold text-gray-800">Combine Decks</h3>
+              <p className="text-sm text-gray-500">Select 2 or more decks to merge into a new one. Originals are kept.</p>
+              {combineError && <p className="text-red-500 text-sm">{combineError}</p>}
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {decks.map((deck) => (
+                  <label key={deck.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={combineSelected.includes(deck.id)}
+                      onChange={() => toggleCombineSelect(deck.id)}
+                      className="text-indigo-600"
+                    />
+                    <span className="text-sm">{deck.name} <span className="text-gray-400">({deck.card_count} cards)</span></span>
+                  </label>
+                ))}
+              </div>
+              <input
+                placeholder="New deck name"
+                value={combineName}
+                onChange={(e) => setCombineName(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
+                ⊕ Create Combined Deck
+              </button>
+            </form>
+          )}
+
+          {filteredDecks.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+              {selectedCategoryId === null
+                ? 'No decks yet. Create your first one!'
+                : 'No decks in this category.'}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredDecks.map((deck) => (
+                <div key={deck.id} className="bg-white rounded-xl shadow p-5 hover:shadow-md transition">
+                  {editingDeck && editingDeck.id === deck.id ? (
+                    <div className="space-y-2">
+                      {editDeckError && <p className="text-red-500 text-sm">{editDeckError}</p>}
+                      <input
+                        value={editingDeck.name}
+                        onChange={(e) => setEditingDeck({ ...editingDeck, name: e.target.value })}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleEditDeck(); if (e.key === 'Escape') setEditingDeck(null); }}
+                        autoFocus
+                        placeholder="Deck name"
+                        className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      />
+                      <input
+                        value={editingDeck.description}
+                        onChange={(e) => setEditingDeck({ ...editingDeck, description: e.target.value })}
+                        placeholder="Description (optional)"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      />
+                      {categories.length > 0 && (
+                        <select
+                          value={editingDeck.category_id || ''}
+                          onChange={(e) => setEditingDeck({ ...editingDeck, category_id: Number(e.target.value) })}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+                        >
+                          {categories
+                            .filter((c) => c.name !== 'General')
+                            .map((cat) => (
+                              <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                      )}
+                      <div className="flex gap-2">
+                        <button onClick={handleEditDeck} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
+                        <button onClick={() => { setEditingDeck(null); setEditDeckError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <Link to={`/decks/${deck.id}`} className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
+                        <p className="text-gray-500 text-sm truncate">{deck.description || 'No description'}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <p className="text-indigo-600 text-sm">{deck.card_count} cards</p>
+                          {(() => {
+                            const catName = getCategoryName(deck.category_id);
+                            return catName && catName !== 'Sin Categoría' ? (
+                              <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                                {catName}
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
+                      </Link>
+                      <div className="ml-4 flex gap-3 items-center shrink-0">
+                        <button
+                          onClick={() => { setEditingDeck({ id: deck.id, name: deck.name, description: deck.description || '', category_id: deck.category_id || sinCategoryId || null }); setEditDeckError(''); }}
+                          className="text-xs text-indigo-500 hover:text-indigo-700"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(deck.id)}
+                          className="text-xs text-red-400 hover:text-red-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-            <input
-              placeholder="New deck name"
-              value={combineName}
-              onChange={(e) => setCombineName(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
-              ⊕ Create Combined Deck
-            </button>
-          </form>
-        )}
-
-        {decks.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-            No decks yet. Create your first one!
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {decks.map((deck) => (
-              <div key={deck.id} className="bg-white rounded-xl shadow p-5 hover:shadow-md transition">
-                {editingDeck && editingDeck.id === deck.id ? (
-                  <div className="space-y-2">
-                    {editDeckError && <p className="text-red-500 text-sm">{editDeckError}</p>}
-                    <input
-                      value={editingDeck.name}
-                      onChange={(e) => setEditingDeck({ ...editingDeck, name: e.target.value })}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleEditDeck(); if (e.key === 'Escape') setEditingDeck(null); }}
-                      autoFocus
-                      placeholder="Deck name"
-                      className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    />
-                    <input
-                      value={editingDeck.description}
-                      onChange={(e) => setEditingDeck({ ...editingDeck, description: e.target.value })}
-                      placeholder="Description (optional)"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    />
-                    <div className="flex gap-2">
-                      <button onClick={handleEditDeck} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
-                      <button onClick={() => { setEditingDeck(null); setEditDeckError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center">
-                    <Link to={`/decks/${deck.id}`} className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
-                      <p className="text-gray-500 text-sm truncate">{deck.description || 'No description'}</p>
-                      <p className="text-indigo-600 text-sm mt-1">{deck.card_count} cards</p>
-                    </Link>
-                    <div className="ml-4 flex gap-3 items-center shrink-0">
-                      <button
-                        onClick={() => { setEditingDeck({ id: deck.id, name: deck.name, description: deck.description || '' }); setEditDeckError(''); }}
-                        className="text-xs text-indigo-500 hover:text-indigo-700"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(deck.id)}
-                        className="text-xs text-red-400 hover:text-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
