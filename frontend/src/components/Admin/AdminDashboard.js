@@ -57,7 +57,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchUsers();
     fetchSettings();
-  }, [fetchUsers, fetchSettings]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const logout = () => {
     localStorage.removeItem('access_token');
