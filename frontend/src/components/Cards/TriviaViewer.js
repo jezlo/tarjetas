@@ -32,6 +32,15 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
           <p className="text-xs font-semibold uppercase tracking-wide text-green-500 mb-1">{t('viewer.answer')}</p>
           <p className="text-xl font-semibold text-gray-700">{answerText}</p>
         </div>
+        {card.context && (
+          <>
+            <hr className="border-gray-200" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{t('viewer.context')}</p>
+              <p className="text-sm italic text-gray-500">{card.context}</p>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex gap-4">
