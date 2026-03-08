@@ -4,9 +4,59 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from models import db, User, AppSettings
+from models import db, User, AppSettings, Deck, Card, get_or_create_default_categories
 
 auth_bp = Blueprint('auth', __name__)
+
+_DEMO_CARDS = [
+    {
+        'question': '¿Qué es una tarjeta de memoria (flashcard)?',
+        'answer': 'Una herramienta de estudio con una pregunta en el frente y la respuesta al dorso.',
+        'context': 'Las tarjetas de memoria son muy útiles para memorizar conceptos clave.',
+    },
+    {
+        'question': '¿Cómo se llama la técnica de estudiar con tarjetas espaciadas?',
+        'answer': 'Repetición espaciada',
+        'context': 'La repetición espaciada aumenta la retención a largo plazo revisando las tarjetas en intervalos crecientes.',
+    },
+    {
+        'question': '¿Cuáles son los tres modos de estudio disponibles?',
+        'answer': 'Estudio, Trivia y Rellenar',
+        'context': 'Cada modo pone a prueba tu conocimiento de una forma diferente.',
+    },
+    {
+        'question': '¿Qué hace el modo Trivia?',
+        'answer': 'Presenta opciones múltiples para elegir la respuesta correcta.',
+        'context': 'Se generan distractores a partir de las otras tarjetas del mazo.',
+    },
+    {
+        'question': '¿Qué hace el modo Rellenar?',
+        'answer': 'Solicita escribir la respuesta completa sin ver opciones.',
+        'context': 'Solo funciona con tarjetas cuya respuesta es una sola palabra.',
+    },
+]
+
+
+def _create_demo_deck(user_id):
+    """Create a demo deck with sample cards for a newly registered user."""
+    sin_cat, _ = get_or_create_default_categories(user_id)
+    deck = Deck(
+        name='🎓 Mazo Demo',
+        description='Mazo de demostración para explorar la aplicación. ¡Prueba los distintos modos de estudio!',
+        user_id=user_id,
+        is_public=False,
+        category_id=sin_cat.id,
+    )
+    db.session.add(deck)
+    db.session.flush()  # get deck.id before creating cards
+    for card_data in _DEMO_CARDS:
+        card = Card(
+            deck_id=deck.id,
+            question=card_data['question'],
+            answer=card_data['answer'],
+            context=card_data.get('context'),
+        )
+        db.session.add(card)
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -29,12 +79,19 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 409
 
+    is_first_user = User.query.count() == 0
+
     user = User(
         username=username,
         email=email,
         password_hash=generate_password_hash(password),
     )
     db.session.add(user)
+    db.session.flush()  # ensure user.id is available before creating the demo deck
+
+    if is_first_user:
+        _create_demo_deck(user.id)
+
     db.session.commit()
 
     access_token = create_access_token(identity=str(user.id))
