@@ -207,6 +207,23 @@ class DeckLike(db.Model):
     deck = db.relationship('Deck', back_populates='likes')
 
 
+class SessionPreferences(db.Model):
+    __tablename__ = 'session_preferences'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    preferences = db.Column(db.Text, nullable=False, default='{}')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        import json
+        try:
+            prefs = json.loads(self.preferences)
+        except (ValueError, TypeError):
+            prefs = {}
+        return prefs
+
+
 def get_or_create_default_categories(user_id):
     """Ensure 'Sin Categoría' and 'General' exist for the user.
 

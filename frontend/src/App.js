@@ -13,6 +13,7 @@ import CategoryManager from './components/Categories/CategoryManager';
 import AIPrompts from './components/AIPrompts/AIPrompts';
 import { isAuthenticated, isAdmin } from './utils/authUtils';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { SessionPreferencesProvider } from './contexts/SessionPreferencesContext';
 
 const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
 
@@ -28,6 +29,7 @@ function AdminRoute({ children }) {
 export default function App() {
   return (
     <LanguageProvider>
+      <SessionPreferencesProvider>
       <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -110,6 +112,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </BrowserRouter>
+      </SessionPreferencesProvider>
     </LanguageProvider>
   );
 }
