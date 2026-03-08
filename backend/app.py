@@ -22,6 +22,7 @@ def create_app(config_class=Config):
     from routes.sessions import sessions_bp
     from routes.admin import admin_bp
     from routes.categories import categories_bp
+    from routes.health import health_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(decks_bp, url_prefix='/api/decks')
@@ -30,6 +31,7 @@ def create_app(config_class=Config):
     app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(categories_bp, url_prefix='/api/categories')
+    app.register_blueprint(health_bp, url_prefix='/api/health')
 
     with app.app_context():
         db.create_all()
