@@ -33,11 +33,17 @@ def create_session():
     started_at = data.get('started_at')
     ended_at = data.get('ended_at')
 
+    valid_session_types = {'study', 'trivia', 'fill'}
+    session_type = data.get('session_type', 'study')
+    if session_type not in valid_session_types:
+        return jsonify({'message': "session_type must be one of: 'study', 'trivia', 'fill'"}), 400
+
     session = StudySession(
         user_id=user_id,
         deck_id=deck.id,
         correct_count=int(data.get('correct_count', 0)),
         wrong_count=int(data.get('wrong_count', 0)),
+        session_type=session_type,
         started_at=datetime.fromisoformat(started_at.replace('Z', '+00:00')) if started_at else datetime.utcnow(),
         ended_at=datetime.fromisoformat(ended_at.replace('Z', '+00:00')) if ended_at else None,
     )

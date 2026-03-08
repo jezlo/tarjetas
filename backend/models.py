@@ -155,6 +155,7 @@ class StudySession(db.Model):
     deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False)
     correct_count = db.Column(db.Integer, default=0)
     wrong_count = db.Column(db.Integer, default=0)
+    session_type = db.Column(db.String(20), nullable=False, default='study')
     started_at = db.Column(db.DateTime, default=datetime.utcnow)
     ended_at = db.Column(db.DateTime, nullable=True)
 
@@ -168,6 +169,7 @@ class StudySession(db.Model):
             'deck_name': self.deck.name if self.deck else None,
             'correct_count': self.correct_count,
             'wrong_count': self.wrong_count,
+            'session_type': self.session_type,
             'started_at': self.started_at.isoformat(),
             'ended_at': self.ended_at.isoformat() if self.ended_at else None,
         }

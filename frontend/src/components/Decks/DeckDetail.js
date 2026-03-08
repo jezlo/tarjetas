@@ -51,6 +51,7 @@ export default function DeckDetail() {
   // Session tracking
   const sessionStartRef = useRef(null);
   const sessionCountsRef = useRef({ correct: 0, wrong: 0 });
+  const sessionModeRef = useRef('study');
   const deckIdRef = useRef(null);
 
   const load = useCallback(() =>
@@ -97,9 +98,10 @@ export default function DeckDetail() {
     setStudyIndex(0);
   }, []);
 
-  const beginSession = () => {
+  const beginSession = (sessionMode) => {
     sessionStartRef.current = new Date().toISOString();
     sessionCountsRef.current = { correct: 0, wrong: 0 };
+    sessionModeRef.current = sessionMode || 'study';
   };
 
   const saveSession = async (deckId) => {
@@ -113,6 +115,7 @@ export default function DeckDetail() {
         deck_id: deckId,
         correct_count: counts.correct,
         wrong_count: counts.wrong,
+        session_type: sessionModeRef.current,
         started_at: started,
         ended_at: new Date().toISOString(),
       });
@@ -129,6 +132,7 @@ export default function DeckDetail() {
           deck_id: deckIdRef.current,
           correct_count: counts.correct,
           wrong_count: counts.wrong,
+          session_type: sessionModeRef.current,
           started_at: started,
           ended_at: new Date().toISOString(),
         }).catch(() => {});
@@ -214,7 +218,7 @@ export default function DeckDetail() {
       }
     }
     startStudy(selectedCards, shuffle);
-    beginSession();
+    beginSession(mode);
     setLiveCounts({ correct: 0, wrong: 0 });
     setStudyPhase('active');
   };
