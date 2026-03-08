@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function normalizeAnswer(str) {
   return str
@@ -28,6 +29,7 @@ function levenshtein(a, b) {
 const MAX_LEVENSHTEIN_DISTANCE = 2;
 
 export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode, showCharCount }) {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
@@ -69,13 +71,13 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="text-sm text-gray-500">
-        Card {index + 1} of {cards.length}
-        {weakMode && <span className="ml-2 text-xs font-medium bg-blue-100 text-blue-700 rounded px-2 py-0.5">weak</span>}
+        {t('viewer.cardOf', { n: index + 1, total: cards.length })}
+        {weakMode && <span className="ml-2 text-xs font-medium bg-blue-100 text-blue-700 rounded px-2 py-0.5">{t('viewer.weak')}</span>}
       </p>
 
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">Question</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">{t('viewer.question')}</p>
           <p className="text-xl font-semibold text-gray-800">{card.question}</p>
         </div>
 
@@ -86,13 +88,13 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your answer…"
+              placeholder={t('viewer.typeAnswer')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoComplete="off"
             />
             {showCharCount && (
               <p className="text-xs text-gray-400 text-right">
-                Caracteres: {inputValue.length}/{card.answer.trim().length}
+                {t('viewer.charCount', { n: inputValue.length, total: card.answer.trim().length })}
               </p>
             )}
             <button
@@ -100,20 +102,20 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
               disabled={!inputValue.trim()}
               className="w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Check Answer
+              {t('viewer.checkAnswer')}
             </button>
           </form>
         ) : (
           <div className={`rounded-xl p-4 ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} aria-live="polite">
             <p className={`text-sm font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-              {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+              {isCorrect ? t('viewer.correct') : t('viewer.incorrect')}
             </p>
             {!isCorrect && (
               <p className="text-sm text-gray-600 mt-1">
-                Correct answer: <span className="font-semibold">{card.answer}</span>
+                {t('viewer.correctAnswer')}   <span className="font-semibold">{card.answer}</span>
               </p>
             )}
-            <p className="text-sm text-gray-500 mt-1">Your answer: {inputValue}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('viewer.yourAnswer')} {inputValue}</p>
             {!isCorrect && card.context && (
               <p className="text-sm text-blue-600 mt-2 italic">💡 {card.context}</p>
             )}
@@ -127,7 +129,7 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
           disabled={index === cards.length - 1}
           className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next →
+          {t('viewer.next')}
         </button>
       )}
 
@@ -137,7 +139,7 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
           disabled={index === 0}
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
         >
-          ← Prev
+          {t('viewer.prev')}
         </button>
       </div>
     </div>

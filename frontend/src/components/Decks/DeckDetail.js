@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 import CardViewer from '../Cards/CardViewer';
 import TriviaViewer from '../Cards/TriviaViewer';
 import FillViewer from '../Cards/FillViewer';
@@ -18,6 +19,7 @@ function shuffleArray(arr) {
 }
 
 export default function DeckDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [deck, setDeck] = useState(null);
   const [mode, setMode] = useState('list'); // list | study | trivia | fill | add | bulk | import | duplicates
@@ -82,7 +84,7 @@ export default function DeckDetail() {
         a.click();
         URL.revokeObjectURL(url);
       })
-      .catch(() => alert('Failed to export deck. Please try again.'));
+      .catch(() => alert(t('deckDetail.failedExport')));
   };
 
   const handleToggleShare = async () => {
@@ -148,7 +150,7 @@ export default function DeckDetail() {
       loadMarkedCards();
       loadDuplicates();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to mark duplicates. Please try again.');
+      alert(err.response?.data?.message || t('deckDetail.failedMarkDuplicates'));
     }
   };
 
@@ -246,17 +248,17 @@ export default function DeckDetail() {
       await api.post(`/statistics/cards/${cardId}/mark`);
       loadMarkedCards();
     } catch {
-      alert('Failed to update pin. Please try again.');
+      alert(t('deckDetail.failedPin'));
     }
   };
 
   const handleClearAllPins = async () => {
-    if (!window.confirm('Clear all pins for this deck?')) return;
+    if (!window.confirm(t('deckDetail.clearPinsConfirm'))) return;
     try {
       await api.delete(`/statistics/decks/${id}/marks`);
       loadMarkedCards();
     } catch {
-      alert('Failed to clear pins. Please try again.');
+      alert(t('deckDetail.failedClearPins'));
     }
   };
 
@@ -271,14 +273,14 @@ export default function DeckDetail() {
       setEditingCard(null);
       load();
     } catch (err) {
-      setEditError(err.response?.data?.message || 'Failed to save card');
+      setEditError(err.response?.data?.message || t('deckDetail.failedSaveCard'));
     }
   };
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadMarkedCards(); }, [loadMarkedCards]);
 
-  if (!deck) return <div className="p-8 text-center text-gray-400">Loading…</div>;
+  if (!deck) return <div className="p-8 text-center text-gray-400">{t('common.loading')}</div>;
 
   const cards = deck.cards || [];
   const isActiveSession = (mode === 'study' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
@@ -287,7 +289,7 @@ export default function DeckDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/decks" className="text-indigo-600 font-medium hover:underline">← Back to Decks</Link>
+        <Link to="/decks" className="text-indigo-600 font-medium hover:underline">{t('nav.backToDecks')}</Link>
         <span className="text-gray-600 font-medium">{deck.name}</span>
         <button
           onClick={handleToggleShare}
@@ -297,7 +299,7 @@ export default function DeckDetail() {
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
           }`}
         >
-          {deck.is_public ? '🌐 Public' : '🔒 Private'}
+          {deck.is_public ? t('deckDetail.public') : t('deckDetail.private')}
         </button>
       </nav>
 
@@ -315,7 +317,7 @@ export default function DeckDetail() {
                     : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
                 }`}
               >
-                {m === 'list' ? 'Cards' : m === 'study' ? 'Study' : m === 'trivia' ? '🎯 Trivia' : m === 'fill' ? '✏️ Fill' : m === 'add' ? '+ Add Card' : m === 'bulk' ? '⚡ Bulk Add' : m === 'import' ? 'Import CSV' : '🔍 Duplicates'}
+                {m === 'list' ? t('deckDetail.modeCards') : m === 'study' ? t('deckDetail.modeStudy') : m === 'trivia' ? t('deckDetail.modeTrivia') : m === 'fill' ? t('deckDetail.modeFill') : m === 'add' ? t('deckDetail.modeAdd') : m === 'bulk' ? t('deckDetail.modeBulk') : m === 'import' ? t('deckDetail.modeImport') : t('deckDetail.modeDuplicates')}
               </button>
             ))}
           {!isActiveSession && (
@@ -323,7 +325,7 @@ export default function DeckDetail() {
               onClick={handleExport}
               className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50"
             >
-              ⬇ Export CSV
+              {t('deckDetail.exportCsv')}
             </button>
           )}
         </div>
@@ -332,18 +334,18 @@ export default function DeckDetail() {
           <div>
             {markedCardIds.size > 0 && (
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 text-sm text-orange-700 flex justify-between items-center">
-                <span>📌 <span className="font-medium">{markedCardIds.size} pinned card{markedCardIds.size !== 1 ? 's' : ''}</span> — scroll down to find them highlighted</span>
+                <span>{t('deckDetail.pinnedMsg', { n: markedCardIds.size })}</span>
                 <button
                   onClick={handleClearAllPins}
                   className="ml-4 text-xs text-orange-600 hover:text-orange-800 border border-orange-300 rounded px-2 py-1 hover:bg-orange-100 transition"
                 >
-                  Clear all pins
+                  {t('deckDetail.clearAllPins')}
                 </button>
               </div>
             )}
             {cards.length === 0 ? (
               <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-                No cards yet. Add some or import a CSV!
+                {t('deckDetail.noCards')}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -353,7 +355,7 @@ export default function DeckDetail() {
                       <div className="space-y-3">
                         {editError && <p className="text-red-500 text-sm">{editError}</p>}
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Question</label>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">{t('deckDetail.question')}</label>
                           <textarea
                             value={editingCard.question}
                             onChange={(e) => setEditingCard({ ...editingCard, question: e.target.value })}
@@ -362,7 +364,7 @@ export default function DeckDetail() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Answer</label>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">{t('deckDetail.answer')}</label>
                           <textarea
                             value={editingCard.answer}
                             onChange={(e) => setEditingCard({ ...editingCard, answer: e.target.value })}
@@ -371,12 +373,12 @@ export default function DeckDetail() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Context (optional)</label>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">>{t('deckDetail.contextOptional')}</label>
                           <textarea
                             value={editingCard.context || ''}
                             onChange={(e) => setEditingCard({ ...editingCard, context: e.target.value })}
                             rows={2}
-                            placeholder="Additional context or hint…"
+                            placeholder={t('deckDetail.additionalContext')}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           />
                         </div>
@@ -402,7 +404,7 @@ export default function DeckDetail() {
                           <button
                             onClick={() => handleTogglePin(card.id)}
                             className={`ml-1 shrink-0 text-base leading-none ${markedCardIds.has(card.id) ? 'text-orange-500' : 'text-gray-300 hover:text-orange-400'}`}
-                            title={markedCardIds.has(card.id) ? 'Remove pin' : 'Pin card'}
+                            title={markedCardIds.has(card.id) ? t('deckDetail.removePin') : t('deckDetail.pinCard')}
                           >
                             📌
                           </button>
@@ -420,7 +422,7 @@ export default function DeckDetail() {
                           </button>
                           <button
                             onClick={async () => {
-                              if (!window.confirm('Delete card?')) return;
+                              if (!window.confirm(t('deckDetail.deleteCardConfirm'))) return;
                               await api.delete(`/cards/${card.id}`);
                               load();
                             }}
@@ -447,23 +449,23 @@ export default function DeckDetail() {
               if (mode === 'fill' && fillEligible.length === 0) {
                 return (
                   <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-                    No cards with a single-word answer found. Fill mode only works with 1-word answers.
+                    {t('deckDetail.noSingleWord')}
                   </div>
                 );
               }
               return (
                 <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    {mode === 'study' ? 'Study Session Setup' : mode === 'trivia' ? 'Trivia Session Setup' : 'Fill-in Session Setup'}
+                    {mode === 'study' ? t('deckDetail.studySetup') : mode === 'trivia' ? t('deckDetail.triviaSetup') : t('deckDetail.fillSetup')}
                   </h3>
                   {mode === 'fill' && (
                     <p className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4">
-                      ✏️ Only cards with a single-word answer will be included ({fillEligible.length} of {cards.length} cards).
+                      {t('deckDetail.fillOnly', { n: fillEligible.length, total: cards.length })}
                     </p>
                   )}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Cards to study</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('deckDetail.cardsToStudy')}</label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -472,7 +474,7 @@ export default function DeckDetail() {
                             onChange={() => setConfigCardCount('all')}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">All cards ({mode === 'fill' ? fillEligible.length : cards.length})</span>
+                          <span className="text-sm">{t('deckDetail.allCards', { n: mode === 'fill' ? fillEligible.length : cards.length })}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -502,7 +504,7 @@ export default function DeckDetail() {
                         onChange={() => setShuffle(!shuffle)}
                         className="text-indigo-600"
                       />
-                      <span className="text-sm">🔀 Shuffle cards</span>
+                      <span className="text-sm">{t('deckDetail.shuffle')}</span>
                     </label>
                     {mode !== 'fill' && (
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -512,7 +514,7 @@ export default function DeckDetail() {
                           onChange={() => setInvertCards(!invertCards)}
                           className="text-indigo-600"
                         />
-                        <span className="text-sm">🔄 Invert questions and answers</span>
+                        <span className="text-sm">{t('deckDetail.invert')}</span>
                       </label>
                     )}
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -522,12 +524,12 @@ export default function DeckDetail() {
                         onChange={() => setHideKnown(!hideKnown)}
                         className="text-indigo-600"
                       />
-                      <span className="text-sm">⭐ Hide known cards</span>
+                      <span className="text-sm">{t('deckDetail.hideKnown')}</span>
                     </label>
                     {mode === 'study' && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          ⏱ Auto-flip timer
+                          {t('deckDetail.autoFlip')}
                         </label>
                         <div className="flex items-center gap-2">
                           <input
@@ -536,7 +538,7 @@ export default function DeckDetail() {
                             onChange={() => setAutoFlipDelay(autoFlipDelay > 0 ? 0 : 5)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">Flip card automatically after</span>
+                          <span className="text-sm">{t('deckDetail.flipAfter')}</span>
                           {autoFlipDelay > 0 && (
                             <input
                               type="number"
@@ -547,7 +549,7 @@ export default function DeckDetail() {
                               className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                             />
                           )}
-                          {autoFlipDelay > 0 && <span className="text-sm text-gray-500">seconds</span>}
+                          {autoFlipDelay > 0 && <span className="text-sm text-gray-500">{t('deckDetail.seconds')}</span>}
                         </div>
                       </div>
                     )}
@@ -560,7 +562,7 @@ export default function DeckDetail() {
                             onChange={() => setFillWeakMode(!fillWeakMode)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">🔤 Modo débil (ignorar acentos y tolerar pequeños errores)</span>
+                          <span className="text-sm">{t('deckDetail.fillWeak')}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -569,7 +571,7 @@ export default function DeckDetail() {
                             onChange={() => setFillShowCharCount(!fillShowCharCount)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">🔢 Mostrar contador de caracteres</span>
+                          <span className="text-sm">{t('deckDetail.fillCharCount')}</span>
                         </label>
                       </>
                     )}
@@ -582,11 +584,11 @@ export default function DeckDetail() {
                             onChange={() => setIncludeFillCards(!includeFillCards)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">🔀 Mix Fill cards (random)</span>
+                          <span className="text-sm">{t('deckDetail.mixFill')}</span>
                         </label>
                         {includeFillCards && (
                           <div className="ml-6 flex items-center gap-2">
-                            <span className="text-sm text-gray-600">Percentage of Fill cards:</span>
+                            <span className="text-sm text-gray-600">{t('deckDetail.fillPercentage')}</span>
                             <input
                               type="number"
                               min={10}
@@ -606,23 +608,23 @@ export default function DeckDetail() {
                     onClick={handleStartSession}
                     className="mt-6 w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
                   >
-                    Start Session
+                    {t('deckDetail.startSession')}
                   </button>
                 </div>
               );
             })()
           ) : studyPhase === 'complete' ? (
             <div className="bg-white rounded-xl shadow p-8 text-center max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-indigo-700 mb-2"><span aria-hidden="true">🎉 </span>¡Práctica terminada!</h3>
-              <p className="text-gray-500 mb-6">Has completado todas las tarjetas de esta sesión.</p>
+              <h3 className="text-2xl font-bold text-indigo-700 mb-2"><span aria-hidden="true">🎉 </span>{t('deckDetail.sessionDone')}</h3>
+              <p className="text-gray-500 mb-6">{t('deckDetail.sessionDoneDesc')}</p>
               <div className="flex justify-center gap-10 mb-8">
                 <div>
                   <p className="text-3xl font-bold text-green-600">{liveCounts.correct}</p>
-                  <p className="text-sm text-gray-500">Correctas</p>
+                  <p className="text-sm text-gray-500">{t('deckDetail.sessionCorrect')}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-red-500">{liveCounts.wrong}</p>
-                  <p className="text-sm text-gray-500">Incorrectas</p>
+                  <p className="text-sm text-gray-500">{t('deckDetail.sessionWrong')}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-gray-700">
@@ -630,7 +632,7 @@ export default function DeckDetail() {
                       ? Math.round((liveCounts.correct / (liveCounts.correct + liveCounts.wrong)) * 100)
                       : 0}%
                   </p>
-                  <p className="text-sm text-gray-500">Precisión</p>
+                  <p className="text-sm text-gray-500">{t('deckDetail.sessionAccuracy')}</p>
                 </div>
               </div>
               <div className="flex gap-4 justify-center">
@@ -641,21 +643,21 @@ export default function DeckDetail() {
                   }}
                   className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
                 >
-                  🔄 Volver al inicio
+                  {t('deckDetail.restartSession')}
                 </button>
                 <button
                   onClick={() => handleModeChange('list')}
                   className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition"
                 >
-                  ✓ Terminar sesión
+                  {t('deckDetail.endSessionBtn')}
                 </button>
               </div>
             </div>
           ) : (
             <div>
               <div className="flex justify-center items-center gap-8 mb-4 text-sm font-semibold">
-                <span className="text-green-600">✓ Correct: {liveCounts.correct}</span>
-                <span className="text-red-500">✗ Wrong: {liveCounts.wrong}</span>
+                <span className="text-green-600">{t('deckDetail.correctCount', { n: liveCounts.correct })}</span>
+                <span className="text-red-500">{t('deckDetail.wrongCount', { n: liveCounts.wrong })}</span>
                 <button
                   onClick={() => {
                     saveSession(deck.id);
@@ -665,7 +667,7 @@ export default function DeckDetail() {
                   aria-label="End study session"
                   className="px-4 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition"
                 >
-                  ■ End Session
+                  {t('deckDetail.endSession')}
                 </button>
               </div>
               {mode === 'study' ? (
@@ -712,35 +714,35 @@ export default function DeckDetail() {
           <div>
             {duplicateGroups === null ? (
               <div className="bg-white rounded-xl shadow p-8 text-center">
-                <p className="text-gray-500 mb-4">Find cards with the same question so you can review and clean them up.</p>
+                <p className="text-gray-500 mb-4">{t('deckDetail.duplicatesDesc')}</p>
                 <button
                   onClick={loadDuplicates}
                   disabled={duplicateLoading}
                   className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
                 >
-                  {duplicateLoading ? 'Searching…' : '🔍 Search for duplicates'}
+                  {duplicateLoading ? t('deckDetail.searching') : t('deckDetail.searchDuplicates')}
                 </button>
               </div>
             ) : duplicateGroups.total_duplicates === 0 ? (
               <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-                ✅ No duplicate cards found in this deck.
+                {t('deckDetail.noDuplicates')}
               </div>
             ) : (
               <div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 text-sm text-yellow-800 flex flex-wrap justify-between items-center gap-2">
-                  <span>⚠️ <span className="font-medium">{duplicateGroups.total_duplicates} duplicate card{duplicateGroups.total_duplicates !== 1 ? 's' : ''}</span> found across <span className="font-medium">{duplicateGroups.groups.length} group{duplicateGroups.groups.length !== 1 ? 's' : ''}</span></span>
+                  <span>{t('deckDetail.duplicatesFound', { total: duplicateGroups.total_duplicates, groups: duplicateGroups.groups.length })}</span>
                   <div className="flex gap-2">
                     <button
                       onClick={handleMarkDuplicates}
                       className="text-xs bg-orange-500 text-white border border-orange-400 rounded px-3 py-1 hover:bg-orange-600 transition"
                     >
-                      📌 Mark all duplicates
+                      {t('deckDetail.markAllDuplicates')}
                     </button>
                     <button
                       onClick={loadDuplicates}
                       className="text-xs text-yellow-700 border border-yellow-300 rounded px-2 py-1 hover:bg-yellow-100 transition"
                     >
-                      🔄 Refresh
+                      {t('deckDetail.refresh')}
                     </button>
                   </div>
                 </div>
@@ -748,7 +750,7 @@ export default function DeckDetail() {
                   {duplicateGroups.groups.map((group, gi) => (
                     <div key={gi} className="bg-white rounded-xl shadow p-4">
                       <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-2">
-                        Group {gi + 1} — {group.length} cards with the same question
+                        {t('deckDetail.duplicateGroup', { n: gi + 1, count: group.length })}
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {group.map((card) => (
@@ -759,20 +761,20 @@ export default function DeckDetail() {
                               <button
                                 onClick={() => handleTogglePin(card.id)}
                                 className={`text-xs ${markedCardIds.has(card.id) ? 'text-orange-500 hover:text-orange-700' : 'text-gray-400 hover:text-orange-500'}`}
-                                title={markedCardIds.has(card.id) ? 'Remove pin' : 'Pin card'}
+                                title={markedCardIds.has(card.id) ? t('deckDetail.removePin') : t('deckDetail.pinCard')}
                               >
-                                {markedCardIds.has(card.id) ? '📌 Pinned' : '📌 Pin'}
+                                {markedCardIds.has(card.id) ? t('deckDetail.pinnedCard') : t('deckDetail.pinCardBtn')}
                               </button>
                               <button
                                 onClick={async () => {
-                                  if (!window.confirm('Delete this card?')) return;
+                                  if (!window.confirm(t('deckDetail.deleteCardConfirm2'))) return;
                                   await api.delete(`/cards/${card.id}`);
                                   load();
                                   loadDuplicates();
                                 }}
                                 className="text-xs text-red-400 hover:text-red-600"
                               >
-                                Delete
+                                {t('common.delete')}
                               </button>
                             </div>
                           </div>

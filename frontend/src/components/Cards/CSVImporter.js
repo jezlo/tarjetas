@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function CSVImporter({ deckId, onImported }) {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export default function CSVImporter({ deckId, onImported }) {
       setFile(null);
       onImported();
     } catch (err) {
-      setError(err.response?.data?.message || 'Import failed');
+      setError(err.response?.data?.message || t('csv.failed'));
     } finally {
       setLoading(false);
     }
@@ -31,11 +33,9 @@ export default function CSVImporter({ deckId, onImported }) {
 
   return (
     <div className="bg-white rounded-xl shadow p-6 max-w-lg mx-auto">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Import CSV</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">{t('csv.title')}</h3>
       <p className="text-sm text-gray-500 mb-4">
-        The CSV must have <code className="bg-gray-100 px-1 rounded">question</code> and{' '}
-        <code className="bg-gray-100 px-1 rounded">answer</code> columns. An optional{' '}
-        <code className="bg-gray-100 px-1 rounded">context</code> column can also be included.
+        {t('csv.desc', { question: 'question', answer: 'answer', context: 'context' })}
       </p>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {message && <p className="text-green-600 text-sm mb-3">{message}</p>}
@@ -52,7 +52,7 @@ export default function CSVImporter({ deckId, onImported }) {
           disabled={loading || !file}
           className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
         >
-          {loading ? 'Importing…' : 'Import'}
+          {loading ? t('csv.importing') : t('csv.import')}
         </button>
       </form>
     </div>

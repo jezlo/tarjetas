@@ -19,6 +19,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     last_login = db.Column(db.DateTime, nullable=True)
+    language = db.Column(db.String(10), default='es', server_default='es', nullable=False)
 
     decks = db.relationship('Deck', back_populates='owner', cascade='all, delete-orphan')
     categories = db.relationship('DeckCategory', back_populates='user', cascade='all, delete-orphan')
@@ -31,6 +32,7 @@ class User(db.Model):
             'created_at': self.created_at.isoformat(),
             'is_admin': self.is_admin,
             'last_login': self.last_login.isoformat() if self.last_login else None,
+            'language': self.language,
         }
 
 

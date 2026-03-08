@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function BulkAddCards({ deckId, onSaved }) {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -39,18 +41,18 @@ export default function BulkAddCards({ deckId, onSaved }) {
 
     const cards = parseCards(text);
     if (cards.length === 0) {
-      setError('No valid cards found. Each line must be: question, answer[, context]');
+      setError(t('bulk.noValid'));
       return;
     }
 
     setLoading(true);
     try {
       await Promise.all(cards.map((card) => api.post(`/decks/${deckId}/cards`, card)));
-      setMessage(`${cards.length} card${cards.length !== 1 ? 's' : ''} added successfully.`);
+      setMessage(t('bulk.success', { n: cards.length }));
       setText('');
       onSaved();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add cards');
+      setError(err.response?.data?.message || t('bulk.failed'));
     } finally {
       setLoading(false);
     }
@@ -60,11 +62,11 @@ export default function BulkAddCards({ deckId, onSaved }) {
 
   return (
     <div className="bg-white rounded-xl shadow p-6 max-w-2xl mx-auto">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Bulk Add Cards</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">{t('bulk.title')}</h3>
       <p className="text-sm text-gray-500 mb-4">
-        Enter one card per line in the format:{' '}
-        <code className="bg-gray-100 px-1 rounded">question, answer[, context]</code>
-        {' '}— the <code className="bg-gray-100 px-1 rounded">context</code> column is optional.
+        {t('bulk.desc')}{' '}
+        <code className="bg-gray-100 px-1 rounded">{t('bulk.format')}</code>
+        {' '}— {t('bulk.contextOptional', { context: 'context' })}
       </p>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {message && <p className="text-green-600 text-sm mb-3">{message}</p>}
@@ -78,14 +80,14 @@ export default function BulkAddCards({ deckId, onSaved }) {
         />
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-400">
-            {parsedCards.length} card{parsedCards.length !== 1 ? 's' : ''} detected
+            {t('bulk.detected', { n: parsedCards.length })}
           </span>
           <button
             type="submit"
             disabled={loading || parsedCards.length === 0}
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
           >
-            {loading ? 'Adding…' : 'Add All Cards'}
+            {loading ? t('bulk.adding') : t('bulk.addAll')}
           </button>
         </div>
       </form>
