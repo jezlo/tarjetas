@@ -2,10 +2,32 @@ import React, { useState, useRef, useEffect } from 'react';
 import api from '../../services/api';
 
 function normalizeAnswer(str) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode }) {
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+      else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+const MAX_LEVENSHTEIN_DISTANCE = 2;
+
+export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode, showCharCount }) {
   const [inputValue, setInputValue] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
@@ -22,11 +44,14 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userAnswer = inputValue.trim().toLowerCase();
-    const correctAnswer = card.answer.trim().toLowerCase();
-    const correct = weakMode
-      ? normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer)
-      : userAnswer === correctAnswer;
+    const userNorm = normalizeAnswer(inputValue);
+    const correctNorm = normalizeAnswer(card.answer);
+    let correct;
+    if (weakMode) {
+      correct = userNorm === correctNorm || levenshtein(userNorm, correctNorm) <= MAX_LEVENSHTEIN_DISTANCE;
+    } else {
+      correct = userNorm === correctNorm;
+    }
     setIsCorrect(correct);
     setSubmitted(true);
     try {
@@ -65,6 +90,11 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoComplete="off"
             />
+            {showCharCount && (
+              <p className="text-xs text-gray-400 text-right">
+                Caracteres: {inputValue.length}/{card.answer.trim().length}
+              </p>
+            )}
             <button
               type="submit"
               disabled={!inputValue.trim()}
@@ -84,6 +114,9 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
               </p>
             )}
             <p className="text-sm text-gray-500 mt-1">Your answer: {inputValue}</p>
+            {!isCorrect && card.context && (
+              <p className="text-sm text-blue-600 mt-2 italic">💡 {card.context}</p>
+            )}
           </div>
         )}
       </div>
