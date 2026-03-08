@@ -170,11 +170,23 @@ export default function Statistics() {
             {sessions.map((s) => {
               const total = s.correct_count + s.wrong_count;
               const accuracy = total ? Math.round((s.correct_count / total) * 100) : 0;
+              const sessionTypeLabel = t(`stats.sessionTypes.${s.session_type}`);
+              const sessionTypeBadgeColors = {
+                trivia: 'bg-yellow-100 text-yellow-700',
+                fill: 'bg-green-100 text-green-700',
+                study: 'bg-indigo-100 text-indigo-700',
+              };
+              const sessionTypeBadgeColor = sessionTypeBadgeColors[s.session_type] || sessionTypeBadgeColors.study;
               return (
                 <div key={s.id} className="bg-white rounded-xl shadow p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-semibold text-gray-800">{s.deck_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-800">{s.deck_name}</p>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sessionTypeBadgeColor}`}>
+                          {sessionTypeLabel}
+                        </span>
+                      </div>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDate(s.started_at)}</p>
                     </div>
                     <div className="flex items-center gap-3">

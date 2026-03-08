@@ -100,7 +100,12 @@
     "clearConfirm": "Clear all statistics? This cannot be undone.",
     "failedDelete": "Failed to delete session. Please try again.",
     "failedDeleteAll": "Failed to delete sessions. Please try again.",
-    "failedClear": "Failed to clear statistics. Please try again."
+    "failedClear": "Failed to clear statistics. Please try again.",
+    "sessionTypes": {
+      "study": "Study",
+      "trivia": "Trivia",
+      "fill": "Fill"
+    }
   },
   "decks": {
     "myDecks": "My Decks",

@@ -100,7 +100,12 @@
     "clearConfirm": "¿Borrar todas las estadísticas? Esto no se puede deshacer.",
     "failedDelete": "Error al eliminar la sesión. Inténtalo de nuevo.",
     "failedDeleteAll": "Error al eliminar las sesiones. Inténtalo de nuevo.",
-    "failedClear": "Error al borrar las estadísticas. Inténtalo de nuevo."
+    "failedClear": "Error al borrar las estadísticas. Inténtalo de nuevo.",
+    "sessionTypes": {
+      "study": "Estudio",
+      "trivia": "Trivia",
+      "fill": "Rellenar"
+    }
   },
   "decks": {
     "myDecks": "Mis mazos",
