@@ -10,7 +10,6 @@ services:
       - db_data:/app/data
     environment:
       - DATABASE_URI=sqlite:////app/data/tarjetas.db
-      - TZ=UTC
   frontend:
     build:
       context: .

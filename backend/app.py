@@ -1,9 +1,6 @@
-import os
-
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from sqlalchemy import event
 
 from config import Config
 from models import db
@@ -37,7 +34,6 @@ def create_app(config_class=Config):
     app.register_blueprint(health_bp, url_prefix='/api/health')
 
     with app.app_context():
-        _configure_db_timezone(app, db)
         db.create_all()
         _migrate_db(db)
 
@@ -121,46 +117,4 @@ def _migrate_db(db):
     # Ensure the singleton AppSettings row exists (initialised from env var).
     from models import AppSettings
     AppSettings.get()
-
-
-def _configure_db_timezone(app, db):
-    """Apply the TZ environment variable to database connections.
-
-    For SQLite the OS-level TZ variable is sufficient. For PostgreSQL and MySQL
-    an explicit SET command is executed on every new connection so that
-    timestamp comparisons and NOW() calls use the expected timezone.
-    """
-    import re
-
-    tz = os.getenv('TZ')
-    if not tz:
-        return
-
-    # Validate timezone string to prevent SQL injection.
-    # Valid timezone names only contain letters, digits, underscores,
-    # hyphens, forward slashes, and plus/minus signs (e.g. "America/New_York",
-    # "UTC", "Etc/GMT+5").
-    if not re.fullmatch(r'[A-Za-z0-9_/+\-]+', tz):
-        raise ValueError(f"Invalid TZ value: {tz!r}")
-
-    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
-
-    if db_uri.startswith('sqlite'):
-        # SQLite has no session-level timezone setting; the OS TZ env var
-        # (already exported by Docker) is enough.
-        return
-
-    if db_uri.startswith('postgresql'):
-        @event.listens_for(db.engine, 'connect')
-        def _set_pg_timezone(dbapi_connection, connection_record):
-            cursor = dbapi_connection.cursor()
-            cursor.execute(f"SET TIME ZONE '{tz}'")
-            cursor.close()
-
-    elif db_uri.startswith('mysql'):
-        @event.listens_for(db.engine, 'connect')
-        def _set_mysql_timezone(dbapi_connection, connection_record):
-            cursor = dbapi_connection.cursor()
-            cursor.execute(f"SET time_zone = '{tz}'")
-            cursor.close()
 

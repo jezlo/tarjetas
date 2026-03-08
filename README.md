@@ -142,7 +142,6 @@ npm start   # runs on http://localhost:3000, proxies /api → localhost:5000
 | `DATABASE_URI` | `sqlite:///tarjetas.db` (manual) or `sqlite:////app/data/tarjetas.db` (Docker) | SQLAlchemy database URI |
 | `FLASK_ENV` | `development` | Flask environment mode |
 | `REACT_APP_REGISTRATION_ENABLED` | `true` | Allow public registration (set to `false` for production) |
-| `TZ` | `UTC` | Container timezone applied to the database connection (e.g. `America/Argentina/Buenos_Aires`) |
 
 ---
 
