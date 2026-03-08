@@ -10,6 +10,7 @@ import BrowseDecks from './components/Decks/BrowseDecks';
 import Statistics from './components/Statistics/Statistics';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import CategoryManager from './components/Categories/CategoryManager';
+import AIPrompts from './components/AIPrompts/AIPrompts';
 import { isAuthenticated, isAdmin } from './utils/authUtils';
 import { LanguageProvider } from './contexts/LanguageContext';
 
@@ -87,6 +88,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CategoryManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prompts"
+          element={
+            <ProtectedRoute>
+              <AIPrompts />
             </ProtectedRoute>
           }
         />

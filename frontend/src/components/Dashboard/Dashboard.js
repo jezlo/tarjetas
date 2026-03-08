@@ -31,6 +31,7 @@ export default function Dashboard() {
           <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
           <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.browse')}</Link>
           <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.stats')}</Link>
+          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
           <Link to="/profile" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.profile')}</Link>
           {user.is_admin && (
             <Link to="/admin" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.admin')}</Link>

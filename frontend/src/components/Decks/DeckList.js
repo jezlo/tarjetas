@@ -153,6 +153,7 @@ export default function DeckList() {
         <div className="flex items-center gap-4">
           <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.stats')}</Link>
           <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.browse')}</Link>
+          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
           <button
             onClick={() => { localStorage.removeItem('access_token'); localStorage.removeItem('user'); navigate('/login'); }}
             className="text-sm text-red-500 hover:underline"

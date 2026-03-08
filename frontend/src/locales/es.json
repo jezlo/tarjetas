@@ -12,7 +12,8 @@
     "browse": "Explorar mazos",
     "myDecks": "Mis mazos",
     "categories": "Categorías",
-    "backToDecks": "← Volver a mazos"
+    "backToDecks": "← Volver a mazos",
+    "prompts": "Prompts IA"
   },
   "common": {
     "cancel": "Cancelar",
@@ -346,5 +347,66 @@
     "weak": "suave",
     "charCount": "Caracteres: {n}/{total}",
     "answer": "Respuesta"
+  },
+  "prompts": {
+    "title": "Prompts para IA",
+    "subtitle": "Usa estos prompts para generar flashcards con inteligencia artificial. Completa los campos y copia el prompt listo para usar.",
+    "copy": "📋 Copiar",
+    "copied": "✓ ¡Copiado!",
+    "placeholderHint": "Valor para",
+    "items": {
+      "generalFlashcards": {
+        "name": "Flashcards generales",
+        "text": "Genera [NÚMERO] flashcards sobre [TEMA]. Para cada una, escribe una pregunta clara y una respuesta concisa."
+      },
+      "vocabularyFlashcards": {
+        "name": "Flashcards de vocabulario",
+        "text": "Crea [NÚMERO] flashcards de vocabulario. Para cada una, muestra la palabra en [IDIOMA 1] y su traducción en [IDIOMA 2], más un ejemplo de uso en oración."
+      },
+      "studyQuestions": {
+        "name": "Preguntas de estudio",
+        "text": "Genera [NÚMERO] preguntas de estudio sobre [TEMA]. Las preguntas deben evaluar comprensión, no solo memorización. Incluye la respuesta para cada una."
+      },
+      "basicConcepts": {
+        "name": "Conceptos básicos",
+        "text": "Lista los [NÚMERO] conceptos fundamentales de [TEMA] en formato flashcard. La pregunta es el nombre del concepto y la respuesta su definición en 1-2 oraciones."
+      },
+      "rulesFormulas": {
+        "name": "Reglas y fórmulas",
+        "text": "Crea flashcards con las reglas y fórmulas principales de [TEMA]. La pregunta es el nombre de la regla o fórmula y la respuesta es su enunciado y cómo aplicarla."
+      },
+      "quickMemorization": {
+        "name": "Memorización rápida",
+        "text": "Genera [NÚMERO] flashcards de memorización rápida sobre [TEMA]. Las respuestas deben ser muy breves (máximo 3-5 palabras) para facilitar la retención."
+      },
+      "comparisons": {
+        "name": "Comparaciones",
+        "text": "Crea [NÚMERO] flashcards comparativas sobre [TEMA]. Cada pregunta debe pedir comparar dos conceptos relacionados, del tipo: ¿En qué se diferencia X de Y?"
+      },
+      "progressiveDifficulty": {
+        "name": "Dificultad progresiva",
+        "text": "Genera [NÚMERO] flashcards sobre [TEMA] ordenadas de menor a mayor dificultad. Las primeras deben ser básicas y las últimas de nivel avanzado."
+      },
+      "fillBlanks1": {
+        "name": "Rellenar espacios (1)",
+        "text": "Crea [NÚMERO] oraciones sobre [TEMA] con una palabra clave en blanco (marcada con ___). La pregunta es la oración incompleta y la respuesta es la palabra que falta."
+      },
+      "fillBlanks2": {
+        "name": "Rellenar espacios (2)",
+        "text": "Genera [NÚMERO] ejercicios de completar la oración en [IDIOMA]. La pregunta es la oración con ___ y la respuesta es la palabra o frase que falta."
+      },
+      "fillBlanks3": {
+        "name": "Rellenar espacios (3)",
+        "text": "Crea flashcards tipo cloze para memorizar [TEMA]. Toma frases o definiciones importantes y reemplaza la parte clave con ___. La respuesta debe ser esa palabra clave."
+      },
+      "everydayVocabulary": {
+        "name": "Vocabulario cotidiano",
+        "text": "Genera [NÚMERO] flashcards de vocabulario cotidiano en [IDIOMA]. Incluye palabras usadas en situaciones diarias, con su traducción y un ejemplo en conversación."
+      },
+      "everydayVerbs": {
+        "name": "Verbos cotidianos",
+        "text": "Crea flashcards para los [NÚMERO] verbos más usados en [IDIOMA]. Para cada verbo incluye: infinitivo, significado y un ejemplo de conjugación en presente."
+      }
+    }
   }
 }
