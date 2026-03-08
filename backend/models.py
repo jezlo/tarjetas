@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
 
 db = SQLAlchemy()
 
@@ -181,6 +182,24 @@ class DeckLike(db.Model):
     __table_args__ = (db.UniqueConstraint('deck_id', 'user_id', name='uq_deck_like'),)
 
     deck = db.relationship('Deck', back_populates='likes')
+
+
+class AppSettings(db.Model):
+    __tablename__ = 'app_settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    registration_enabled = db.Column(db.Boolean, default=True, nullable=False)
+
+    @classmethod
+    def get(cls):
+        """Return the singleton settings row, creating it if it does not exist."""
+        settings = cls.query.first()
+        if settings is None:
+            enabled = os.getenv('REGISTRATION_ENABLED', 'true').lower() != 'false'
+            settings = cls(registration_enabled=enabled)
+            db.session.add(settings)
+            db.session.commit()
+        return settings
 
 
 def get_or_create_default_categories(user_id):

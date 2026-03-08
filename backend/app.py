@@ -102,4 +102,7 @@ def _migrate_db(db):
             conn.execute(text('ALTER TABLE decks ADD COLUMN category_id INTEGER REFERENCES deck_categories(id)'))
             conn.commit()
         _assign_existing_decks_to_default_category(db)
+    # Ensure the singleton AppSettings row exists (initialised from env var).
+    from models import AppSettings
+    AppSettings.get()
 
