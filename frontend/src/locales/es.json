@@ -357,55 +357,55 @@
     "items": {
       "generalFlashcards": {
         "name": "Flashcards generales",
-        "text": "Genera [NÚMERO] flashcards sobre [TEMA]. Para cada una, escribe una pregunta clara y una respuesta concisa."
+        "text": "Genera 20 flashcards sobre [TEMA].\n\nFormato CSV con 3 columnas:\npregunta, respuesta, contexto.\n\nLa pregunta debe evaluar conocimiento.\nLa respuesta debe ser corta.\nEl contexto debe explicar brevemente o dar un ejemplo.\n\nNo agregues texto fuera del CSV."
       },
       "vocabularyFlashcards": {
         "name": "Flashcards de vocabulario",
-        "text": "Crea [NÚMERO] flashcards de vocabulario. Para cada una, muestra la palabra en [IDIOMA 1] y su traducción en [IDIOMA 2], más un ejemplo de uso en oración."
+        "text": "Genera 30 flashcards para aprender [IDIOMA o TEMA DE VOCABULARIO].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLa pregunta debe ser la palabra o frase.\nLa respuesta debe ser la traducción.\nEl contexto debe ser una oración de ejemplo.\n\nDevuelve solo el CSV."
       },
       "studyQuestions": {
         "name": "Preguntas de estudio",
-        "text": "Genera [NÚMERO] preguntas de estudio sobre [TEMA]. Las preguntas deben evaluar comprensión, no solo memorización. Incluye la respuesta para cada una."
+        "text": "Crea 25 preguntas de estudio sobre [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLa pregunta debe ser clara.\nLa respuesta breve.\nEl contexto debe explicar la respuesta.\n\nEntrega únicamente el CSV."
       },
       "basicConcepts": {
         "name": "Conceptos básicos",
-        "text": "Lista los [NÚMERO] conceptos fundamentales de [TEMA] en formato flashcard. La pregunta es el nombre del concepto y la respuesta su definición en 1-2 oraciones."
+        "text": "Genera 20 flashcards para aprender los conceptos básicos de [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nUsa lenguaje simple.\nEl contexto debe incluir un ejemplo sencillo.\n\nNo incluyas texto fuera del CSV."
       },
       "rulesFormulas": {
         "name": "Reglas y fórmulas",
-        "text": "Crea flashcards con las reglas y fórmulas principales de [TEMA]. La pregunta es el nombre de la regla o fórmula y la respuesta es su enunciado y cómo aplicarla."
+        "text": "Crea 20 flashcards para estudiar reglas o fórmulas de [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLa respuesta debe contener la fórmula o regla.\nEl contexto debe mostrar cómo se usa.\n\nEntrega únicamente el CSV."
       },
       "quickMemorization": {
         "name": "Memorización rápida",
-        "text": "Genera [NÚMERO] flashcards de memorización rápida sobre [TEMA]. Las respuestas deben ser muy breves (máximo 3-5 palabras) para facilitar la retención."
+        "text": "Genera 30 flashcards de memorización rápida sobre [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLa respuesta debe ser muy corta.\nEl contexto debe ayudar a recordar la respuesta.\n\nNo agregues texto adicional."
       },
       "comparisons": {
         "name": "Comparaciones",
-        "text": "Crea [NÚMERO] flashcards comparativas sobre [TEMA]. Cada pregunta debe pedir comparar dos conceptos relacionados, del tipo: ¿En qué se diferencia X de Y?"
+        "text": "Genera 20 flashcards comparando conceptos de [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLa pregunta debe pedir una diferencia o comparación.\nLa respuesta debe ser breve.\nEl contexto debe aclarar la comparación.\n\nDevuelve solo CSV."
       },
       "progressiveDifficulty": {
         "name": "Dificultad progresiva",
-        "text": "Genera [NÚMERO] flashcards sobre [TEMA] ordenadas de menor a mayor dificultad. Las primeras deben ser básicas y las últimas de nivel avanzado."
+        "text": "Genera 25 flashcards sobre [TEMA] ordenadas de fácil a difícil.\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nLas primeras deben ser básicas.\nLas últimas más avanzadas.\n\nEntrega solo el CSV."
       },
       "fillBlanks1": {
         "name": "Rellenar espacios (1)",
-        "text": "Crea [NÚMERO] oraciones sobre [TEMA] con una palabra clave en blanco (marcada con ___). La pregunta es la oración incompleta y la respuesta es la palabra que falta."
+        "text": "Genera 20 flashcards de rellenar espacios sobre [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nReglas:\n- La pregunta debe tener un espacio en blanco usando _____\n- La respuesta debe ser SOLO una palabra.\n- El contexto debe ser una oración que ayude a entender la respuesta.\n\nEntrega solo el CSV."
       },
       "fillBlanks2": {
         "name": "Rellenar espacios (2)",
-        "text": "Genera [NÚMERO] ejercicios de completar la oración en [IDIOMA]. La pregunta es la oración con ___ y la respuesta es la palabra o frase que falta."
+        "text": "Crea 20 flashcards de rellenar espacios sobre [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nReglas:\n- La pregunta debe ser una definición con un espacio _____\n- La respuesta debe ser una sola palabra.\n- El contexto debe dar una explicación breve.\n\nEntrega solo CSV."
       },
       "fillBlanks3": {
         "name": "Rellenar espacios (3)",
-        "text": "Crea flashcards tipo cloze para memorizar [TEMA]. Toma frases o definiciones importantes y reemplaza la parte clave con ___. La respuesta debe ser esa palabra clave."
+        "text": "Genera 30 flashcards de rellenar espacios para memorizar [TEMA].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nReglas:\n- Usa un espacio en blanco _____ en la pregunta.\n- La respuesta debe ser una sola palabra.\n- El contexto debe ayudar a recordar la respuesta.\n\nSolo devuelve CSV."
       },
       "everydayVocabulary": {
         "name": "Vocabulario cotidiano",
-        "text": "Genera [NÚMERO] flashcards de vocabulario cotidiano en [IDIOMA]. Incluye palabras usadas en situaciones diarias, con su traducción y un ejemplo en conversación."
+        "text": "Genera 40 flashcards de vocabulario cotidiano traduciendo palabras de [IDIOMA 1] a [IDIOMA 2].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nReglas:\n- Solo palabras individuales.\n- No usar frases.\n- La respuesta debe ser una sola palabra.\n\nEntrega únicamente el CSV."
       },
       "everydayVerbs": {
         "name": "Verbos cotidianos",
-        "text": "Crea flashcards para los [NÚMERO] verbos más usados en [IDIOMA]. Para cada verbo incluye: infinitivo, significado y un ejemplo de conjugación en presente."
+        "text": "Genera 30 flashcards de verbos cotidianos traduciendo de [IDIOMA 1] a [IDIOMA 2].\n\nFormato CSV:\npregunta, respuesta, contexto.\n\nReglas:\n- La pregunta debe ser un verbo en infinitivo.\n- La respuesta debe ser su traducción en una sola palabra.\n- El contexto debe ser una oración corta usando el verbo.\n\nDevuelve solo el CSV."
       }
     }
   }

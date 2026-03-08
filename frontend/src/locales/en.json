@@ -357,55 +357,55 @@
     "items": {
       "generalFlashcards": {
         "name": "General Flashcards",
-        "text": "Generate [NUMBER] flashcards about [TOPIC]. For each one, write a clear question and a concise answer."
+        "text": "Generate 20 flashcards about [TOPIC].\n\nCSV format with 3 columns:\nquestion, answer, context.\n\nThe question should assess knowledge.\nThe answer should be short.\nThe context should briefly explain or give an example.\n\nDo not add text outside the CSV."
       },
       "vocabularyFlashcards": {
         "name": "Vocabulary Flashcards",
-        "text": "Create [NUMBER] vocabulary flashcards. For each one, show the word in [LANGUAGE 1] and its translation in [LANGUAGE 2], plus a sentence example."
+        "text": "Generate 30 flashcards to learn [LANGUAGE OR VOCABULARY TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nThe question should be the word or phrase.\nThe answer should be the translation.\nThe context should be an example sentence.\n\nReturn only the CSV."
       },
       "studyQuestions": {
         "name": "Study Questions",
-        "text": "Generate [NUMBER] study questions about [TOPIC]. The questions should evaluate comprehension, not just memorization. Include the answer for each."
+        "text": "Create 25 study questions about [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nThe question should be clear.\nThe answer brief.\nThe context should explain the answer.\n\nDeliver only the CSV."
       },
       "basicConcepts": {
         "name": "Basic Concepts",
-        "text": "List the [NUMBER] fundamental concepts of [TOPIC] in flashcard format. The question is the concept name and the answer is its definition in 1-2 sentences."
+        "text": "Generate 20 flashcards to learn the basic concepts of [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nUse simple language.\nThe context should include a simple example.\n\nDo not include text outside the CSV."
       },
       "rulesFormulas": {
         "name": "Rules and Formulas",
-        "text": "Create flashcards with the main rules and formulas of [TOPIC]. The question is the rule or formula name and the answer is its statement and how to apply it."
+        "text": "Create 20 flashcards to study rules or formulas of [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nThe answer should contain the formula or rule.\nThe context should show how it is used.\n\nDeliver only the CSV."
       },
       "quickMemorization": {
         "name": "Quick Memorization",
-        "text": "Generate [NUMBER] quick memorization flashcards about [TOPIC]. Answers should be very brief (maximum 3-5 words) to make retention easier."
+        "text": "Generate 30 quick memorization flashcards about [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nThe answer should be very short.\nThe context should help recall the answer.\n\nDo not add additional text."
       },
       "comparisons": {
         "name": "Comparisons",
-        "text": "Create [NUMBER] comparative flashcards about [TOPIC]. Each question should ask to compare two related concepts, like: What is the difference between X and Y?"
+        "text": "Generate 20 flashcards comparing concepts of [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nThe question should ask for a difference or comparison.\nThe answer should be brief.\nThe context should clarify the comparison.\n\nReturn CSV only."
       },
       "progressiveDifficulty": {
         "name": "Progressive Difficulty",
-        "text": "Generate [NUMBER] flashcards about [TOPIC] ordered from easiest to hardest. The first ones should be basic and the last ones advanced level."
+        "text": "Generate 25 flashcards about [TOPIC] ordered from easy to hard.\n\nCSV format:\nquestion, answer, context.\n\nThe first ones should be basic.\nThe last ones more advanced.\n\nDeliver only the CSV."
       },
       "fillBlanks1": {
         "name": "Fill in the Blanks (1)",
-        "text": "Create [NUMBER] sentences about [TOPIC] with a key word left blank (marked with ___). The question is the incomplete sentence and the answer is the missing word."
+        "text": "Generate 20 fill-in-the-blank flashcards about [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nRules:\n- The question must have a blank space using _____\n- The answer must be ONLY one word.\n- The context must be a sentence that helps understand the answer.\n\nDeliver only the CSV."
       },
       "fillBlanks2": {
         "name": "Fill in the Blanks (2)",
-        "text": "Generate [NUMBER] sentence completion exercises in [LANGUAGE]. The question is the sentence with ___ and the answer is the missing word or phrase."
+        "text": "Create 20 fill-in-the-blank flashcards about [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nRules:\n- The question must be a definition with a blank _____\n- The answer must be a single word.\n- The context must provide a brief explanation.\n\nDeliver only CSV."
       },
       "fillBlanks3": {
         "name": "Fill in the Blanks (3)",
-        "text": "Create cloze-type flashcards to memorize [TOPIC]. Take important phrases or definitions and replace the key part with ___. The answer should be that key word."
+        "text": "Generate 30 fill-in-the-blank flashcards to memorize [TOPIC].\n\nCSV format:\nquestion, answer, context.\n\nRules:\n- Use a blank space _____ in the question.\n- The answer must be a single word.\n- The context should help recall the answer.\n\nReturn CSV only."
       },
       "everydayVocabulary": {
         "name": "Everyday Vocabulary",
-        "text": "Generate [NUMBER] everyday vocabulary flashcards in [LANGUAGE]. Include words used in daily situations, with their translation and a conversation example."
+        "text": "Generate 40 everyday vocabulary flashcards translating words from [LANGUAGE 1] to [LANGUAGE 2].\n\nCSV format:\nquestion, answer, context.\n\nRules:\n- Individual words only.\n- Do not use phrases.\n- The answer must be a single word.\n\nDeliver only the CSV."
       },
       "everydayVerbs": {
         "name": "Everyday Verbs",
-        "text": "Create flashcards for the [NUMBER] most common verbs in [LANGUAGE]. For each verb include: infinitive form, meaning, and a present tense conjugation example."
+        "text": "Generate 30 everyday verb flashcards translating from [LANGUAGE 1] to [LANGUAGE 2].\n\nCSV format:\nquestion, answer, context.\n\nRules:\n- The question must be a verb in the infinitive.\n- The answer must be its translation in a single word.\n- The context must be a short sentence using the verb.\n\nReturn only the CSV."
       }
     }
   }
