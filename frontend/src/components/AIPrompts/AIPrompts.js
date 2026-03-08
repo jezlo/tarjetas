@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getCurrentUser } from '../../utils/authUtils';
+import Navbar from '../Navbar';
 
 const PROMPT_IDS = [
   'generalFlashcards',
@@ -38,18 +37,10 @@ function renderTemplateText(text) {
 }
 
 export default function AIPrompts() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const user = getCurrentUser();
 
   const [values, setValues] = useState({});
   const [copied, setCopied] = useState(null);
-
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
 
   const getValue = (promptId, placeholder) =>
     (values[promptId] && values[promptId][placeholder]) || '';
@@ -100,33 +91,7 @@ export default function AIPrompts() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600">
-          {t('app.name')}
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">
-            {t('nav.decks')}
-          </Link>
-          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">
-            {t('nav.browse')}
-          </Link>
-          <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">
-            {t('nav.stats')}
-          </Link>
-          <Link to="/profile" className="text-gray-600 hover:text-indigo-600 font-medium">
-            {t('nav.profile')}
-          </Link>
-          {user && user.is_admin && (
-            <Link to="/admin" className="text-gray-600 hover:text-indigo-600 font-medium">
-              {t('nav.admin')}
-            </Link>
-          )}
-          <button onClick={logout} className="text-sm text-red-500 hover:underline">
-            {t('nav.logout')}
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">{t('prompts.title')}</h2>

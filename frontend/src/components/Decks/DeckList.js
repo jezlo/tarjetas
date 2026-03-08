@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useTranslation } from '../../hooks/useTranslation';
+import Navbar from '../Navbar';
 
 export default function DeckList() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [decks, setDecks] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -148,20 +148,7 @@ export default function DeckList() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600">{t('app.name')}</Link>
-        <div className="flex items-center gap-4">
-          <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.stats')}</Link>
-          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.browse')}</Link>
-          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
-          <button
-            onClick={() => { localStorage.removeItem('access_token'); localStorage.removeItem('user'); navigate('/login'); }}
-            className="text-sm text-red-500 hover:underline"
-          >
-            {t('nav.logout')}
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
         {/* Category Sidebar */}
