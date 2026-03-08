@@ -14,7 +14,21 @@ def import_cards_from_csv(stream, deck_id):
     """
     content = stream.read()
     if isinstance(content, bytes):
-        content = content.decode('utf-8-sig')
+        encodings = ['utf-8-sig', 'utf-8', 'utf-16', 'iso-8859-1', 'cp1252']
+        decoded = None
+        for encoding in encodings:
+            try:
+                decoded = content.decode(encoding)
+                break
+            except (UnicodeDecodeError, LookupError):
+                continue
+
+        if decoded is None:
+            raise ValueError(
+                f"Could not decode CSV file. Tried encodings: {', '.join(encodings)}. "
+                "Please export your file from Excel using UTF-8 encoding."
+            )
+        content = decoded
 
     reader = csv.DictReader(io.StringIO(content))
     headers = [h.lower() for h in (reader.fieldnames or [])]
