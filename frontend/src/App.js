@@ -9,6 +9,7 @@ import DeckDetail from './components/Decks/DeckDetail';
 import BrowseDecks from './components/Decks/BrowseDecks';
 import Statistics from './components/Statistics/Statistics';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import CategoryManager from './components/Categories/CategoryManager';
 import { isAuthenticated, isAdmin } from './utils/authUtils';
 
 const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
@@ -76,6 +77,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <BrowseDecks />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <CategoryManager />
             </ProtectedRoute>
           }
         />
