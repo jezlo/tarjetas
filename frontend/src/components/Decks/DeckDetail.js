@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useTranslation } from '../../hooks/useTranslation';
 import CardViewer from '../Cards/CardViewer';
+import QuestionnaireViewer from '../Cards/QuestionnaireViewer';
 import TriviaViewer from '../Cards/TriviaViewer';
 import FillViewer from '../Cards/FillViewer';
 import CardForm from '../Cards/CardForm';
@@ -22,7 +23,7 @@ export default function DeckDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
   const [deck, setDeck] = useState(null);
-  const [mode, setMode] = useState('list'); // list | study | trivia | fill | add | bulk | import | duplicates
+  const [mode, setMode] = useState('list'); // list | study | questionnaire | trivia | fill | add | bulk | import | duplicates
   const [studyIndex, setStudyIndex] = useState(0);
   const [shuffle, setShuffle] = useState(false);
   const [studyCards, setStudyCards] = useState([]);
@@ -40,6 +41,7 @@ export default function DeckDetail() {
   const [fillShowCharCount, setFillShowCharCount] = useState(false);
   const [includeFillCards, setIncludeFillCards] = useState(false);
   const [fillCardPercentage, setFillCardPercentage] = useState(20);
+  const [triviaOptionCount, setTriviaOptionCount] = useState(3);
 
   // Marked cards
   const [markedCardIds, setMarkedCardIds] = useState(new Set());
@@ -159,12 +161,12 @@ export default function DeckDetail() {
   };
 
   const handleModeChange = (m) => {
-    const wasActiveSession = (mode === 'study' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
+    const wasActiveSession = (mode === 'study' || mode === 'questionnaire' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
     if (wasActiveSession && m !== mode) {
       saveSession(deck.id);
       setLiveCounts({ correct: 0, wrong: 0 });
     }
-    if (m === 'study' || m === 'trivia' || m === 'fill') {
+    if (m === 'study' || m === 'questionnaire' || m === 'trivia' || m === 'fill') {
       setStudyPhase('config');
       setConfigCardCount('all');
       setShuffle(false);
@@ -175,6 +177,7 @@ export default function DeckDetail() {
       setFillShowCharCount(false);
       setIncludeFillCards(false);
       setFillCardPercentage(20);
+      setTriviaOptionCount(3);
     } else {
       setStudyPhase(null);
     }
@@ -287,7 +290,7 @@ export default function DeckDetail() {
   if (!deck) return <div className="p-8 text-center text-gray-400">{t('common.loading')}</div>;
 
   const cards = deck.cards || [];
-  const isActiveSession = (mode === 'study' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
+  const isActiveSession = (mode === 'study' || mode === 'questionnaire' || mode === 'trivia' || mode === 'fill') && studyPhase === 'active';
   const hiddenDuringSession = new Set(['add', 'bulk', 'import', 'duplicates']);
 
   return (
@@ -309,7 +312,7 @@ export default function DeckDetail() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
-          {['list', 'study', 'trivia', 'fill', 'add', 'bulk', 'import', 'duplicates']
+          {['list', 'study', 'questionnaire', 'trivia', 'fill', 'add', 'bulk', 'import', 'duplicates']
             .filter((m) => !(isActiveSession && hiddenDuringSession.has(m)))
             .map((m) => (
               <button
@@ -321,7 +324,7 @@ export default function DeckDetail() {
                     : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
                 }`}
               >
-                {m === 'list' ? t('deckDetail.modeCards') : m === 'study' ? t('deckDetail.modeStudy') : m === 'trivia' ? t('deckDetail.modeTrivia') : m === 'fill' ? t('deckDetail.modeFill') : m === 'add' ? t('deckDetail.modeAdd') : m === 'bulk' ? t('deckDetail.modeBulk') : m === 'import' ? t('deckDetail.modeImport') : t('deckDetail.modeDuplicates')}
+                {m === 'list' ? t('deckDetail.modeCards') : m === 'study' ? t('deckDetail.modeStudy') : m === 'questionnaire' ? t('deckDetail.modeQuestionnaire') : m === 'trivia' ? t('deckDetail.modeTrivia') : m === 'fill' ? t('deckDetail.modeFill') : m === 'add' ? t('deckDetail.modeAdd') : m === 'bulk' ? t('deckDetail.modeBulk') : m === 'import' ? t('deckDetail.modeImport') : t('deckDetail.modeDuplicates')}
               </button>
             ))}
           {!isActiveSession && (
@@ -444,7 +447,7 @@ export default function DeckDetail() {
           </div>
         )}
 
-        {(mode === 'study' || mode === 'trivia' || mode === 'fill') && (
+        {(mode === 'study' || mode === 'questionnaire' || mode === 'trivia' || mode === 'fill') && (
           cards.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
           ) : studyPhase === 'config' ? (
@@ -460,7 +463,7 @@ export default function DeckDetail() {
               return (
                 <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    {mode === 'study' ? t('deckDetail.studySetup') : mode === 'trivia' ? t('deckDetail.triviaSetup') : t('deckDetail.fillSetup')}
+                    {mode === 'study' ? t('deckDetail.studySetup') : mode === 'trivia' ? t('deckDetail.triviaSetup') : mode === 'questionnaire' ? t('deckDetail.questionnaireSetup') : t('deckDetail.fillSetup')}
                   </h3>
                   {mode === 'fill' && (
                     <p className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4">
@@ -579,6 +582,19 @@ export default function DeckDetail() {
                         </label>
                       </>
                     )}
+                    {mode === 'trivia' && (
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-gray-700">{t('deckDetail.triviaOptions')}</label>
+                        <input
+                          type="number"
+                          min={2}
+                          max={10}
+                          value={triviaOptionCount}
+                          onChange={(e) => setTriviaOptionCount(Math.max(2, Math.min(10, parseInt(e.target.value) || 2)))}
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        />
+                      </div>
+                    )}
                     {mode === 'study' && fillEligible.length > 0 && (
                       <div>
                         <label className="flex items-center gap-2 cursor-pointer mb-2">
@@ -686,6 +702,15 @@ export default function DeckDetail() {
                   onMark={handleCardMark}
                   markedCardIds={markedCardIds}
                 />
+              ) : mode === 'questionnaire' ? (
+                <QuestionnaireViewer
+                  cards={studyCards}
+                  index={studyIndex}
+                  onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
+                  onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
+                  onResult={handleResult}
+                  invertCards={invertCards}
+                />
               ) : mode === 'fill' ? (
                 <FillViewer
                   cards={studyCards}
@@ -704,6 +729,8 @@ export default function DeckDetail() {
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
                   invertCards={invertCards}
+                  optionCount={triviaOptionCount}
+                  allCards={deck.cards}
                 />
               )}
             </div>

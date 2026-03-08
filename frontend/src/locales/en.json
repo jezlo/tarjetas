@@ -104,6 +104,7 @@
     "sessionTypes": {
       "study": "Study",
       "trivia": "Trivia",
+      "questionnaire": "Questionnaire",
       "fill": "Fill"
     }
   },
@@ -216,7 +217,8 @@
     "private": "🔒 Private",
     "modeCards": "Cards",
     "modeStudy": "Study",
-    "modeTrivia": "🎯 Trivia",
+    "modeQuestionnaire": "❓ Questionnaire",
+    "modeTrivia": "🎮 Trivia",
     "modeFill": "✏️ Fill",
     "modeAdd": "+ Add Card",
     "modeBulk": "⚡ Bulk Add",
@@ -234,6 +236,7 @@
     "noSingleWord": "No cards with a single-word answer found. Fill mode only works with 1-word answers.",
     "studySetup": "Study Session Setup",
     "triviaSetup": "Trivia Session Setup",
+    "questionnaireSetup": "Questionnaire Session Setup",
     "fillSetup": "Fill-in Session Setup",
     "fillOnly": "✏️ Only cards with a single-word answer will be included ({n} of {total} cards).",
     "cardsToStudy": "Cards to study",
@@ -249,6 +252,7 @@
     "fillCharCount": "🔢 Show character count",
     "mixFill": "🔀 Mix Fill cards (random)",
     "fillPercentage": "Percentage of Fill cards:",
+    "triviaOptions": "Number of answer options",
     "startSession": "Start Session",
     "endSession": "■ End Session",
     "correctCount": "✓ Correct: {n}",
