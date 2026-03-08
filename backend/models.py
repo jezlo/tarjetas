@@ -29,9 +29,9 @@ class User(db.Model):
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'created_at': self.created_at.isoformat(),
+            'created_at': self.created_at.isoformat() + 'Z',
             'is_admin': self.is_admin,
-            'last_login': self.last_login.isoformat() if self.last_login else None,
+            'last_login': (self.last_login.isoformat() + 'Z') if self.last_login else None,
             'language': self.language,
         }
 
@@ -170,8 +170,8 @@ class StudySession(db.Model):
             'correct_count': self.correct_count,
             'wrong_count': self.wrong_count,
             'session_type': self.session_type,
-            'started_at': self.started_at.isoformat(),
-            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+            'started_at': self.started_at.isoformat() + 'Z',
+            'ended_at': (self.ended_at.isoformat() + 'Z') if self.ended_at else None,
         }
 
 
