@@ -11,6 +11,7 @@ export default function Statistics() {
   const [deckStats, setDeckStats] = useState({});
   const [sessions, setSessions] = useState([]);
   const [loadError, setLoadError] = useState('');
+  const [timezone, setTimezone] = useState('UTC');
 
   const loadStats = () => api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError(t('stats.loadError')));
   const loadSessions = () => api.get('/sessions').then(({ data }) => setSessions(data)).catch(() => {});
@@ -19,6 +20,9 @@ export default function Statistics() {
     loadStats();
     api.get('/decks').then(({ data }) => setDecks(data)).catch(() => {});
     loadSessions();
+    api.get('/admin/public-settings')
+      .then(({ data }) => { if (data.timezone) setTimezone(data.timezone); })
+      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadDeckStats = async (deckId) => {
@@ -60,7 +64,11 @@ export default function Statistics() {
 
   const formatDate = (iso) => {
     if (!iso) return '—';
-    return new Date(iso).toLocaleString();
+    try {
+      return new Date(iso).toLocaleString(undefined, { timeZone: timezone });
+    } catch {
+      return new Date(iso).toLocaleString();
+    }
   };
 
   return (

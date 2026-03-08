@@ -180,6 +180,7 @@ class AppSettings(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     registration_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    timezone = db.Column(db.String(50), default='UTC', nullable=False, server_default='UTC')
 
     @classmethod
     def get(cls):
