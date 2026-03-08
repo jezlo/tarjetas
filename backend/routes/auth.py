@@ -107,10 +107,12 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 409
 
+    is_first_user = User.query.count() == 0
     user = User(
         username=username,
         email=email,
         password_hash=generate_password_hash(password),
+        is_admin=is_first_user,
     )
     db.session.add(user)
     db.session.flush()  # ensure user.id is available before creating the demo deck
