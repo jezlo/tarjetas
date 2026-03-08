@@ -108,6 +108,12 @@ def _migrate_db(db):
             conn.execute(text('ALTER TABLE decks ADD COLUMN category_id INTEGER REFERENCES deck_categories(id)'))
             conn.commit()
         _assign_existing_decks_to_default_category(db)
+    if 'study_sessions' in inspector.get_table_names():
+        session_columns = [col['name'] for col in inspector.get_columns('study_sessions')]
+        if 'session_type' not in session_columns:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE study_sessions ADD COLUMN session_type VARCHAR(20) NOT NULL DEFAULT 'study'"))
+                conn.commit()
     # Ensure the singleton AppSettings row exists (initialised from env var).
     from models import AppSettings
     AppSettings.get()

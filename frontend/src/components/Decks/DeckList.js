@@ -162,10 +162,10 @@ export default function DeckList() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 py-8 flex gap-6">
+      <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
         {/* Category Sidebar */}
-        <aside className="w-48 shrink-0">
-          <div className="bg-white rounded-xl shadow p-4 sticky top-8">
+        <aside className="w-full md:w-48 md:shrink-0">
+          <div className="bg-white rounded-xl shadow p-4 md:sticky md:top-8">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('decks.categories')}</h3>
               <Link to="/categories" className="text-xs text-indigo-500 hover:text-indigo-700">{t('decks.manage')}</Link>
