@@ -246,6 +246,7 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-4">
           <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.dashboard')}</Link>
           <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
+          <Link to="/prompts" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.prompts')}</Link>
           <Link to="/admin" className="text-indigo-600 font-medium">{t('nav.admin')}</Link>
           <button onClick={logout} className="text-sm text-red-500 hover:underline">{t('nav.logout')}</button>
         </div>

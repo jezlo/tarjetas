@@ -12,7 +12,8 @@
     "browse": "Browse Decks",
     "myDecks": "My Decks",
     "categories": "Categories",
-    "backToDecks": "← Back to Decks"
+    "backToDecks": "← Back to Decks",
+    "prompts": "AI Prompts"
   },
   "common": {
     "cancel": "Cancel",
@@ -346,5 +347,66 @@
     "weak": "weak",
     "charCount": "Characters: {n}/{total}",
     "answer": "Answer"
+  },
+  "prompts": {
+    "title": "AI Prompts",
+    "subtitle": "Use these prompts to generate flashcards with artificial intelligence. Fill in the fields and copy the ready-to-use prompt.",
+    "copy": "📋 Copy",
+    "copied": "✓ Copied!",
+    "placeholderHint": "Value for",
+    "items": {
+      "generalFlashcards": {
+        "name": "General Flashcards",
+        "text": "Generate [NUMBER] flashcards about [TOPIC]. For each one, write a clear question and a concise answer."
+      },
+      "vocabularyFlashcards": {
+        "name": "Vocabulary Flashcards",
+        "text": "Create [NUMBER] vocabulary flashcards. For each one, show the word in [LANGUAGE 1] and its translation in [LANGUAGE 2], plus a sentence example."
+      },
+      "studyQuestions": {
+        "name": "Study Questions",
+        "text": "Generate [NUMBER] study questions about [TOPIC]. The questions should evaluate comprehension, not just memorization. Include the answer for each."
+      },
+      "basicConcepts": {
+        "name": "Basic Concepts",
+        "text": "List the [NUMBER] fundamental concepts of [TOPIC] in flashcard format. The question is the concept name and the answer is its definition in 1-2 sentences."
+      },
+      "rulesFormulas": {
+        "name": "Rules and Formulas",
+        "text": "Create flashcards with the main rules and formulas of [TOPIC]. The question is the rule or formula name and the answer is its statement and how to apply it."
+      },
+      "quickMemorization": {
+        "name": "Quick Memorization",
+        "text": "Generate [NUMBER] quick memorization flashcards about [TOPIC]. Answers should be very brief (maximum 3-5 words) to make retention easier."
+      },
+      "comparisons": {
+        "name": "Comparisons",
+        "text": "Create [NUMBER] comparative flashcards about [TOPIC]. Each question should ask to compare two related concepts, like: What is the difference between X and Y?"
+      },
+      "progressiveDifficulty": {
+        "name": "Progressive Difficulty",
+        "text": "Generate [NUMBER] flashcards about [TOPIC] ordered from easiest to hardest. The first ones should be basic and the last ones advanced level."
+      },
+      "fillBlanks1": {
+        "name": "Fill in the Blanks (1)",
+        "text": "Create [NUMBER] sentences about [TOPIC] with a key word left blank (marked with ___). The question is the incomplete sentence and the answer is the missing word."
+      },
+      "fillBlanks2": {
+        "name": "Fill in the Blanks (2)",
+        "text": "Generate [NUMBER] sentence completion exercises in [LANGUAGE]. The question is the sentence with ___ and the answer is the missing word or phrase."
+      },
+      "fillBlanks3": {
+        "name": "Fill in the Blanks (3)",
+        "text": "Create cloze-type flashcards to memorize [TOPIC]. Take important phrases or definitions and replace the key part with ___. The answer should be that key word."
+      },
+      "everydayVocabulary": {
+        "name": "Everyday Vocabulary",
+        "text": "Generate [NUMBER] everyday vocabulary flashcards in [LANGUAGE]. Include words used in daily situations, with their translation and a conversation example."
+      },
+      "everydayVerbs": {
+        "name": "Everyday Verbs",
+        "text": "Create flashcards for the [NUMBER] most common verbs in [LANGUAGE]. For each verb include: infinitive form, meaning, and a present tense conjugation example."
+      }
+    }
   }
 }
