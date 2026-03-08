@@ -9,30 +9,58 @@ from models import db, User, AppSettings, Deck, Card, get_or_create_default_cate
 auth_bp = Blueprint('auth', __name__)
 
 _DEMO_CARDS = [
+    # --- Modo Estudio / Study mode ---
     {
         'question': '¿Qué es una tarjeta de memoria (flashcard)?',
         'answer': 'Una herramienta de estudio con una pregunta en el frente y la respuesta al dorso.',
         'context': 'Las tarjetas de memoria son muy útiles para memorizar conceptos clave.',
     },
     {
-        'question': '¿Cómo se llama la técnica de estudiar con tarjetas espaciadas?',
-        'answer': 'Repetición espaciada',
-        'context': 'La repetición espaciada aumenta la retención a largo plazo revisando las tarjetas en intervalos crecientes.',
+        'question': 'What is spaced repetition?',
+        'answer': 'A learning technique that reviews material at increasing intervals to improve long-term retention.',
+        'context': 'Spaced repetition is one of the most effective study methods backed by cognitive science.',
+    },
+    # --- Modo Trivia / Trivia mode (respuestas variadas como distractores) ---
+    {
+        'question': '¿Cuál es el planeta más grande del sistema solar?',
+        'answer': 'Júpiter',
+        'context': 'Júpiter es tan grande que todos los demás planetas del sistema solar cabrían dentro de él.',
     },
     {
-        'question': '¿Cuáles son los tres modos de estudio disponibles?',
-        'answer': 'Estudio, Trivia y Rellenar',
-        'context': 'Cada modo pone a prueba tu conocimiento de una forma diferente.',
+        'question': '¿En qué año llegó el ser humano a la Luna por primera vez?',
+        'answer': '1969',
+        'context': 'La misión Apolo 11 llevó a Neil Armstrong y Buzz Aldrin a la superficie lunar el 20 de julio de 1969.',
     },
     {
-        'question': '¿Qué hace el modo Trivia?',
-        'answer': 'Presenta opciones múltiples para elegir la respuesta correcta.',
-        'context': 'Se generan distractores a partir de las otras tarjetas del mazo.',
+        'question': 'What is the capital of France?',
+        'answer': 'Paris',
+        'context': 'Paris has been the capital of France since the 10th century and is known as the "City of Light".',
     },
     {
-        'question': '¿Qué hace el modo Rellenar?',
-        'answer': 'Solicita escribir la respuesta completa sin ver opciones.',
-        'context': 'Solo funciona con tarjetas cuya respuesta es una sola palabra.',
+        'question': '¿Cuál es el océano más grande del mundo?',
+        'answer': 'Pacífico',
+        'context': 'El océano Pacífico cubre más de un tercio de la superficie total de la Tierra.',
+    },
+    # --- Modo Rellenar / Fill mode (respuestas de una sola palabra) ---
+    {
+        'question': '¿Cómo se llama la técnica de memorización que revisa el material en intervalos crecientes?',
+        'answer': 'Espaciada',
+        'context': 'La repetición espaciada es una de las técnicas de estudio más efectivas para la memoria a largo plazo.',
+    },
+    {
+        'question': 'What is the chemical symbol for water?',
+        'answer': 'H2O',
+        'context': 'Water is composed of two hydrogen atoms and one oxygen atom.',
+    },
+    {
+        'question': '¿Cuántos lados tiene un hexágono?',
+        'answer': 'Seis',
+        'context': 'Un hexágono es un polígono de seis lados. Las celdas de los panales de abejas tienen forma hexagonal.',
+    },
+    {
+        'question': 'What is the largest country in South America?',
+        'answer': 'Brazil',
+        'context': 'Brazil covers nearly half of South America and is the fifth largest country in the world.',
     },
 ]
 
@@ -79,8 +107,6 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 409
 
-    is_first_user = User.query.count() == 0
-
     user = User(
         username=username,
         email=email,
@@ -89,8 +115,7 @@ def register():
     db.session.add(user)
     db.session.flush()  # ensure user.id is available before creating the demo deck
 
-    if is_first_user:
-        _create_demo_deck(user.id)
+    _create_demo_deck(user.id)
 
     db.session.commit()
 
