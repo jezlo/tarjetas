@@ -35,6 +35,7 @@ export default function DeckDetail() {
   const [hideKnown, setHideKnown] = useState(false);
   const [autoFlipDelay, setAutoFlipDelay] = useState(0); // 0 = disabled
   const [fillWeakMode, setFillWeakMode] = useState(false);
+  const [fillShowCharCount, setFillShowCharCount] = useState(false);
   const [includeFillCards, setIncludeFillCards] = useState(false);
   const [fillCardPercentage, setFillCardPercentage] = useState(20);
 
@@ -165,6 +166,7 @@ export default function DeckDetail() {
       setHideKnown(false);
       setAutoFlipDelay(0);
       setFillWeakMode(false);
+      setFillShowCharCount(false);
       setIncludeFillCards(false);
       setFillCardPercentage(20);
     } else {
@@ -264,6 +266,7 @@ export default function DeckDetail() {
       await api.put(`/cards/${editingCard.id}`, {
         question: editingCard.question,
         answer: editingCard.answer,
+        context: editingCard.context,
       });
       setEditingCard(null);
       load();
@@ -367,6 +370,16 @@ export default function DeckDetail() {
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           />
                         </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Context (optional)</label>
+                          <textarea
+                            value={editingCard.context || ''}
+                            onChange={(e) => setEditingCard({ ...editingCard, context: e.target.value })}
+                            rows={2}
+                            placeholder="Additional context or hint…"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                          />
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={handleEditSave}
@@ -395,9 +408,12 @@ export default function DeckDetail() {
                           </button>
                         </div>
                         <p className="text-gray-500 text-sm mt-1">{card.answer}</p>
+                        {card.context && (
+                          <p className="text-xs text-blue-500 mt-1 italic">💡 {card.context}</p>
+                        )}
                         <div className="flex gap-3 mt-2">
                           <button
-                            onClick={() => { setEditingCard({ id: card.id, question: card.question, answer: card.answer }); setEditError(''); }}
+                            onClick={() => { setEditingCard({ id: card.id, question: card.question, answer: card.answer, context: card.context || '' }); setEditError(''); }}
                             className="text-xs text-indigo-500 hover:text-indigo-700"
                           >
                             Edit
@@ -536,15 +552,26 @@ export default function DeckDetail() {
                       </div>
                     )}
                     {mode === 'fill' && (
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={fillWeakMode}
-                          onChange={() => setFillWeakMode(!fillWeakMode)}
-                          className="text-indigo-600"
-                        />
-                        <span className="text-sm">🔤 Modo débil (ignorar acentos)</span>
-                      </label>
+                      <>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={fillWeakMode}
+                            onChange={() => setFillWeakMode(!fillWeakMode)}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">🔤 Modo débil (ignorar acentos y tolerar pequeños errores)</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={fillShowCharCount}
+                            onChange={() => setFillShowCharCount(!fillShowCharCount)}
+                            className="text-indigo-600"
+                          />
+                          <span className="text-sm">🔢 Mostrar contador de caracteres</span>
+                        </label>
+                      </>
                     )}
                     {mode === 'study' && fillEligible.length > 0 && (
                       <div>
@@ -661,6 +688,7 @@ export default function DeckDetail() {
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
                   onResult={handleResult}
                   weakMode={fillWeakMode}
+                  showCharCount={fillShowCharCount}
                 />
               ) : (
                 <TriviaViewer
