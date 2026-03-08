@@ -2,9 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { getCurrentUser } from '../../utils/authUtils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,11 +35,11 @@ export default function AdminDashboard() {
         if (err.response?.status === 403) {
           navigate('/');
         } else {
-          setError('Could not load users.');
+          setError(t('admin.loadError'));
           setLoading(false);
         }
       });
-  }, [navigate]);
+  }, [navigate, t]);
 
   const fetchSettings = useCallback(() => {
     setSettingsLoading(true);
@@ -47,10 +49,10 @@ export default function AdminDashboard() {
         setSettingsLoading(false);
       })
       .catch(() => {
-        setSettingsError('Could not load settings.');
+        setSettingsError(t('admin.loadSettingsError'));
         setSettingsLoading(false);
       });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchUsers();
@@ -64,7 +66,7 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = (userId) => {
-    if (!window.confirm('Delete this user? This will also delete all their decks and data.')) return;
+    if (!window.confirm(t('admin.deleteConfirm'))) return;
     setDeletingId(userId);
     api.delete(`/admin/users/${userId}`)
       .then(() => {
@@ -72,7 +74,7 @@ export default function AdminDashboard() {
         setDeletingId(null);
       })
       .catch(() => {
-        setError('Could not delete user.');
+        setError(t('admin.couldNotDelete'));
         setDeletingId(null);
       });
   };
@@ -89,7 +91,7 @@ export default function AdminDashboard() {
         setCreating(false);
       })
       .catch((err) => {
-        setCreateError(err.response?.data?.message || 'Could not create user.');
+        setCreateError(err.response?.data?.message || t('admin.couldNotCreate'));
         setCreating(false);
       });
   };
@@ -106,7 +108,7 @@ export default function AdminDashboard() {
         setResetting(false);
       })
       .catch((err) => {
-        setResetError(err.response?.data?.message || 'Could not reset password.');
+        setResetError(err.response?.data?.message || t('admin.couldNotReset'));
         setResetting(false);
       });
   };
@@ -127,13 +129,13 @@ export default function AdminDashboard() {
         setSettingsUpdating(false);
       })
       .catch(() => {
-        setSettingsError('Could not update settings.');
+        setSettingsError(t('admin.couldNotUpdate'));
         setSettingsUpdating(false);
       });
   };
 
   const formatDate = (iso) => {
-    if (!iso) return 'Never';
+    if (!iso) return t('admin.never');
     const d = new Date(iso);
     return d.toLocaleString();
   };
@@ -142,26 +144,26 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-indigo-600">Tarjetas</h1>
+        <h1 className="text-2xl font-bold text-indigo-600">{t('app.name')}</h1>
         <div className="flex items-center gap-4">
-          <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">Dashboard</Link>
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">Decks</Link>
-          <Link to="/admin" className="text-indigo-600 font-medium">Admin</Link>
-          <button onClick={logout} className="text-sm text-red-500 hover:underline">Logout</button>
+          <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.dashboard')}</Link>
+          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
+          <Link to="/admin" className="text-indigo-600 font-medium">{t('nav.admin')}</Link>
+          <button onClick={logout} className="text-sm text-red-500 hover:underline">{t('nav.logout')}</button>
         </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h2>
-            <p className="text-gray-500 text-sm mt-1">Manage users and their data</p>
+            <h2 className="text-2xl font-semibold text-gray-800">{t('admin.title')}</h2>
+            <p className="text-gray-500 text-sm mt-1">{t('admin.subtitle')}</p>
           </div>
           <button
             onClick={() => { setShowCreateModal(true); setCreateError(''); }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
           >
-            + New User
+            {t('admin.newUser')}
           </button>
         </div>
 
@@ -175,39 +177,39 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">{users.length}</p>
-            <p className="text-sm text-gray-500 mt-1">Total Users</p>
+            <p className="text-sm text-gray-500 mt-1">{t('admin.totalUsers')}</p>
           </div>
           <div className="bg-white rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">
               {users.reduce((sum, u) => sum + (u.deck_count || 0), 0)}
             </p>
-            <p className="text-sm text-gray-500 mt-1">Total Decks</p>
+            <p className="text-sm text-gray-500 mt-1">{t('admin.totalDecks')}</p>
           </div>
           <div className="bg-white rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">
               {users.filter((u) => u.is_admin).length}
             </p>
-            <p className="text-sm text-gray-500 mt-1">Admins</p>
+            <p className="text-sm text-gray-500 mt-1">{t('admin.admins')}</p>
           </div>
         </div>
 
         {/* Users table */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-gray-400">Loading users…</div>
+            <div className="p-8 text-center text-gray-400">{t('admin.loadingUsers')}</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">No users found.</div>
+            <div className="p-8 text-center text-gray-400">{t('admin.noUsers')}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-left text-gray-500 uppercase text-xs tracking-wider">
-                    <th className="px-4 py-3">User</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3 text-center">Decks</th>
-                    <th className="px-4 py-3">Registered</th>
-                    <th className="px-4 py-3">Last Login</th>
-                    <th className="px-4 py-3 text-center">Role</th>
+                    <th className="px-4 py-3">{t('admin.user')}</th>
+                    <th className="px-4 py-3">{t('admin.email')}</th>
+                    <th className="px-4 py-3 text-center">{t('nav.decks')}</th>
+                    <th className="px-4 py-3">{t('admin.registered')}</th>
+                    <th className="px-4 py-3">{t('admin.lastLogin')}</th>
+                    <th className="px-4 py-3 text-center">{t('admin.role')}</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -217,7 +219,7 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 font-medium text-gray-800">
                         {u.username}
                         {u.id === currentUser.id && (
-                          <span className="ml-2 text-xs text-gray-400">(you)</span>
+                          <span className="ml-2 text-xs text-gray-400">{t('admin.you')}</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-500">{u.email}</td>
@@ -231,11 +233,11 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 text-center">
                         {u.is_admin ? (
                           <span className="inline-block bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-semibold">
-                            Admin
+                            {t('admin.adminRole')}
                           </span>
                         ) : (
                           <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-                            User
+                            {t('admin.userRole')}
                           </span>
                         )}
                       </td>
@@ -252,7 +254,7 @@ export default function AdminDashboard() {
                             disabled={deletingId === u.id || u.id === currentUser.id}
                             className="text-red-500 hover:text-red-700 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                           >
-                            {deletingId === u.id ? 'Deleting…' : 'Delete'}
+                            {deletingId === u.id ? t('admin.deleting') : t('common.delete')}
                           </button>
                         </div>
                       </td>
@@ -266,7 +268,7 @@ export default function AdminDashboard() {
 
         {/* Global Settings */}
         <div className="mt-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Global Settings</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('admin.globalSettings')}</h3>
           {settingsError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
               {settingsError}
@@ -275,13 +277,13 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-800">User Registration</p>
+                <p className="font-medium text-gray-800">{t('admin.userRegistration')}</p>
                 <p className="text-sm text-gray-500 mt-1">
                   {settingsLoading
-                    ? 'Loading…'
+                    ? t('admin.loading')
                     : registrationEnabled
-                      ? 'New users can currently register.'
-                      : 'Registration is currently disabled.'}
+                      ? t('admin.regEnabled')
+                      : t('admin.regDisabled')}
                 </p>
               </div>
               <button
@@ -303,7 +305,7 @@ export default function AdminDashboard() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Create New User</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('admin.createNewUser')}</h3>
             {createError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
                 {createError}
@@ -311,7 +313,7 @@ export default function AdminDashboard() {
             )}
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.username')}</label>
                 <input
                   type="text"
                   value={createForm.username}
@@ -321,7 +323,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.email')}</label>
                 <input
                   type="email"
                   value={createForm.email}
@@ -331,7 +333,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.password')}</label>
                 <input
                   type="password"
                   value={createForm.password}
@@ -348,7 +350,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setCreateForm({ ...createForm, is_admin: e.target.checked })}
                   className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor="is_admin" className="text-sm text-gray-700">Grant admin privileges</label>
+                <label htmlFor="is_admin" className="text-sm text-gray-700">{t('admin.grantAdmin')}</label>
               </div>
               <div className="flex gap-3 pt-2">
                 <button
@@ -356,14 +358,14 @@ export default function AdminDashboard() {
                   disabled={creating}
                   className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-60"
                 >
-                  {creating ? 'Creating…' : 'Create User'}
+                  {creating ? t('admin.creating') : t('admin.createUser')}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowCreateModal(false); setCreateError(''); }}
                   className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </form>
@@ -375,8 +377,8 @@ export default function AdminDashboard() {
       {showResetModal && resetTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-1">Reset Password</h3>
-            <p className="text-sm text-gray-500 mb-4">Set a new password for <span className="font-semibold text-gray-700">{resetTarget.username}</span></p>
+            <h3 className="text-xl font-semibold text-gray-800 mb-1">{t('admin.resetPassword')}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t('admin.resetPasswordFor')} <span className="font-semibold text-gray-700">{resetTarget.username}</span></p>
             {resetError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
                 {resetError}
@@ -384,7 +386,7 @@ export default function AdminDashboard() {
             )}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.newPassword')}</label>
                 <input
                   type="password"
                   value={resetPassword}
@@ -400,14 +402,14 @@ export default function AdminDashboard() {
                   disabled={resetting}
                   className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-60"
                 >
-                  {resetting ? 'Saving…' : 'Reset Password'}
+                  {resetting ? t('admin.resetting') : t('admin.resetPassword')}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowResetModal(false); setResetTarget(null); setResetError(''); }}
                   className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </form>

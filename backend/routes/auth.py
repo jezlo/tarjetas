@@ -70,6 +70,7 @@ def update_profile():
     email = data.get('email', '').strip()
     current_password = data.get('current_password', '')
     new_password = data.get('new_password', '')
+    language = data.get('language', '').strip()
 
     if email and email != user.email:
         if User.query.filter_by(email=email).first():
@@ -82,6 +83,9 @@ def update_profile():
         if not check_password_hash(user.password_hash, current_password):
             return jsonify({'message': 'Current password is incorrect'}), 401
         user.password_hash = generate_password_hash(new_password)
+
+    if language and language in ('es', 'en'):
+        user.language = language
 
     db.session.commit()
     return jsonify({'user': user.to_dict()}), 200

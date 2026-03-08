@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function CardForm({ deckId, onSaved }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ question: '', answer: '', context: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,7 @@ export default function CardForm({ deckId, onSaved }) {
       setForm({ question: '', answer: '', context: '' });
       onSaved();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save card');
+      setError(err.response?.data?.message || t('card.failedSave'));
     } finally {
       setLoading(false);
     }
@@ -23,11 +25,11 @@ export default function CardForm({ deckId, onSaved }) {
 
   return (
     <div className="bg-white rounded-xl shadow p-6 max-w-lg mx-auto">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Card</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('card.addNew')}</h3>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('card.question')}</label>
           <textarea
             value={form.question}
             onChange={(e) => setForm({ ...form, question: e.target.value })}
@@ -37,7 +39,7 @@ export default function CardForm({ deckId, onSaved }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('card.answer')}</label>
           <textarea
             value={form.answer}
             onChange={(e) => setForm({ ...form, answer: e.target.value })}
@@ -54,7 +56,7 @@ export default function CardForm({ deckId, onSaved }) {
             value={form.context}
             onChange={(e) => setForm({ ...form, context: e.target.value })}
             rows={2}
-            placeholder="Examples, explanation, alternative answers…"
+            placeholder={t('card.contextPlaceholder')}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
@@ -63,7 +65,7 @@ export default function CardForm({ deckId, onSaved }) {
           disabled={loading}
           className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
         >
-          {loading ? 'Saving…' : 'Add Card'}
+          {loading ? t('card.saving') : t('card.addCard')}
         </button>
       </form>
     </div>

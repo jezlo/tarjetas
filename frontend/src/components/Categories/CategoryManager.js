@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function CategoryManager() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [decks, setDecks] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -21,7 +23,7 @@ export default function CategoryManager() {
     setDecks(deckRes.data);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const deckCountForCategory = (category) => {
     if (category.name === 'General') return decks.length;
@@ -32,65 +34,65 @@ export default function CategoryManager() {
     e.preventDefault();
     setCreateError('');
     const name = newName.trim();
-    if (!name) { setCreateError('Name is required'); return; }
+    if (!name) { setCreateError(t('catManager.nameRequired')); return; }
     try {
       await api.post('/categories', { name });
       setNewName('');
       setShowForm(false);
       load();
     } catch (err) {
-      setCreateError(err.response?.data?.message || 'Failed to create category');
+      setCreateError(err.response?.data?.message || t('catManager.failedCreate'));
     }
   };
 
   const handleEdit = async () => {
     setEditError('');
     const name = editingCategory.name.trim();
-    if (!name) { setEditError('Name cannot be empty'); return; }
+    if (!name) { setEditError(t('catManager.nameEmpty')); return; }
     try {
       await api.put(`/categories/${editingCategory.id}`, { name });
       setEditingCategory(null);
       load();
     } catch (err) {
-      setEditError(err.response?.data?.message || 'Failed to update category');
+      setEditError(err.response?.data?.message || t('catManager.failedUpdate'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this category? Its decks will be moved to "Sin Categoría".')) return;
+    if (!window.confirm(t('catManager.deleteConfirm'))) return;
     try {
       await api.delete(`/categories/${id}`);
       load();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete category');
+      alert(err.response?.data?.message || t('catManager.failedDelete'));
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600">Tarjetas</Link>
+        <Link to="/" className="text-2xl font-bold text-indigo-600">{t('app.name')}</Link>
         <div className="flex items-center gap-4">
-          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">Decks</Link>
-          <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">Stats</Link>
-          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">Browse Decks</Link>
+          <Link to="/decks" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.decks')}</Link>
+          <Link to="/statistics" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.stats')}</Link>
+          <Link to="/browse" className="text-gray-600 hover:text-indigo-600 font-medium">{t('nav.browse')}</Link>
           <button
             onClick={() => { localStorage.removeItem('access_token'); localStorage.removeItem('user'); navigate('/login'); }}
             className="text-sm text-red-500 hover:underline"
           >
-            Logout
+            {t('nav.logout')}
           </button>
         </div>
       </nav>
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">Categories</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">{t('catManager.title')}</h2>
           <button
             onClick={() => { setShowForm(!showForm); setNewName(''); setCreateError(''); }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
           >
-            {showForm ? 'Cancel' : '+ New Category'}
+            {showForm ? t('common.cancel') : t('catManager.newCategory')}
           </button>
         </div>
 
@@ -98,7 +100,7 @@ export default function CategoryManager() {
           <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
             {createError && <p className="text-red-500 text-sm">{createError}</p>}
             <input
-              placeholder="Category name"
+              placeholder={t('catManager.categoryName')}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               autoFocus
@@ -106,7 +108,7 @@ export default function CategoryManager() {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
-              Create Category
+              {t('catManager.createCategory')}
             </button>
           </form>
         )}
@@ -125,8 +127,8 @@ export default function CategoryManager() {
                     className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleEdit} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save</button>
-                    <button onClick={() => { setEditingCategory(null); setEditError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                    <button onClick={handleEdit} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">{t('common.save')}</button>
+                    <button onClick={() => { setEditingCategory(null); setEditError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">{t('common.cancel')}</button>
                   </div>
                 </div>
               ) : (
@@ -134,9 +136,9 @@ export default function CategoryManager() {
                   <div>
                     <span className="font-medium text-gray-800">{cat.name}</span>
                     {cat.is_default && (
-                      <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">default</span>
+                      <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{t('catManager.default')}</span>
                     )}
-                    <p className="text-sm text-indigo-600 mt-0.5">{deckCountForCategory(cat)} decks</p>
+                    <p className="text-sm text-indigo-600 mt-0.5">{deckCountForCategory(cat)} {t('catManager.decks')}</p>
                   </div>
                   {!cat.is_default && (
                     <div className="flex gap-3">
@@ -144,13 +146,13 @@ export default function CategoryManager() {
                         onClick={() => { setEditingCategory({ id: cat.id, name: cat.name }); setEditError(''); }}
                         className="text-xs text-indigo-500 hover:text-indigo-700"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(cat.id)}
                         className="text-xs text-red-400 hover:text-red-600"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   )}
@@ -161,7 +163,7 @@ export default function CategoryManager() {
 
           {categories.length === 0 && (
             <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-              No categories yet. Create your first one!
+              {t('catManager.noCategories')}
             </div>
           )}
         </div>

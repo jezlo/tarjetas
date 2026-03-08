@@ -1,7 +1,9 @@
 import React from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, invertCards }) {
+  const { t } = useTranslation();
   const card = cards[index];
   const questionText = invertCards ? card.answer : card.question;
   const answerText = invertCards ? card.question : card.answer;
@@ -17,17 +19,17 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="text-sm text-gray-500">
-        Card {index + 1} of {cards.length}
+        {t('viewer.cardOf', { n: index + 1, total: cards.length })}
       </p>
 
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">Question</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">{t('viewer.question')}</p>
           <p className="text-xl font-semibold text-gray-800">{questionText}</p>
         </div>
         <hr className="border-gray-200" />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-green-500 mb-1">Answer</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-green-500 mb-1">{t('viewer.answer')}</p>
           <p className="text-xl font-semibold text-gray-700">{answerText}</p>
         </div>
       </div>
@@ -37,13 +39,13 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
           onClick={() => handleResult(false)}
           className="px-6 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition"
         >
-          ✗ Wrong
+          {t('viewer.wrong')}
         </button>
         <button
           onClick={() => handleResult(true)}
           className="px-6 py-2 bg-green-100 text-green-600 font-semibold rounded-lg hover:bg-green-200 transition"
         >
-          ✓ Correct
+          {t('viewer.correct2')}
         </button>
       </div>
 
@@ -53,14 +55,14 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
           disabled={index === 0}
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
         >
-          ← Prev
+          {t('viewer.prev')}
         </button>
         <button
           onClick={onNext}
           disabled={index === cards.length - 1}
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
         >
-          Next →
+          {t('viewer.next')}
         </button>
       </div>
     </div>

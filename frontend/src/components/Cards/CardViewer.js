@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const SLIDE_DURATION = 500;
 
@@ -8,6 +9,7 @@ function normalizeAnswer(str) {
 }
 
 export default function CardViewer({ cards, index, onNext, onPrev, onResult, invertCards, autoFlipDelay, onMark, markedCardIds }) {
+  const { t } = useTranslation();
   const [flipped, setFlipped] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [slideDir, setSlideDir] = useState(null); // 'out-left' | null
@@ -109,16 +111,16 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="text-sm text-gray-500">
-        Card {index + 1} of {cards.length}
+        {t('viewer.cardOf', { n: index + 1, total: cards.length })}
         {isFillCard && (
-          <span className="ml-2 text-xs font-medium bg-purple-100 text-purple-700 rounded px-2 py-0.5">✏️ Fill card</span>
+          <span className="ml-2 text-xs font-medium bg-purple-100 text-purple-700 rounded px-2 py-0.5">{t('viewer.fillCard')}</span>
         )}
       </p>
 
       {isFillCard ? (
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">Question</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">{t('viewer.question')}</p>
             <p className="text-xl font-semibold text-gray-800">{card.question}</p>
           </div>
           {!fillSubmitted ? (
@@ -128,7 +130,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
                 type="text"
                 value={fillInput}
                 onChange={(e) => setFillInput(e.target.value)}
-                placeholder="Type your answer…"
+                placeholder={t('viewer.typeAnswer')}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoComplete="off"
               />
@@ -137,25 +139,25 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
                 disabled={!fillInput.trim()}
                 className="w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Check Answer
+                {t('viewer.checkAnswer')}
               </button>
             </form>
           ) : (
             <div className={`rounded-xl p-4 ${fillCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} aria-live="polite">
               <p className={`text-sm font-semibold ${fillCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                {fillCorrect ? '✓ Correct!' : '✗ Incorrect'}
+                {fillCorrect ? t('viewer.correct') : t('viewer.incorrect')}
               </p>
               {!fillCorrect && (
                 <p className="text-sm text-gray-600 mt-1">
-                  Correct answer: <span className="font-semibold">{card.answer}</span>
+                  {t('viewer.correctAnswer')}   <span className="font-semibold">{card.answer}</span>
                 </p>
               )}
               {card.context ? (
                 <p className="text-sm text-gray-500 mt-1">
-                  Context: <span className="italic">{card.context}</span>
+                  {t('viewer.context')}   <span className="italic">{card.context}</span>
                 </p>
               ) : null}
-              <p className="text-sm text-gray-500 mt-1">Your answer: {fillInput}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('viewer.yourAnswer')} {fillInput}</p>
             </div>
           )}
         </div>
@@ -179,7 +181,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-400">Click card to flip</p>
+          <p className="text-sm text-gray-400">{t('viewer.clickFlip')}</p>
         </>
       )}
 
@@ -190,7 +192,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               onClick={handleFillNext}
               className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
             >
-              {index === cards.length - 1 ? 'Finish' : 'Next →'}
+              {index === cards.length - 1 ? t('viewer.finish') : t('viewer.next')}
             </button>
           )}
           <div className="flex gap-4">
@@ -199,7 +201,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               disabled={index === 0}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
             >
-              ← Prev
+              {t('viewer.prev')}
             </button>
           </div>
         </>
@@ -212,7 +214,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               aria-label="Mark card as known"
               className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ⭐ Known
+              {t('viewer.known')}  
             </button>
             <button
               onClick={() => recordResult(true, false)}
@@ -220,12 +222,12 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               aria-label="Mark as easy"
               className="px-5 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ✓ Easy
+              {t('viewer.easy')}  
             </button>
             <button
               onClick={handleMark}
               disabled={transitioning}
-              aria-label={isMarked ? 'Unpin card' : 'Pin card for later review'}
+              aria-label={isMarked ? t('viewer.unpinCard') : t('viewer.pinCard')}
               title={isMarked ? 'Unpin card' : 'Pin card for later review'}
               className={`px-5 py-2 font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
                 isMarked
@@ -243,14 +245,14 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               disabled={!flipped || transitioning}
               className="px-6 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ✗ Wrong
+              {t('viewer.wrong')}
             </button>
             <button
               onClick={() => recordResult(true)}
               disabled={!flipped || transitioning}
               className="px-6 py-2 bg-green-100 text-green-600 font-semibold rounded-lg hover:bg-green-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ✓ Correct
+              {t('viewer.correct2')}
             </button>
           </div>
 
@@ -260,14 +262,14 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               disabled={index === 0 || transitioning}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
             >
-              ← Prev
+              {t('viewer.prev')}
             </button>
             <button
               onClick={handleNext}
               disabled={index === cards.length - 1 || transitioning}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
             >
-              Next →
+              {t('viewer.next')}
             </button>
           </div>
         </>

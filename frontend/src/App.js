@@ -11,6 +11,7 @@ import Statistics from './components/Statistics/Statistics';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import CategoryManager from './components/Categories/CategoryManager';
 import { isAuthenticated, isAdmin } from './utils/authUtils';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
 
@@ -25,7 +26,8 @@ function AdminRoute({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -98,6 +100,7 @@ export default function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
