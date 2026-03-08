@@ -10,6 +10,7 @@ A full-stack web application for creating and studying flashcard decks with stat
 | Database | SQLite (via SQLAlchemy ORM) |
 | Auth | JWT (JSON Web Tokens) |
 | Frontend | React 18, React Router v6, Axios, TailwindCSS |
+| Deployment | Docker & Docker Compose |
 
 ---
 
@@ -28,8 +29,9 @@ tarjetas/
 │   │   ├── decks.py        # CRUD /api/decks + CSV import
 │   │   ├── cards.py        # PUT/DELETE /api/cards/<id>
 │   │   └── statistics.py   # GET /api/statistics, POST /api/statistics/cards/<id>
-│   └── utils/
-│       └── csv_importer.py # CSV → cards bulk import
+│   ├── utils/
+│   │   └── csv_importer.py # CSV → cards bulk import
+│   └── Dockerfile          # Backend container
 ├── frontend/
 │   ├── public/index.html
 │   ├── src/
@@ -44,16 +46,71 @@ tarjetas/
 │   │   ├── services/api.js # Axios instance with JWT interceptor
 │   │   └── styles/tailwind.css
 │   ├── package.json
-│   └── tailwind.config.js
-├── requirements.txt
+│   ├── tailwind.config.js
+│   └── Dockerfile          # Frontend container
+├── docker-compose.yml      # Multi-container setup
+├── requirements.txt        # Python dependencies
+├── package.json           # Root package metadata
+├── .env.example           # Environment variables template
 └── README.md
 ```
 
 ---
 
-## Setup & Running
+## 🚀 Setup & Running
 
-### Backend
+### Option 1: Docker (Recommended) ⭐
+
+The easiest way to get started with all services running together.
+
+**Prerequisites:**
+- Docker & Docker Compose installed
+
+**Steps:**
+
+1. Clone the repository:
+```bash
+git clone https://github.com/jezlo/tarjetas.git
+cd tarjetas
+```
+
+2. Create `.env` file from template:
+```bash
+cp .env.example .env
+```
+
+3. Build and start containers:
+```bash
+docker-compose up --build
+```
+
+4. Access the application:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+   - Database: `db_data` volume (persistent storage)
+
+**Useful Docker commands:**
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Remove all data (including database)
+docker-compose down -v
+```
+
+---
+
+### Option 2: Manual Setup
+
+If you prefer to run services locally without Docker.
+
+#### Backend
 
 ```bash
 # Install Python dependencies
@@ -66,7 +123,7 @@ cp .env.example .env
 python backend/run.py
 ```
 
-### Frontend
+#### Frontend
 
 ```bash
 cd frontend
@@ -76,7 +133,19 @@ npm start   # runs on http://localhost:3000, proxies /api → localhost:5000
 
 ---
 
-## API Reference
+## ⚙️ Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `SECRET_KEY` | `dev-secret-key-change-in-production` | Flask secret key |
+| `JWT_SECRET_KEY` | `dev-jwt-secret-change-in-production` | JWT signing key |
+| `DATABASE_URI` | `sqlite:///tarjetas.db` (manual) or `sqlite:////app/data/tarjetas.db` (Docker) | SQLAlchemy database URI |
+| `FLASK_ENV` | `development` | Flask environment mode |
+| `REACT_APP_REGISTRATION_ENABLED` | `true` | Allow public registration (set to `false` for production) |
+
+---
+
+## 📡 API Reference
 
 ### Auth
 | Method | URL | Body | Description |
@@ -111,7 +180,7 @@ npm start   # runs on http://localhost:3000, proxies /api → localhost:5000
 
 ---
 
-## CSV Import Format
+## 📊 CSV Import Format
 
 The CSV file must have `question` and `answer` columns (case-insensitive). An optional `context` column can be included to store additional information such as examples, explanations, or alternative answers.
 
@@ -138,11 +207,16 @@ Simple question,Simple answer,
 
 ---
 
-## Environment Variables
+## 🔐 Security Notes
 
-| Variable | Default | Description |
-|---|---|---|
-| `SECRET_KEY` | `dev-secret-key-change-in-production` | Flask secret key |
-| `JWT_SECRET_KEY` | `dev-jwt-secret-change-in-production` | JWT signing key |
-| `DATABASE_URI` | `sqlite:///tarjetas.db` | SQLAlchemy database URI |
-| `FLASK_DEBUG` | `false` | Enable Flask debug mode |
+- Always change `SECRET_KEY` and `JWT_SECRET_KEY` in production
+- Use a proper database (PostgreSQL, MySQL) instead of SQLite in production
+- Set `REACT_APP_REGISTRATION_ENABLED=false` in production to control user access
+- Use HTTPS in production
+- Store sensitive values in a secure secret manager
+
+---
+
+## 📝 License
+
+See [LICENSE](LICENSE) file for details.
