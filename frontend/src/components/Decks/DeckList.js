@@ -115,6 +115,15 @@ export default function DeckList() {
     load();
   };
 
+  const handleToggleShare = async (id) => {
+    try {
+      const { data } = await api.put(`/decks/${id}/share`);
+      setDecks((prev) => prev.map((d) => (d.id === id ? { ...d, is_public: data.is_public } : d)));
+    } catch {
+      // silently ignore - state stays unchanged
+    }
+  };
+
   const toggleCombineSelect = (id) => {
     setCombineSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -350,9 +359,26 @@ export default function DeckList() {
                               </span>
                             ) : null;
                           })()}
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            deck.is_public
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                          }`}>
+                            {deck.is_public ? t('deckDetail.public') : t('deckDetail.private')}
+                          </span>
                         </div>
                       </Link>
                       <div className="ml-4 flex gap-3 items-center shrink-0">
+                        <button
+                          onClick={() => handleToggleShare(deck.id)}
+                          className={`text-xs px-2 py-0.5 rounded-full border font-medium transition ${
+                            deck.is_public
+                              ? 'border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900'
+                              : 'border-gray-300 text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {deck.is_public ? t('deckDetail.public') : t('deckDetail.private')}
+                        </button>
                         <button
                           onClick={() => { setEditingDeck({ id: deck.id, name: deck.name, description: deck.description || '', category_id: deck.category_id || sinCategoryId || null }); setEditDeckError(''); }}
                           className="text-xs text-indigo-500 hover:text-indigo-700"
