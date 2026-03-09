@@ -38,6 +38,7 @@ export default function DeckDetail() {
   const [liveCounts, setLiveCounts] = useState({ correct: 0, wrong: 0 });
   const [invertCards, setInvertCards] = useState(false);
   const [hideKnown, setHideKnown] = useState(false);
+  const [onlyDifficult, setOnlyDifficult] = useState(false);
   const [autoFlipDelay, setAutoFlipDelay] = useState(0); // 0 = disabled
   const [fillWeakMode, setFillWeakMode] = useState(false);
   const [fillShowCharCount, setFillShowCharCount] = useState(false);
@@ -51,6 +52,9 @@ export default function DeckDetail() {
   // Known cards
   const [knownCardIds, setKnownCardIds] = useState(new Set());
   const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known'
+
+  // Difficult cards
+  const [difficultCardIds, setDifficultCardIds] = useState(new Set());
 
   // Duplicate cards
   const [duplicateGroups, setDuplicateGroups] = useState(null);
@@ -78,6 +82,12 @@ export default function DeckDetail() {
   const loadKnownCards = useCallback(() => {
     api.get(`/statistics/decks/${id}/known`)
       .then(({ data }) => setKnownCardIds(new Set(data.known_card_ids)))
+      .catch(() => {});
+  }, [id]);
+
+  const loadDifficultCards = useCallback(() => {
+    api.get(`/statistics/decks/${id}/difficult`)
+      .then(({ data }) => setDifficultCardIds(new Set(data.difficult_card_ids)))
       .catch(() => {});
   }, [id]);
 
@@ -185,6 +195,7 @@ export default function DeckDetail() {
       setShuffle(preferences.shuffle);
       setInvertCards(preferences.invert_cards);
       setHideKnown(preferences.hide_known);
+      setOnlyDifficult(preferences.only_difficult);
       setAutoFlipDelay(preferences.auto_flip_delay);
       setFillWeakMode(preferences.fill_weak_mode);
       setFillShowCharCount(preferences.fill_show_char_count);
@@ -208,6 +219,7 @@ export default function DeckDetail() {
       shuffle,
       invert_cards: invertCards,
       hide_known: hideKnown,
+      only_difficult: onlyDifficult,
       auto_flip_delay: autoFlipDelay,
       fill_weak_mode: fillWeakMode,
       fill_show_char_count: fillShowCharCount,
@@ -227,6 +239,17 @@ export default function DeckDetail() {
         baseCards = baseCards.filter((c) => !knownIds.has(c.id));
       } catch (err) {
         console.error('Failed to fetch known cards, showing all cards:', err);
+      }
+    }
+    if (onlyDifficult) {
+      try {
+        const { data } = await api.get(`/statistics/decks/${id}/difficult`);
+        const freshDifficultIds = new Set(data.difficult_card_ids);
+        setDifficultCardIds(freshDifficultIds);
+        baseCards = baseCards.filter((c) => freshDifficultIds.has(c.id));
+      } catch (err) {
+        console.error('Failed to fetch difficult cards, using cached data:', err);
+        baseCards = baseCards.filter((c) => difficultCardIds.has(c.id));
       }
     }
     let selectedCards;
@@ -324,6 +347,7 @@ export default function DeckDetail() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadMarkedCards(); }, [loadMarkedCards]);
   useEffect(() => { loadKnownCards(); }, [loadKnownCards]);
+  useEffect(() => { loadDifficultCards(); }, [loadDifficultCards]);
 
   if (!deck) return <div className="p-8 text-center text-gray-400">{t('common.loading')}</div>;
 
@@ -604,6 +628,15 @@ export default function DeckDetail() {
                         className="text-indigo-600"
                       />
                       <span className="text-sm dark:text-gray-300">{t('deckDetail.hideKnown')}</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={onlyDifficult}
+                        onChange={() => setOnlyDifficult(!onlyDifficult)}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm dark:text-gray-300">{t('deckDetail.onlyDifficult')}</span>
                     </label>
                     {mode === 'study' && (
                       <div>

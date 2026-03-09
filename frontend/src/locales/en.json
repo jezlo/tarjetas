@@ -301,7 +301,8 @@
     "noKnownCards": "No known cards yet. Mark cards as ⭐ Known during study sessions.",
     "unmarkKnown": "Unmark",
     "failedUnmark": "Failed to unmark card. Please try again.",
-    "unmarkConfirm": "Unmark this card as known?"
+    "unmarkConfirm": "Unmark this card as known?",
+    "onlyDifficult": "🔥 Only difficult cards"
   },
   "card": {
     "addNew": "Add New Card",

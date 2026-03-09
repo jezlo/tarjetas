@@ -19,6 +19,16 @@ def _get_or_create_stat(card_id, user_id):
     return stat
 
 
+def update_difficulty_status(stat):
+    """Mark a card as difficult if wrong_count >= 2 AND error_rate > 30%."""
+    total = stat.correct_count + stat.wrong_count
+    if total == 0:
+        stat.is_difficult = False
+    else:
+        error_rate = stat.wrong_count / total
+        stat.is_difficult = stat.wrong_count >= 2 and error_rate > 0.3
+
+
 @statistics_bp.route('', methods=['GET'])
 @jwt_required()
 def get_statistics():
@@ -77,6 +87,7 @@ def record_result(card_id):
         stat.wrong_count += 1
     if known:
         stat.is_known = True
+    update_difficulty_status(stat)
     stat.last_reviewed = datetime.utcnow()
     db.session.commit()
     return jsonify(stat.to_dict()), 200
@@ -108,6 +119,20 @@ def get_marked_cards(deck_id):
         CardStatistic.is_marked,
     ).all()
     return jsonify({'marked_card_ids': [s.card_id for s in marked_stats]}), 200
+
+
+@statistics_bp.route('/decks/<int:deck_id>/difficult', methods=['GET'])
+@jwt_required()
+def get_difficult_cards(deck_id):
+    user_id = int(get_jwt_identity())
+    deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
+    card_ids = [c.id for c in deck.cards]
+    difficult_stats = CardStatistic.query.filter(
+        CardStatistic.card_id.in_(card_ids),
+        CardStatistic.user_id == user_id,
+        CardStatistic.is_difficult,
+    ).all()
+    return jsonify({'difficult_card_ids': [s.card_id for s in difficult_stats]}), 200
 
 
 @statistics_bp.route('/cards/<int:card_id>/mark', methods=['POST'])

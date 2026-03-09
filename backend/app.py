@@ -85,6 +85,10 @@ def _migrate_db(db):
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE card_statistics ADD COLUMN is_marked BOOLEAN NOT NULL DEFAULT 0'))
             conn.commit()
+    if 'is_difficult' not in card_statistics_columns:
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE card_statistics ADD COLUMN is_difficult BOOLEAN NOT NULL DEFAULT 0'))
+            conn.commit()
     users_columns = [col['name'] for col in inspector.get_columns('users')]
     if 'is_admin' not in users_columns:
         with db.engine.connect() as conn:
