@@ -302,7 +302,7 @@
     "unmarkKnown": "Unmark",
     "failedUnmark": "Failed to unmark card. Please try again.",
     "unmarkConfirm": "Unmark this card as known?",
-    "onlyDifficult": "🔥 Only difficult cards"
+    "onlyDifficult": "🔥 Reinforce difficult cards"
   },
   "card": {
     "addNew": "Add New Card",

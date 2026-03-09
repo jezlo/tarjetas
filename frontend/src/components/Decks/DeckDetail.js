@@ -246,10 +246,14 @@ export default function DeckDetail() {
         const { data } = await api.get(`/statistics/decks/${id}/difficult`);
         const freshDifficultIds = new Set(data.difficult_card_ids);
         setDifficultCardIds(freshDifficultIds);
-        baseCards = baseCards.filter((c) => freshDifficultIds.has(c.id));
+        const difficultCards = baseCards.filter((c) => freshDifficultIds.has(c.id));
+        const normalCards = baseCards.filter((c) => !freshDifficultIds.has(c.id));
+        baseCards = [...difficultCards, ...normalCards];
       } catch (err) {
         console.error('Failed to fetch difficult cards, using cached data:', err);
-        baseCards = baseCards.filter((c) => difficultCardIds.has(c.id));
+        const difficultCards = baseCards.filter((c) => difficultCardIds.has(c.id));
+        const normalCards = baseCards.filter((c) => !difficultCardIds.has(c.id));
+        baseCards = [...difficultCards, ...normalCards];
       }
     }
     let selectedCards;
