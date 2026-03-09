@@ -70,21 +70,21 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {t('viewer.cardOf', { n: index + 1, total: cards.length })}
       </p>
 
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
+      <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">{t('viewer.question')}</p>
-          <p className="text-xl font-semibold text-gray-800">{questionText}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 dark:text-indigo-300 mb-1">{t('viewer.question')}</p>
+          <p className="text-xl font-semibold text-gray-800 dark:text-gray-100">{questionText}</p>
         </div>
         {selected !== null && card.context && (
           <>
-            <hr className="border-gray-200" />
+            <hr className="border-gray-200 dark:border-gray-700" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{t('viewer.context')}</p>
-              <p className="text-sm italic text-gray-500">{card.context}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{t('viewer.context')}</p>
+              <p className="text-sm italic text-gray-500 dark:text-gray-400">{card.context}</p>
             </div>
           </>
         )}
@@ -94,13 +94,13 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
         {options.map((opt, i) => {
           let btnClass = 'w-full px-4 py-3 rounded-lg text-left font-medium transition border ';
           if (selected === null) {
-            btnClass += 'bg-white border-gray-300 hover:bg-indigo-50 text-gray-800';
+            btnClass += 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-indigo-900 text-gray-800 dark:text-gray-100';
           } else if (opt.isCorrect) {
-            btnClass += 'bg-green-100 border-green-400 text-green-800';
+            btnClass += 'bg-green-100 dark:bg-green-900 border-green-400 dark:border-green-600 text-green-800 dark:text-green-200';
           } else if (selected === opt) {
-            btnClass += 'bg-red-100 border-red-400 text-red-800';
+            btnClass += 'bg-red-100 dark:bg-red-900 border-red-400 dark:border-red-600 text-red-800 dark:text-red-200';
           } else {
-            btnClass += 'bg-white border-gray-200 text-gray-400';
+            btnClass += 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500';
           }
           return (
             <button
@@ -116,7 +116,7 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
       </div>
 
       {selected !== null && (
-        <p className={`text-sm font-semibold ${selected.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+        <p className={`text-sm font-semibold ${selected.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
           {selected.isCorrect
             ? t('viewer.correct')
             : `${t('viewer.incorrect')} — ${t('viewer.correctAnswer')} ${correctAnswerText}`}
@@ -127,14 +127,14 @@ export default function TriviaViewer({ cards, index, onNext, onPrev, onResult, i
         <button
           onClick={handlePrev}
           disabled={index === 0}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 transition"
         >
           {t('viewer.prev')}
         </button>
         {selected !== null && (
           <button
             onClick={handleNext}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             {index === cards.length - 1 ? t('viewer.finish') : t('viewer.next')}
           </button>
