@@ -65,15 +65,15 @@ export default function Statistics() {
   const formatDate = (iso) => formatDateWithTimezone(iso, timezone);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">{t('stats.title')}</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{t('stats.title')}</h2>
           <button
             onClick={handleClearStatistics}
-            className="text-sm text-red-500 hover:text-red-700 border border-red-300 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+            className="text-sm text-red-500 hover:text-red-700 border border-red-300 dark:border-red-800 rounded-lg px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950 transition"
           >
             {t('stats.clearStatistics')}
           </button>
@@ -89,17 +89,17 @@ export default function Statistics() {
               { label: t('stats.wrong'), value: stats.wrong },
               { label: t('stats.accuracy'), value: `${stats.accuracy}%` },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white rounded-xl shadow p-4 text-center">
+              <div key={label} className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 text-center">
                 <p className="text-2xl font-bold text-indigo-600">{value}</p>
-                <p className="text-sm text-gray-500 mt-1">{label}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{label}</p>
               </div>
             ))}
           </div>
         )}
 
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('stats.byDeck')}</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">{t('stats.byDeck')}</h3>
         {decks.length === 0 ? (
-          <p className="text-gray-400">{t('stats.noDecks')}</p>
+          <p className="text-gray-400 dark:text-gray-500">{t('stats.noDecks')}</p>
         ) : (
           <div className="space-y-3 mb-8">
             {decks.map((deck) => {
@@ -107,11 +107,11 @@ export default function Statistics() {
               return (
                 <div
                   key={deck.id}
-                  className="bg-white rounded-xl shadow p-4 cursor-pointer hover:shadow-md transition"
+                  className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 cursor-pointer hover:shadow-md transition"
                   onClick={() => loadDeckStats(deck.id)}
                 >
                   <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-gray-800">{deck.name}</h4>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">{deck.name}</h4>
                     {!ds && (
                       <span className="text-xs text-indigo-500">{t('stats.clickToLoad')}</span>
                     )}
@@ -120,19 +120,19 @@ export default function Statistics() {
                     <div className="grid grid-cols-4 gap-2 mt-3 text-center text-sm">
                       <div>
                         <p className="font-bold text-indigo-600">{ds.total_reviews}</p>
-                        <p className="text-gray-500">{t('stats.reviews')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('stats.reviews')}</p>
                       </div>
                       <div>
                         <p className="font-bold text-green-600">{ds.correct}</p>
-                        <p className="text-gray-500">{t('stats.correct')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('stats.correct')}</p>
                       </div>
                       <div>
                         <p className="font-bold text-red-500">{ds.wrong}</p>
-                        <p className="text-gray-500">{t('stats.wrong')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('stats.wrong')}</p>
                       </div>
                       <div>
                         <p className="font-bold text-indigo-600">{ds.accuracy}%</p>
-                        <p className="text-gray-500">{t('stats.accuracy')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('stats.accuracy')}</p>
                       </div>
                     </div>
                   )}
@@ -143,18 +143,18 @@ export default function Statistics() {
         )}
 
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-700">{t('stats.sessions')}</h3>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{t('stats.sessions')}</h3>
           {sessions.length > 0 && (
             <button
               onClick={handleDeleteAllSessions}
-              className="text-sm text-red-500 hover:text-red-700 border border-red-300 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+              className="text-sm text-red-500 hover:text-red-700 border border-red-300 dark:border-red-800 rounded-lg px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950 transition"
             >
               {t('stats.deleteAllSessions')}
             </button>
           )}
         </div>
         {sessions.length === 0 ? (
-          <p className="text-gray-400">{t('stats.noSessions')}</p>
+          <p className="text-gray-400 dark:text-gray-500">{t('stats.noSessions')}</p>
         ) : (
           <div className="space-y-3">
             {sessions.map((s) => {
@@ -162,22 +162,22 @@ export default function Statistics() {
               const accuracy = total ? Math.round((s.correct_count / total) * 100) : 0;
               const sessionTypeLabel = t(`stats.sessionTypes.${s.session_type}`);
               const sessionTypeBadgeColors = {
-                trivia: 'bg-yellow-100 text-yellow-700',
-                fill: 'bg-green-100 text-green-700',
-                study: 'bg-indigo-100 text-indigo-700',
+                trivia: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
+                fill: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300',
+                study: 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300',
               };
               const sessionTypeBadgeColor = sessionTypeBadgeColors[s.session_type] || sessionTypeBadgeColors.study;
               return (
-                <div key={s.id} className="bg-white rounded-xl shadow p-4">
+                <div key={s.id} className="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-gray-800">{s.deck_name}</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-100">{s.deck_name}</p>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sessionTypeBadgeColor}`}>
                           {sessionTypeLabel}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(s.started_at)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(s.started_at)}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-bold text-indigo-600">{accuracy}%</span>
@@ -193,7 +193,7 @@ export default function Statistics() {
                   <div className="flex gap-4 mt-3 text-sm">
                     <span className="text-green-600 font-medium">{t('stats.correctCount', { n: s.correct_count })}</span>
                     <span className="text-red-500 font-medium">{t('stats.wrongCount', { n: s.wrong_count })}</span>
-                    <span className="text-gray-400">{t('stats.total', { n: total })}</span>
+                    <span className="text-gray-400 dark:text-gray-500">{t('stats.total', { n: total })}</span>
                   </div>
                 </div>
               );

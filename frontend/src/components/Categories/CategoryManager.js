@@ -68,12 +68,12 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">{t('catManager.title')}</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{t('catManager.title')}</h2>
           <button
             onClick={() => { setShowForm(!showForm); setNewName(''); setCreateError(''); }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
@@ -83,7 +83,7 @@ export default function CategoryManager() {
         </div>
 
         {showForm && (
-          <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-5 mb-6 space-y-3">
+          <form onSubmit={handleCreate} className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 mb-6 space-y-3">
             {createError && <p className="text-red-500 text-sm">{createError}</p>}
             <input
               placeholder={t('catManager.categoryName')}
@@ -91,7 +91,7 @@ export default function CategoryManager() {
               onChange={(e) => setNewName(e.target.value)}
               autoFocus
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
               {t('catManager.createCategory')}
@@ -101,7 +101,7 @@ export default function CategoryManager() {
 
         <div className="space-y-3">
           {categories.map((cat) => (
-            <div key={cat.id} className="bg-white rounded-xl shadow p-4">
+            <div key={cat.id} className="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
               {editingCategory && editingCategory.id === cat.id ? (
                 <div className="space-y-2">
                   {editError && <p className="text-red-500 text-sm">{editError}</p>}
@@ -110,19 +110,19 @@ export default function CategoryManager() {
                     onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleEdit(); if (e.key === 'Escape') setEditingCategory(null); }}
                     autoFocus
-                    className="w-full border border-indigo-400 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full border border-indigo-400 dark:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
                   <div className="flex gap-2">
                     <button onClick={handleEdit} className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">{t('common.save')}</button>
-                    <button onClick={() => { setEditingCategory(null); setEditError(''); }} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">{t('common.cancel')}</button>
+                    <button onClick={() => { setEditingCategory(null); setEditError(''); }} className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">{t('common.cancel')}</button>
                   </div>
                 </div>
               ) : (
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="font-medium text-gray-800">{cat.name}</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{cat.name}</span>
                     {cat.is_default && (
-                      <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{t('catManager.default')}</span>
+                      <span className="ml-2 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{t('catManager.default')}</span>
                     )}
                     <p className="text-sm text-indigo-600 mt-0.5">{deckCountForCategory(cat)} {t('catManager.decks')}</p>
                   </div>
@@ -148,7 +148,7 @@ export default function CategoryManager() {
           ))}
 
           {categories.length === 0 && (
-            <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
               {t('catManager.noCategories')}
             </div>
           )}

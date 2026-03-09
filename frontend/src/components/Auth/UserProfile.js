@@ -67,70 +67,70 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-lg mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-1">{t('profile.title')}</h2>
-        <p className="text-gray-500 text-sm mb-6">{t('profile.subtitle')}</p>
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-1">{t('profile.title')}</h2>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{t('profile.subtitle')}</p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-4 text-sm">
             {success}
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow p-6">
-          <p className="text-sm text-gray-500 mb-4">
-            {t('profile.username')} <span className="font-semibold text-gray-800">{user?.username}</span>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            {t('profile.username')} <span className="font-semibold text-gray-800 dark:text-gray-100">{user?.username}</span>
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.email')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
-            <hr className="border-gray-200" />
-            <p className="text-sm font-medium text-gray-700">{t('profile.changePassword')}</p>
+            <hr className="border-gray-200 dark:border-gray-700" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('profile.changePassword')}</p>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.currentPassword')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.currentPassword')}</label>
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoComplete="current-password"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.newPassword')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.newPassword')}</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoComplete="new-password"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.confirmPassword')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.confirmPassword')}</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoComplete="new-password"
               />
             </div>
@@ -144,17 +144,17 @@ export default function UserProfile() {
             </button>
           </form>
 
-          <hr className="border-gray-200 mt-6 mb-4" />
+          <hr className="border-gray-200 dark:border-gray-700 mt-6 mb-4" />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('profile.language')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.language')}</label>
             <div className="flex gap-3">
               <button
                 onClick={() => handleLanguageChange('es')}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${
                   language === 'es'
                     ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-indigo-50'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-gray-700'
                 }`}
               >
                 🇪🇸 {t('profile.languageSpanish')}
@@ -164,7 +164,7 @@ export default function UserProfile() {
                 className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${
                   language === 'en'
                     ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-indigo-50'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-gray-700'
                 }`}
               >
                 🇺🇸 {t('profile.languageEnglish')}
