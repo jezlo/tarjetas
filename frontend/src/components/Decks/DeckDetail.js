@@ -598,7 +598,7 @@ export default function DeckDetail() {
                               max={mode === 'fill' ? fillEligible.length : cards.length}
                               value={configCardCount}
                               onChange={(e) => setConfigCardCount(Math.max(1, Math.min(mode === 'fill' ? fillEligible.length : cards.length, parseInt(e.target.value) || 1)))}
-                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                             />
                           )}
                         </label>

@@ -139,7 +139,11 @@
     "selectAtLeast2": "Select at least 2 decks to combine",
     "newNameRequired": "New deck name is required",
     "categoryDeckCreated": "Deck created but failed to assign category",
-    "categoryDeckUpdated": "Deck updated but failed to assign category"
+    "categoryDeckUpdated": "Deck updated but failed to assign category",
+    "cardFilter": "Card type to combine",
+    "cardFilter_all": "All cards",
+    "cardFilter_difficult": "🔥 Difficult cards only",
+    "cardFilter_known": "⭐ Known cards only"
   },
   "browse": {
     "title": "Browse Public Decks",

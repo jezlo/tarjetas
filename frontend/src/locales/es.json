@@ -139,7 +139,11 @@
     "selectAtLeast2": "Selecciona al menos 2 mazos para combinar",
     "newNameRequired": "Se requiere el nombre del nuevo mazo",
     "categoryDeckCreated": "Mazo creado pero no se pudo asignar la categoría",
-    "categoryDeckUpdated": "Mazo actualizado pero no se pudo asignar la categoría"
+    "categoryDeckUpdated": "Mazo actualizado pero no se pudo asignar la categoría",
+    "cardFilter": "Tipo de tarjetas a combinar",
+    "cardFilter_all": "Todas las tarjetas",
+    "cardFilter_difficult": "🔥 Solo tarjetas difíciles",
+    "cardFilter_known": "⭐ Solo tarjetas conocidas"
   },
   "browse": {
     "title": "Explorar mazos públicos",
