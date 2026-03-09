@@ -301,7 +301,8 @@
     "noKnownCards": "Todavía no hay tarjetas sabidas. Marca tarjetas como ⭐ Sabida durante las sesiones de estudio.",
     "unmarkKnown": "Desmarcar",
     "failedUnmark": "Error al desmarcar la tarjeta. Inténtalo de nuevo.",
-    "unmarkConfirm": "¿Desmarcar esta tarjeta como sabida?"
+    "unmarkConfirm": "¿Desmarcar esta tarjeta como sabida?",
+    "onlyDifficult": "🔥 Solo tarjetas difíciles"
   },
   "card": {
     "addNew": "Añadir nueva tarjeta",

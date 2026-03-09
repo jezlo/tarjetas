@@ -131,6 +131,7 @@ class CardStatistic(db.Model):
     last_reviewed = db.Column(db.DateTime, default=datetime.utcnow)
     is_known = db.Column(db.Boolean, default=False, nullable=False)
     is_marked = db.Column(db.Boolean, default=False, nullable=False)
+    is_difficult = db.Column(db.Boolean, default=False, nullable=False)
 
     card = db.relationship('Card', back_populates='statistics')
 
@@ -144,6 +145,7 @@ class CardStatistic(db.Model):
             'last_reviewed': self.last_reviewed.isoformat(),
             'is_known': self.is_known,
             'is_marked': self.is_marked,
+            'is_difficult': self.is_difficult,
         }
 
 
