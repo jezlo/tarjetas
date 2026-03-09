@@ -75,8 +75,10 @@
     "wrong": "Incorrectas",
     "accuracy": "Precisión",
     "recentDecks": "Mazos recientes",
+    "mostUsedDecks": "Más usados",
     "viewAll": "Ver todos →",
     "noDecks": "Sin mazos todavía.",
+    "noUsedDecks": "Aún no hay sesiones de estudio.",
     "createFirst": "Crea tu primer mazo",
     "loadError": "No se pudieron cargar las estadísticas."
   },

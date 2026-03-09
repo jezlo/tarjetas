@@ -10,12 +10,18 @@ export default function Dashboard() {
   const user = getCurrentUser();
   const [stats, setStats] = useState(null);
   const [recentDecks, setRecentDecks] = useState([]);
+  const [mostUsedDecks, setMostUsedDecks] = useState([]);
+  const [activeTab, setActiveTab] = useState('recent');
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     api.get('/statistics').then(({ data }) => setStats(data)).catch(() => setLoadError(t('dashboard.loadError')));
     api.get('/decks').then(({ data }) => setRecentDecks(data.slice(0, 4))).catch(() => {});
+    api.get('/decks/most-used').then(({ data }) => setMostUsedDecks(data)).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const displayedDecks = activeTab === 'recent' ? recentDecks : mostUsedDecks;
+  const emptyKey = activeTab === 'recent' ? 'dashboard.noDecks' : 'dashboard.noUsedDecks';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -45,18 +51,41 @@ export default function Dashboard() {
         )}
 
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{t('dashboard.recentDecks')}</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('recent')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
+                activeTab === 'recent'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              {t('dashboard.recentDecks')}
+            </button>
+            <button
+              onClick={() => setActiveTab('mostUsed')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
+                activeTab === 'mostUsed'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              {t('dashboard.mostUsedDecks')}
+            </button>
+          </div>
           <Link to="/decks" className="text-indigo-600 text-sm hover:underline">{t('dashboard.viewAll')}</Link>
         </div>
 
-        {recentDecks.length === 0 ? (
+        {displayedDecks.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
-            {t('dashboard.noDecks')}{' '}
-            <Link to="/decks" className="text-indigo-600 hover:underline">{t('dashboard.createFirst')}</Link>
+            {t(emptyKey)}{' '}
+            {activeTab === 'recent' && (
+              <Link to="/decks" className="text-indigo-600 hover:underline">{t('dashboard.createFirst')}</Link>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {recentDecks.map((deck) => (
+            {displayedDecks.map((deck) => (
               <Link
                 key={deck.id}
                 to={`/decks/${deck.id}`}
