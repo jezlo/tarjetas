@@ -21,6 +21,7 @@ export default function DeckList() {
   const [showCombine, setShowCombine] = useState(false);
   const [combineSelected, setCombineSelected] = useState([]);
   const [combineName, setCombineName] = useState('');
+  const [combineCardFilter, setCombineCardFilter] = useState('all');
   const [combineError, setCombineError] = useState('');
 
   const load = async () => {
@@ -142,10 +143,11 @@ export default function DeckList() {
       return;
     }
     try {
-      await api.post('/decks/combine', { name: combineName.trim(), deck_ids: combineSelected });
+      await api.post('/decks/combine', { name: combineName.trim(), deck_ids: combineSelected, card_filter: combineCardFilter });
       setShowCombine(false);
       setCombineSelected([]);
       setCombineName('');
+      setCombineCardFilter('all');
       load();
     } catch (err) {
       setCombineError(err.response?.data?.message || t('decks.failedCombine'));
@@ -219,7 +221,7 @@ export default function DeckList() {
             </h2>
             <div className="flex gap-2">
               <button
-                onClick={() => { setShowCombine(!showCombine); setCombineSelected([]); setCombineName(''); setCombineError(''); }}
+                onClick={() => { setShowCombine(!showCombine); setCombineSelected([]); setCombineName(''); setCombineCardFilter('all'); setCombineError(''); }}
                 className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-gray-700 transition text-sm font-medium"
               >
                 {showCombine ? t('decks.cancelCombine') : t('decks.combineDecks')}
@@ -293,6 +295,24 @@ export default function DeckList() {
                 required
                 className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('decks.cardFilter')}</p>
+                <div className="flex flex-wrap gap-4">
+                  {['all', 'difficult', 'known'].map((filter) => (
+                    <label key={filter} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="combineCardFilter"
+                        value={filter}
+                        checked={combineCardFilter === filter}
+                        onChange={() => setCombineCardFilter(filter)}
+                        className="text-indigo-600"
+                      />
+                      <span className="text-sm dark:text-gray-300">{t(`decks.cardFilter_${filter}`)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
               <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm font-medium">
                 {t('decks.createCombined')}
               </button>

@@ -234,6 +234,9 @@ def combine_decks():
     data = request.get_json()
     name = data.get('name', '').strip()
     deck_ids = data.get('deck_ids', [])
+    card_filter = data.get('card_filter', 'all')
+    if card_filter not in ('all', 'difficult', 'known'):
+        card_filter = 'all'
     if not name:
         return jsonify({'message': 'name is required'}), 400
     if not deck_ids or len(deck_ids) < 2:
@@ -243,6 +246,19 @@ def combine_decks():
     if len(source_decks) != len(deck_ids):
         return jsonify({'message': 'Some decks were not found'}), 404
 
+    # Collect card IDs that match the filter for this user
+    filter_field = {'difficult': CardStatistic.is_difficult, 'known': CardStatistic.is_known}.get(card_filter)
+    if filter_field is not None:
+        all_card_ids = [c.id for deck in source_decks for c in deck.cards]
+        matching_stats = CardStatistic.query.filter(
+            CardStatistic.card_id.in_(all_card_ids),
+            CardStatistic.user_id == user_id,
+            filter_field.is_(True),
+        ).all()
+        matching_ids = {s.card_id for s in matching_stats}
+    else:
+        matching_ids = None  # include all cards
+
     new_deck = Deck(name=name, description=data.get('description', ''), user_id=user_id)
     sin_cat, _ = get_or_create_default_categories(user_id)
     new_deck.category_id = sin_cat.id
@@ -250,7 +266,8 @@ def combine_decks():
     db.session.flush()
     for source in source_decks:
         for card in source.cards:
-            db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer, context=card.context))
+            if matching_ids is None or card.id in matching_ids:
+                db.session.add(Card(deck_id=new_deck.id, question=card.question, answer=card.answer, context=card.context))
     db.session.commit()
     return jsonify(new_deck.to_dict()), 201
 
