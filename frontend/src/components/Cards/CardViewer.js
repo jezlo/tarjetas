@@ -228,14 +228,14 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               onClick={handleMark}
               disabled={transitioning}
               aria-label={isMarked ? t('viewer.unpinCard') : t('viewer.pinCard')}
-              title={isMarked ? 'Unpin card' : 'Pin card for later review'}
+              title={isMarked ? t('viewer.unpinCard') : t('viewer.pinCard')}
               className={`px-5 py-2 font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
                 isMarked
                   ? 'bg-orange-200 dark:bg-orange-900 text-orange-700 dark:text-orange-300 hover:bg-orange-300 dark:hover:bg-orange-800'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              📌 {isMarked ? 'Pinned' : 'Pin'}
+              {isMarked ? t('viewer.pinned') : t('viewer.pin')}
             </button>
           </div>
 

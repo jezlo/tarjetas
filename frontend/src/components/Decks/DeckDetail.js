@@ -51,7 +51,7 @@ export default function DeckDetail() {
 
   // Known cards
   const [knownCardIds, setKnownCardIds] = useState(new Set());
-  const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known'
+  const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known' | 'difficult'
 
   // Difficult cards
   const [difficultCardIds, setDifficultCardIds] = useState(new Set());
@@ -416,8 +416,8 @@ export default function DeckDetail() {
                 </button>
               </div>
             )}
-            {knownCardIds.size > 0 && (
-              <div className="flex items-center gap-2 mb-4 text-sm">
+            {(knownCardIds.size > 0 || difficultCardIds.size > 0) && (
+              <div className="flex items-center gap-2 mb-4 text-sm flex-wrap">
                 <span className="text-gray-500 dark:text-gray-400">{t('deckDetail.knownFilter')}</span>
                 <button
                   onClick={() => setShowKnownFilter('all')}
@@ -425,12 +425,22 @@ export default function DeckDetail() {
                 >
                   {t('deckDetail.showAll')}
                 </button>
-                <button
-                  onClick={() => setShowKnownFilter('known')}
-                  className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'known' ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-gray-700'}`}
-                >
-                  {t('deckDetail.showKnown')} ({knownCardIds.size})
-                </button>
+                {knownCardIds.size > 0 && (
+                  <button
+                    onClick={() => setShowKnownFilter('known')}
+                    className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'known' ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-gray-700'}`}
+                  >
+                    {t('deckDetail.showKnown')} ({knownCardIds.size})
+                  </button>
+                )}
+                {difficultCardIds.size > 0 && (
+                  <button
+                    onClick={() => setShowKnownFilter('difficult')}
+                    className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'difficult' ? 'bg-red-500 text-white border-red-500' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-gray-700'}`}
+                  >
+                    {t('deckDetail.showDifficult')} ({difficultCardIds.size})
+                  </button>
+                )}
               </div>
             )}
             {cards.length === 0 ? (
@@ -441,9 +451,17 @@ export default function DeckDetail() {
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
                 {t('deckDetail.noKnownCards')}
               </div>
+            ) : showKnownFilter === 'difficult' && difficultCardIds.size === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
+                {t('deckDetail.noDifficultCards')}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cards.filter((card) => showKnownFilter === 'known' ? knownCardIds.has(card.id) : true).map((card) => (
+                {cards.filter((card) => {
+                  if (showKnownFilter === 'known') return knownCardIds.has(card.id);
+                  if (showKnownFilter === 'difficult') return difficultCardIds.has(card.id);
+                  return true;
+                }).map((card) => (
                   <div key={card.id} className={`rounded-xl shadow p-4 ${markedCardIds.has(card.id) ? 'bg-orange-50 dark:bg-orange-950 border-2 border-orange-300 dark:border-orange-700' : 'bg-white dark:bg-gray-800'}`}>
                     {editingCard && editingCard.id === card.id ? (
                       <div className="space-y-3">
@@ -481,13 +499,13 @@ export default function DeckDetail() {
                             onClick={handleEditSave}
                             className="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                           >
-                            Save
+                            {t('common.save')}
                           </button>
                           <button
                             onClick={() => { setEditingCard(null); setEditError(''); }}
                             className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </button>
                         </div>
                       </div>
@@ -517,7 +535,7 @@ export default function DeckDetail() {
                             onClick={() => { setEditingCard({ id: card.id, question: card.question, answer: card.answer, context: card.context || '' }); setEditError(''); }}
                             className="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                           >
-                            Edit
+                            {t('common.edit')}
                           </button>
                           <button
                             onClick={async () => {
@@ -527,7 +545,7 @@ export default function DeckDetail() {
                             }}
                             className="text-xs text-red-400 hover:text-red-600"
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                           {knownCardIds.has(card.id) && (
                             <button
@@ -549,7 +567,7 @@ export default function DeckDetail() {
 
         {(mode === 'study' || mode === 'questionnaire' || mode === 'trivia' || mode === 'fill') && (
           cards.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">Add cards first!</div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">{t('deckDetail.addCardsFirst')}</div>
           ) : studyPhase === 'config' ? (
             (() => {
               const fillEligible = cards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
@@ -590,7 +608,7 @@ export default function DeckDetail() {
                             onChange={() => setConfigCardCount(Math.min(10, mode === 'fill' ? fillEligible.length : cards.length))}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">Random selection:</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.randomSelection')}</span>
                           {configCardCount !== 'all' && (
                             <input
                               type="number"
