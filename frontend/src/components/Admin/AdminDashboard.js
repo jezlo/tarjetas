@@ -234,15 +234,15 @@ export default function AdminDashboard() {
   const formatDate = (iso) => formatDateWithTimezone(iso, timezone, t('admin.never'));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Navbar */}
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">{t('admin.title')}</h2>
-            <p className="text-gray-500 text-sm mt-1">{t('admin.subtitle')}</p>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{t('admin.title')}</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('admin.subtitle')}</p>
           </div>
           <button
             onClick={() => { setShowCreateModal(true); setCreateError(''); }}
@@ -253,42 +253,42 @@ export default function AdminDashboard() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
 
         {/* Stats summary */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">{users.length}</p>
-            <p className="text-sm text-gray-500 mt-1">{t('admin.totalUsers')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('admin.totalUsers')}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">
               {users.reduce((sum, u) => sum + (u.deck_count || 0), 0)}
             </p>
-            <p className="text-sm text-gray-500 mt-1">{t('admin.totalDecks')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('admin.totalDecks')}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 text-center">
             <p className="text-2xl font-bold text-indigo-600">
               {users.filter((u) => u.is_admin).length}
             </p>
-            <p className="text-sm text-gray-500 mt-1">{t('admin.admins')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('admin.admins')}</p>
           </div>
         </div>
 
         {/* Users table */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-gray-400">{t('admin.loadingUsers')}</div>
+            <div className="p-8 text-center text-gray-400 dark:text-gray-500">{t('admin.loadingUsers')}</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">{t('admin.noUsers')}</div>
+            <div className="p-8 text-center text-gray-400 dark:text-gray-500">{t('admin.noUsers')}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-left text-gray-500 uppercase text-xs tracking-wider">
+                  <tr className="bg-gray-50 dark:bg-gray-800 text-left text-gray-500 dark:text-gray-400 uppercase text-xs tracking-wider">
                     <th className="px-4 py-3">{t('admin.user')}</th>
                     <th className="px-4 py-3">{t('admin.email')}</th>
                     <th className="px-4 py-3 text-center">{t('nav.decks')}</th>
@@ -298,30 +298,30 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3 font-medium text-gray-800">
+                    <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                      <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">
                         {u.username}
                         {u.id === currentUser.id && (
-                          <span className="ml-2 text-xs text-gray-400">{t('admin.you')}</span>
+                          <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">{t('admin.you')}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{u.email}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className="inline-block bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded-full text-xs">
+                        <span className="inline-block bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold px-2 py-0.5 rounded-full text-xs">
                           {u.deck_count}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{formatDate(u.created_at)}</td>
-                      <td className="px-4 py-3 text-gray-500">{formatDate(u.last_login)}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatDate(u.created_at)}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatDate(u.last_login)}</td>
                       <td className="px-4 py-3 text-center">
                         {u.is_admin ? (
-                          <span className="inline-block bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-semibold">
+                          <span className="inline-block bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs px-2 py-0.5 rounded-full font-semibold">
                             {t('admin.adminRole')}
                           </span>
                         ) : (
-                          <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                          <span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-2 py-0.5 rounded-full">
                             {t('admin.userRole')}
                           </span>
                         )}
@@ -353,17 +353,17 @@ export default function AdminDashboard() {
 
         {/* Global Settings */}
         <div className="mt-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('admin.globalSettings')}</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{t('admin.globalSettings')}</h3>
           {settingsError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
               {settingsError}
             </div>
           )}
-          <div className="bg-white rounded-xl shadow p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-800">{t('admin.userRegistration')}</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="font-medium text-gray-800 dark:text-gray-100">{t('admin.userRegistration')}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {settingsLoading
                     ? t('admin.loading')
                     : registrationEnabled
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
               <button
                 onClick={handleToggleRegistration}
                 disabled={settingsLoading || settingsUpdating}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${registrationEnabled ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed ${registrationEnabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}
                 aria-label="Toggle user registration"
               >
                 <span
@@ -382,13 +382,13 @@ export default function AdminDashboard() {
                 />
               </button>
             </div>
-            <div className="border-t border-gray-100 mt-6 pt-6">
+            <div className="border-t border-gray-100 dark:border-gray-700 mt-6 pt-6">
               <div>
-                <p className="font-medium text-gray-800">{t('admin.timezone')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('admin.timezoneDesc')}</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{t('admin.timezone')}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('admin.timezoneDesc')}</p>
               </div>
               {timezoneError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mt-3 text-sm">
+                <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-3 py-2 rounded-lg mt-3 text-sm">
                   {timezoneError}
                 </div>
               )}
@@ -397,7 +397,7 @@ export default function AdminDashboard() {
                   value={timezoneInput}
                   onChange={(e) => setTimezoneInput(e.target.value)}
                   disabled={settingsLoading || timezoneSaving}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz} value={tz}>{tz}</option>
@@ -419,41 +419,41 @@ export default function AdminDashboard() {
       {/* Create user modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('admin.createNewUser')}</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{t('admin.createNewUser')}</h3>
             {createError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
+              <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg mb-4 text-sm">
                 {createError}
               </div>
             )}
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.username')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.username')}</label>
                 <input
                   type="text"
                   value={createForm.username}
                   onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.email')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.email')}</label>
                 <input
                   type="email"
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.password')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.password')}</label>
                 <input
                   type="password"
                   value={createForm.password}
                   onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
               </div>
@@ -463,9 +463,9 @@ export default function AdminDashboard() {
                   id="is_admin"
                   checked={createForm.is_admin}
                   onChange={(e) => setCreateForm({ ...createForm, is_admin: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor="is_admin" className="text-sm text-gray-700">{t('admin.grantAdmin')}</label>
+                <label htmlFor="is_admin" className="text-sm text-gray-700 dark:text-gray-300">{t('admin.grantAdmin')}</label>
               </div>
               <div className="flex gap-3 pt-2">
                 <button
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => { setShowCreateModal(false); setCreateError(''); }}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition font-medium"
                 >
                   {t('common.cancel')}
                 </button>
@@ -491,22 +491,22 @@ export default function AdminDashboard() {
       {/* Reset password modal */}
       {showResetModal && resetTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-1">{t('admin.resetPassword')}</h3>
-            <p className="text-sm text-gray-500 mb-4">{t('admin.resetPasswordFor')} <span className="font-semibold text-gray-700">{resetTarget.username}</span></p>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">{t('admin.resetPassword')}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('admin.resetPasswordFor')} <span className="font-semibold text-gray-700 dark:text-gray-200">{resetTarget.username}</span></p>
             {resetError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
+              <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg mb-4 text-sm">
                 {resetError}
               </div>
             )}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.newPassword')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.newPassword')}</label>
                 <input
                   type="password"
                   value={resetPassword}
                   onChange={(e) => setResetPassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                   autoComplete="new-password"
                 />
@@ -522,7 +522,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => { setShowResetModal(false); setResetTarget(null); setResetError(''); }}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition font-medium"
                 >
                   {t('common.cancel')}
                 </button>

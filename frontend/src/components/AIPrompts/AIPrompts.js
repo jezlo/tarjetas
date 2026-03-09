@@ -90,12 +90,12 @@ export default function AIPrompts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-2">{t('prompts.title')}</h2>
-        <p className="text-gray-500 mb-8">{t('prompts.subtitle')}</p>
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{t('prompts.title')}</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-8">{t('prompts.subtitle')}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {PROMPT_IDS.map((promptId) => {
@@ -105,12 +105,12 @@ export default function AIPrompts() {
             const wasCopied = copied === promptId;
 
             return (
-              <div key={promptId} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                <h3 className="text-base font-semibold text-gray-800 mb-3">
+              <div key={promptId} className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 flex flex-col">
+                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   {t(`prompts.items.${promptId}.name`)}
                 </h3>
 
-                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                   {renderTemplateText(text)}
                 </p>
 
@@ -118,7 +118,7 @@ export default function AIPrompts() {
                   <div className="space-y-3 mb-4">
                     {placeholders.map((placeholder) => (
                       <div key={placeholder}>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                           {t('prompts.placeholderHint')} {placeholder}
                         </label>
                         <input
@@ -126,7 +126,7 @@ export default function AIPrompts() {
                           value={getValue(promptId, placeholder)}
                           onChange={(e) => setValue(promptId, placeholder, e.target.value)}
                           placeholder={placeholder}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                          className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         />
                       </div>
                     ))}
@@ -142,7 +142,7 @@ export default function AIPrompts() {
                         ? 'bg-green-500 text-white'
                         : ready
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     {wasCopied ? t('prompts.copied') : t('prompts.copy')}

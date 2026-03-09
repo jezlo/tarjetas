@@ -18,14 +18,14 @@ export default function Dashboard() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
           {t('dashboard.welcomeBack', { name: user.username })}
         </h2>
-        <p className="text-gray-500 mb-8">{t('dashboard.readyToStudy')}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-8">{t('dashboard.readyToStudy')}</p>
 
         {loadError && <p className="text-red-500 text-sm mb-4">{loadError}</p>}
         {stats && (
@@ -36,21 +36,21 @@ export default function Dashboard() {
               { label: t('dashboard.wrong'), value: stats.wrong },
               { label: t('dashboard.accuracy'), value: `${stats.accuracy}%` },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white rounded-xl shadow p-4 text-center">
+              <div key={label} className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 text-center">
                 <p className="text-2xl font-bold text-indigo-600">{value}</p>
-                <p className="text-sm text-gray-500 mt-1">{label}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{label}</p>
               </div>
             ))}
           </div>
         )}
 
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-700">{t('dashboard.recentDecks')}</h3>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{t('dashboard.recentDecks')}</h3>
           <Link to="/decks" className="text-indigo-600 text-sm hover:underline">{t('dashboard.viewAll')}</Link>
         </div>
 
         {recentDecks.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
             {t('dashboard.noDecks')}{' '}
             <Link to="/decks" className="text-indigo-600 hover:underline">{t('dashboard.createFirst')}</Link>
           </div>
@@ -60,10 +60,10 @@ export default function Dashboard() {
               <Link
                 key={deck.id}
                 to={`/decks/${deck.id}`}
-                className="bg-white rounded-xl shadow p-5 hover:shadow-md transition block"
+                className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 hover:shadow-md transition block"
               >
-                <h4 className="font-semibold text-gray-800">{deck.name}</h4>
-                <p className="text-gray-500 text-sm mt-1 truncate">{deck.description || t('common.noDescription')}</p>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100">{deck.name}</h4>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 truncate">{deck.description || t('common.noDescription')}</p>
                 <p className="text-indigo-600 text-sm mt-2">{deck.card_count} {t('common.cards')}</p>
               </Link>
             ))}

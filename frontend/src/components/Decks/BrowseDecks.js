@@ -55,23 +55,23 @@ export default function BrowseDecks() {
   const isSuccess = message && (message.includes('successfully') || message.includes('correctamente'));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">{t('browse.title')}</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{t('browse.title')}</h2>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500 mr-1">{t('browse.sort')}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">{t('browse.sort')}</span>
             <button
               onClick={() => setSortBy('recent')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${sortBy === 'recent' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${sortBy === 'recent' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               {t('browse.mostRecent')}
             </button>
             <button
               onClick={() => setSortBy('popular')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${sortBy === 'popular' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${sortBy === 'popular' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               {t('browse.mostPopular')}
             </button>
@@ -79,33 +79,33 @@ export default function BrowseDecks() {
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded-lg text-sm font-medium ${isSuccess ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+          <div className={`mb-4 p-3 rounded-lg text-sm font-medium ${isSuccess ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300'}`}>
             {message}
           </div>
         )}
 
         {decks.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
             {t('browse.noDecks')}
           </div>
         ) : (
           <div className="space-y-3">
             {decks.map((deck) => (
-              <div key={deck.id} className="bg-white rounded-xl shadow p-5 flex justify-between items-center hover:shadow-md transition">
+              <div key={deck.id} className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 flex justify-between items-center hover:shadow-md transition">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-800 truncate">{deck.name}</h3>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 truncate">{deck.name}</h3>
                     {deck.is_own && (
-                      <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">{t('browse.yours')}</span>
+                      <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full font-medium">{t('browse.yours')}</span>
                     )}
                     {!deck.is_own && deck.already_imported && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{t('browse.alreadyImported')}</span>
+                      <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-medium">{t('browse.alreadyImported')}</span>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm truncate">{deck.description || t('common.noDescription')}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm truncate">{deck.description || t('common.noDescription')}</p>
                   <p className="text-indigo-600 text-sm mt-1">
                     {deck.card_count} {t('common.cards')} · {t('browse.by')} {deck.owner_username}
-                    <span className="text-gray-400 ml-2">· {deck.import_count} {deck.import_count === 1 ? t('browse.import') : t('browse.imports')}</span>
+                    <span className="text-gray-400 dark:text-gray-500 ml-2">· {deck.import_count} {deck.import_count === 1 ? t('browse.import') : t('browse.imports')}</span>
                   </p>
                 </div>
                 <div className="ml-4 flex items-center gap-2 flex-shrink-0">
@@ -113,7 +113,7 @@ export default function BrowseDecks() {
                     onClick={() => handleLike(deck.id)}
                     disabled={liking === deck.id}
                     title={deck.user_has_liked ? 'Unlike this deck' : 'Like this deck'}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition ${deck.user_has_liked ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition ${deck.user_has_liked ? 'bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 hover:bg-pink-200 dark:hover:bg-pink-800' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     <span>{deck.user_has_liked ? '❤️' : '🤍'}</span>
                     <span>{deck.like_count}</span>

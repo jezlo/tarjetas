@@ -35,13 +35,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-indigo-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-indigo-50 dark:bg-gray-950">
+      <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-lg w-full max-w-md">
         <div className="flex justify-end mb-2">
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             aria-label="Select language"
           >
             <option value="es">Español</option>
@@ -49,28 +49,28 @@ export default function Login() {
           </select>
         </div>
         <h1 className="text-3xl font-bold text-indigo-600 mb-6 text-center">{t('app.name')}</h1>
-        <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">{t('login.signIn')}</h2>
+        <h2 className="text-xl font-semibold mb-4 text-center text-gray-700 dark:text-gray-200">{t('login.signIn')}</h2>
         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.username')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login.username')}</label>
             <input
               name="username"
               value={form.username}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.password')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login.password')}</label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
           </div>
           <button
@@ -82,7 +82,7 @@ export default function Login() {
           </button>
         </form>
         {REGISTRATION_ENABLED && (
-          <p className="mt-4 text-center text-sm text-gray-600">
+          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             {t('login.noAccount')}{' '}
             <Link to="/register" className="text-indigo-600 font-medium hover:underline">
               {t('login.register')}
