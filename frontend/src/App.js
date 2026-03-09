@@ -14,6 +14,7 @@ import AIPrompts from './components/AIPrompts/AIPrompts';
 import { isAuthenticated, isAdmin } from './utils/authUtils';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SessionPreferencesProvider } from './contexts/SessionPreferencesContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const REGISTRATION_ENABLED = process.env.REACT_APP_REGISTRATION_ENABLED !== 'false';
 
@@ -28,6 +29,7 @@ function AdminRoute({ children }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <LanguageProvider>
       <SessionPreferencesProvider>
       <BrowserRouter>
@@ -114,5 +116,6 @@ export default function App() {
       </BrowserRouter>
       </SessionPreferencesProvider>
     </LanguageProvider>
+    </ThemeProvider>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getCurrentUser } from '../utils/authUtils';
 import { useTranslation } from '../hooks/useTranslation';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function Navbar() {
   const { t } = useTranslation();
   const user = getCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const logout = () => {
     setMenuOpen(false);
@@ -29,12 +31,12 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const linkClass = (to) =>
-    `font-medium transition-colors ${isActive(to) ? 'text-indigo-600' : 'text-gray-600 hover:text-indigo-600'}`;
+    `font-medium transition-colors ${isActive(to) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`;
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-white dark:bg-gray-900 shadow-sm">
       <div className="px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600 shrink-0">
+        <Link to="/" className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
           {t('app.name')}
         </Link>
 
@@ -45,6 +47,22 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label={theme === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
+            title={theme === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
+          >
+            {theme === 'dark' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
           <button onClick={logout} className="text-sm text-red-500 hover:underline">
             {t('nav.logout')}
           </button>
@@ -52,7 +70,7 @@ export default function Navbar() {
 
         {/* Hamburger button - mobile only */}
         <button
-          className="md:hidden p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-gray-100 transition-colors"
+          className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle navigation menu"
           aria-expanded={menuOpen}
@@ -71,7 +89,7 @@ export default function Navbar() {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-100 px-6 py-3 flex flex-col gap-1">
+        <div className="md:hidden border-t border-gray-100 dark:border-gray-700 px-6 py-3 flex flex-col gap-1 bg-white dark:bg-gray-900">
           {navLinks.map(({ to, label }) => (
             <Link
               key={to}
@@ -82,6 +100,26 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+          <button
+            onClick={() => { toggleTheme(); setMenuOpen(false); }}
+            className="py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-left flex items-center gap-2"
+          >
+            {theme === 'dark' ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                {t('nav.lightMode')}
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                {t('nav.darkMode')}
+              </>
+            )}
+          </button>
           <button
             onClick={logout}
             className="py-2 text-sm text-red-500 hover:underline text-left"

@@ -121,6 +121,17 @@ def toggle_mark(card_id):
     return jsonify(stat.to_dict()), 200
 
 
+@statistics_bp.route('/cards/<int:card_id>/unmark', methods=['PUT'])
+@jwt_required()
+def unmark_known(card_id):
+    user_id = int(get_jwt_identity())
+    card = Card.query.join(Deck).filter(Card.id == card_id, Deck.user_id == user_id).first_or_404()
+    stat = _get_or_create_stat(card.id, user_id)
+    stat.is_known = False
+    db.session.commit()
+    return jsonify(stat.to_dict()), 200
+
+
 @statistics_bp.route('/decks/<int:deck_id>/marks', methods=['DELETE'])
 @jwt_required()
 def clear_deck_marks(deck_id):

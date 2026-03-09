@@ -13,7 +13,9 @@
     "myDecks": "Mis mazos",
     "categories": "Categorías",
     "backToDecks": "← Volver a mazos",
-    "prompts": "Prompts IA"
+    "prompts": "Prompts IA",
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro"
   },
   "common": {
     "cancel": "Cancelar",
@@ -289,7 +291,15 @@
     "failedSaveCard": "Error al guardar la tarjeta",
     "clearPinsConfirm": "¿Borrar todos los fijados de este mazo?",
     "deleteCardConfirm": "¿Eliminar tarjeta?",
-    "deleteCardConfirm2": "¿Eliminar esta tarjeta?"
+    "deleteCardConfirm2": "¿Eliminar esta tarjeta?",
+    "showKnown": "⭐ Tarjetas sabidas",
+    "showAll": "Todas las tarjetas",
+    "knownFilter": "Filtrar:",
+    "knownCards": "Tarjetas sabidas",
+    "noKnownCards": "Todavía no hay tarjetas sabidas. Marca tarjetas como ⭐ Sabida durante las sesiones de estudio.",
+    "unmarkKnown": "Desmarcar",
+    "failedUnmark": "Error al desmarcar la tarjeta. Inténtalo de nuevo.",
+    "unmarkConfirm": "¿Desmarcar esta tarjeta como sabida?"
   },
   "card": {
     "addNew": "Añadir nueva tarjeta",

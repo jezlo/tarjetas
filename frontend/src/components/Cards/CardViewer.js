@@ -110,18 +110,18 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {t('viewer.cardOf', { n: index + 1, total: cards.length })}
         {isFillCard && (
-          <span className="ml-2 text-xs font-medium bg-purple-100 text-purple-700 rounded px-2 py-0.5">{t('viewer.fillCard')}</span>
+          <span className="ml-2 text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded px-2 py-0.5">{t('viewer.fillCard')}</span>
         )}
       </p>
 
       {isFillCard ? (
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 space-y-4">
+        <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400 mb-1">{t('viewer.question')}</p>
-            <p className="text-xl font-semibold text-gray-800">{card.question}</p>
+            <p className="text-xl font-semibold text-gray-800 dark:text-gray-100">{card.question}</p>
           </div>
           {!fillSubmitted ? (
             <form onSubmit={handleFillSubmit} className="space-y-3">
@@ -131,7 +131,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
                 value={fillInput}
                 onChange={(e) => setFillInput(e.target.value)}
                 placeholder={t('viewer.typeAnswer')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoComplete="off"
               />
               <button
@@ -143,21 +143,21 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               </button>
             </form>
           ) : (
-            <div className={`rounded-xl p-4 ${fillCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} aria-live="polite">
-              <p className={`text-sm font-semibold ${fillCorrect ? 'text-green-700' : 'text-red-700'}`}>
+            <div className={`rounded-xl p-4 ${fillCorrect ? 'bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800'}`} aria-live="polite">
+              <p className={`text-sm font-semibold ${fillCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                 {fillCorrect ? t('viewer.correct') : t('viewer.incorrect')}
               </p>
               {!fillCorrect && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   {t('viewer.correctAnswer')}   <span className="font-semibold">{card.answer}</span>
                 </p>
               )}
               {card.context ? (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {t('viewer.context')}   <span className="italic">{card.context}</span>
                 </p>
               ) : null}
-              <p className="text-sm text-gray-500 mt-1">{t('viewer.yourAnswer')} {fillInput}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('viewer.yourAnswer')} {fillInput}</p>
             </div>
           )}
         </div>
@@ -169,11 +169,11 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
           >
             <div className={`card-flip ${flipped ? 'flipped' : ''} ${slideDir === 'out-left' ? 'card-slide-out' : ''} w-full h-full`}>
               {/* Front */}
-              <div className="card-face bg-white rounded-2xl shadow-lg flex items-center justify-center p-6">
-                <p className="text-xl font-semibold text-gray-800 text-center">{frontText}</p>
+              <div className="card-face bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center p-6">
+                <p className="text-xl font-semibold text-gray-800 dark:text-gray-100 text-center">{frontText}</p>
               </div>
               {/* Back */}
-              <div className="card-face card-back bg-indigo-600 rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 gap-3">
+              <div className="card-face card-back bg-indigo-600 dark:bg-indigo-700 rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 gap-3">
                 <p className="text-xl font-semibold text-white text-center">{backText}</p>
                 {card.context ? (
                   <p className="text-sm text-indigo-200 text-center mt-1">{card.context}</p>
@@ -181,7 +181,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-400">{t('viewer.clickFlip')}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{t('viewer.clickFlip')}</p>
         </>
       )}
 
@@ -199,7 +199,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
             <button
               onClick={handlePrev}
               disabled={index === 0}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 transition"
             >
               {t('viewer.prev')}
             </button>
@@ -212,7 +212,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               onClick={() => recordResult(true, true)}
               disabled={transitioning}
               aria-label="Mark card as known"
-              className="px-5 py-2 bg-yellow-100 text-yellow-700 font-semibold rounded-lg hover:bg-yellow-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 font-semibold rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('viewer.known')}  
             </button>
@@ -220,7 +220,7 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               onClick={() => recordResult(true, false)}
               disabled={transitioning}
               aria-label="Mark as easy"
-              className="px-5 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-semibold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('viewer.easy')}  
             </button>
@@ -231,8 +231,8 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
               title={isMarked ? 'Unpin card' : 'Pin card for later review'}
               className={`px-5 py-2 font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
                 isMarked
-                  ? 'bg-orange-200 text-orange-700 hover:bg-orange-300'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-orange-200 dark:bg-orange-900 text-orange-700 dark:text-orange-300 hover:bg-orange-300 dark:hover:bg-orange-800'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               📌 {isMarked ? 'Pinned' : 'Pin'}
@@ -243,14 +243,14 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
             <button
               onClick={() => recordResult(false)}
               disabled={!flipped || transitioning}
-              className="px-6 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 font-semibold rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('viewer.wrong')}
             </button>
             <button
               onClick={() => recordResult(true)}
               disabled={!flipped || transitioning}
-              className="px-6 py-2 bg-green-100 text-green-600 font-semibold rounded-lg hover:bg-green-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 font-semibold rounded-lg hover:bg-green-200 dark:hover:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('viewer.correct2')}
             </button>
@@ -260,14 +260,14 @@ export default function CardViewer({ cards, index, onNext, onPrev, onResult, inv
             <button
               onClick={handlePrev}
               disabled={index === 0 || transitioning}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 transition"
             >
               {t('viewer.prev')}
             </button>
             <button
               onClick={handleNext}
               disabled={index === cards.length - 1 || transitioning}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 transition"
             >
               {t('viewer.next')}
             </button>
