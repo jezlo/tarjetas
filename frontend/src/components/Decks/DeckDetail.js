@@ -48,6 +48,10 @@ export default function DeckDetail() {
   // Marked cards
   const [markedCardIds, setMarkedCardIds] = useState(new Set());
 
+  // Known cards
+  const [knownCardIds, setKnownCardIds] = useState(new Set());
+  const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known'
+
   // Duplicate cards
   const [duplicateGroups, setDuplicateGroups] = useState(null);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
@@ -68,6 +72,12 @@ export default function DeckDetail() {
   const loadMarkedCards = useCallback(() => {
     api.get(`/statistics/decks/${id}/marked`)
       .then(({ data }) => setMarkedCardIds(new Set(data.marked_card_ids)))
+      .catch(() => {});
+  }, [id]);
+
+  const loadKnownCards = useCallback(() => {
+    api.get(`/statistics/decks/${id}/known`)
+      .then(({ data }) => setKnownCardIds(new Set(data.known_card_ids)))
       .catch(() => {});
   }, [id]);
 
@@ -286,6 +296,16 @@ export default function DeckDetail() {
     }
   };
 
+  const handleUnmarkKnown = async (cardId) => {
+    if (!window.confirm(t('deckDetail.unmarkConfirm'))) return;
+    try {
+      await api.put(`/statistics/cards/${cardId}/unmark`);
+      loadKnownCards();
+    } catch {
+      alert(t('deckDetail.failedUnmark'));
+    }
+  };
+
   const handleEditSave = async () => {
     setEditError('');
     try {
@@ -303,6 +323,7 @@ export default function DeckDetail() {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadMarkedCards(); }, [loadMarkedCards]);
+  useEffect(() => { loadKnownCards(); }, [loadKnownCards]);
 
   if (!deck) return <div className="p-8 text-center text-gray-400">{t('common.loading')}</div>;
 
@@ -311,16 +332,16 @@ export default function DeckDetail() {
   const hiddenDuringSession = new Set(['add', 'bulk', 'import', 'duplicates']);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <Link to="/decks" className="text-indigo-600 font-medium hover:underline">{t('nav.backToDecks')}</Link>
-        <span className="text-gray-600 font-medium">{deck.name}</span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <nav className="bg-white dark:bg-gray-900 shadow-sm px-6 py-4 flex justify-between items-center">
+        <Link to="/decks" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">{t('nav.backToDecks')}</Link>
+        <span className="text-gray-600 dark:text-gray-300 font-medium">{deck.name}</span>
         <button
           onClick={handleToggleShare}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
             deck.is_public
-              ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
-              : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
+              ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700 dark:hover:bg-green-800'
+              : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
           }`}
         >
           {deck.is_public ? t('deckDetail.public') : t('deckDetail.private')}
@@ -338,7 +359,7 @@ export default function DeckDetail() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                   mode === m
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {m === 'list' ? t('deckDetail.modeCards') : m === 'study' ? t('deckDetail.modeStudy') : m === 'questionnaire' ? t('deckDetail.modeQuestionnaire') : m === 'trivia' ? t('deckDetail.modeTrivia') : m === 'fill' ? t('deckDetail.modeFill') : m === 'add' ? t('deckDetail.modeAdd') : m === 'bulk' ? t('deckDetail.modeBulk') : m === 'import' ? t('deckDetail.modeImport') : t('deckDetail.modeDuplicates')}
@@ -347,7 +368,7 @@ export default function DeckDetail() {
           {!isActiveSession && (
             <button
               onClick={handleExport}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-gray-600 border border-gray-300 hover:bg-indigo-50"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-gray-700"
             >
               {t('deckDetail.exportCsv')}
             </button>
@@ -357,53 +378,74 @@ export default function DeckDetail() {
         {mode === 'list' && (
           <div>
             {markedCardIds.size > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 text-sm text-orange-700 flex justify-between items-center">
+              <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-xl p-3 mb-4 text-sm text-orange-700 dark:text-orange-300 flex justify-between items-center">
                 <span>{t('deckDetail.pinnedMsg', { n: markedCardIds.size })}</span>
                 <button
                   onClick={handleClearAllPins}
-                  className="ml-4 text-xs text-orange-600 hover:text-orange-800 border border-orange-300 rounded px-2 py-1 hover:bg-orange-100 transition"
+                  className="ml-4 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-200 border border-orange-300 dark:border-orange-700 rounded px-2 py-1 hover:bg-orange-100 dark:hover:bg-orange-900 transition"
                 >
                   {t('deckDetail.clearAllPins')}
                 </button>
               </div>
             )}
+            {knownCardIds.size > 0 && (
+              <div className="flex items-center gap-2 mb-4 text-sm">
+                <span className="text-gray-500 dark:text-gray-400">{t('deckDetail.knownFilter')}</span>
+                <button
+                  onClick={() => setShowKnownFilter('all')}
+                  className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-gray-700'}`}
+                >
+                  {t('deckDetail.showAll')}
+                </button>
+                <button
+                  onClick={() => setShowKnownFilter('known')}
+                  className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'known' ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-gray-700'}`}
+                >
+                  {t('deckDetail.showKnown')} ({knownCardIds.size})
+                </button>
+              </div>
+            )}
             {cards.length === 0 ? (
-              <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
                 {t('deckDetail.noCards')}
+              </div>
+            ) : showKnownFilter === 'known' && knownCardIds.size === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
+                {t('deckDetail.noKnownCards')}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cards.map((card) => (
-                  <div key={card.id} className={`rounded-xl shadow p-4 ${markedCardIds.has(card.id) ? 'bg-orange-50 border-2 border-orange-300' : 'bg-white'}`}>
+                {cards.filter((card) => showKnownFilter === 'known' ? knownCardIds.has(card.id) : true).map((card) => (
+                  <div key={card.id} className={`rounded-xl shadow p-4 ${markedCardIds.has(card.id) ? 'bg-orange-50 dark:bg-orange-950 border-2 border-orange-300 dark:border-orange-700' : 'bg-white dark:bg-gray-800'}`}>
                     {editingCard && editingCard.id === card.id ? (
                       <div className="space-y-3">
                         {editError && <p className="text-red-500 text-sm">{editError}</p>}
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">{t('deckDetail.question')}</label>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('deckDetail.question')}</label>
                           <textarea
                             value={editingCard.question}
                             onChange={(e) => setEditingCard({ ...editingCard, question: e.target.value })}
                             rows={2}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">{t('deckDetail.answer')}</label>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('deckDetail.answer')}</label>
                           <textarea
                             value={editingCard.answer}
                             onChange={(e) => setEditingCard({ ...editingCard, answer: e.target.value })}
                             rows={2}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">>{t('deckDetail.contextOptional')}</label>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">>{t('deckDetail.contextOptional')}</label>
                           <textarea
                             value={editingCard.context || ''}
                             onChange={(e) => setEditingCard({ ...editingCard, context: e.target.value })}
                             rows={2}
                             placeholder={t('deckDetail.additionalContext')}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           />
                         </div>
                         <div className="flex gap-2">
@@ -415,7 +457,7 @@ export default function DeckDetail() {
                           </button>
                           <button
                             onClick={() => { setEditingCard(null); setEditError(''); }}
-                            className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition"
+                            className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                           >
                             Cancel
                           </button>
@@ -424,23 +466,28 @@ export default function DeckDetail() {
                     ) : (
                       <>
                         <div className="flex justify-between items-start mb-1">
-                          <p className="font-medium text-gray-800">{card.question}</p>
-                          <button
-                            onClick={() => handleTogglePin(card.id)}
-                            className={`ml-1 shrink-0 text-base leading-none ${markedCardIds.has(card.id) ? 'text-orange-500' : 'text-gray-300 hover:text-orange-400'}`}
-                            title={markedCardIds.has(card.id) ? t('deckDetail.removePin') : t('deckDetail.pinCard')}
-                          >
-                            📌
-                          </button>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{card.question}</p>
+                          <div className="flex items-center gap-1 ml-1 shrink-0">
+                            {knownCardIds.has(card.id) && (
+                              <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded px-1.5 py-0.5">⭐</span>
+                            )}
+                            <button
+                              onClick={() => handleTogglePin(card.id)}
+                              className={`text-base leading-none ${markedCardIds.has(card.id) ? 'text-orange-500' : 'text-gray-300 dark:text-gray-600 hover:text-orange-400'}`}
+                              title={markedCardIds.has(card.id) ? t('deckDetail.removePin') : t('deckDetail.pinCard')}
+                            >
+                              📌
+                            </button>
+                          </div>
                         </div>
-                        <p className="text-gray-500 text-sm mt-1">{card.answer}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{card.answer}</p>
                         {card.context && (
-                          <p className="text-xs text-blue-500 mt-1 italic">💡 {card.context}</p>
+                          <p className="text-xs text-blue-500 dark:text-blue-400 mt-1 italic">💡 {card.context}</p>
                         )}
-                        <div className="flex gap-3 mt-2">
+                        <div className="flex gap-3 mt-2 flex-wrap">
                           <button
                             onClick={() => { setEditingCard({ id: card.id, question: card.question, answer: card.answer, context: card.context || '' }); setEditError(''); }}
-                            className="text-xs text-indigo-500 hover:text-indigo-700"
+                            className="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                           >
                             Edit
                           </button>
@@ -454,6 +501,14 @@ export default function DeckDetail() {
                           >
                             Delete
                           </button>
+                          {knownCardIds.has(card.id) && (
+                            <button
+                              onClick={() => handleUnmarkKnown(card.id)}
+                              className="text-xs text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-200"
+                            >
+                              {t('deckDetail.unmarkKnown')}
+                            </button>
+                          )}
                         </div>
                       </>
                     )}
@@ -466,30 +521,30 @@ export default function DeckDetail() {
 
         {(mode === 'study' || mode === 'questionnaire' || mode === 'trivia' || mode === 'fill') && (
           cards.length === 0 ? (
-            <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Add cards first!</div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">Add cards first!</div>
           ) : studyPhase === 'config' ? (
             (() => {
               const fillEligible = cards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
               if (mode === 'fill' && fillEligible.length === 0) {
                 return (
-                  <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
                     {t('deckDetail.noSingleWord')}
                   </div>
                 );
               }
               return (
-                <div className="bg-white rounded-xl shadow p-6 max-w-md mx-auto">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 max-w-md mx-auto">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
                     {mode === 'study' ? t('deckDetail.studySetup') : mode === 'trivia' ? t('deckDetail.triviaSetup') : mode === 'questionnaire' ? t('deckDetail.questionnaireSetup') : t('deckDetail.fillSetup')}
                   </h3>
                   {mode === 'fill' && (
-                    <p className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4">
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg px-3 py-2 mb-4">
                       {t('deckDetail.fillOnly', { n: fillEligible.length, total: cards.length })}
                     </p>
                   )}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('deckDetail.cardsToStudy')}</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('deckDetail.cardsToStudy')}</label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -498,7 +553,7 @@ export default function DeckDetail() {
                             onChange={() => setConfigCardCount('all')}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">{t('deckDetail.allCards', { n: mode === 'fill' ? fillEligible.length : cards.length })}</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.allCards', { n: mode === 'fill' ? fillEligible.length : cards.length })}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -528,7 +583,7 @@ export default function DeckDetail() {
                         onChange={() => setShuffle(!shuffle)}
                         className="text-indigo-600"
                       />
-                      <span className="text-sm">{t('deckDetail.shuffle')}</span>
+                      <span className="text-sm dark:text-gray-300">{t('deckDetail.shuffle')}</span>
                     </label>
                     {mode !== 'fill' && (
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -538,7 +593,7 @@ export default function DeckDetail() {
                           onChange={() => setInvertCards(!invertCards)}
                           className="text-indigo-600"
                         />
-                        <span className="text-sm">{t('deckDetail.invert')}</span>
+                        <span className="text-sm dark:text-gray-300">{t('deckDetail.invert')}</span>
                       </label>
                     )}
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -548,11 +603,11 @@ export default function DeckDetail() {
                         onChange={() => setHideKnown(!hideKnown)}
                         className="text-indigo-600"
                       />
-                      <span className="text-sm">{t('deckDetail.hideKnown')}</span>
+                      <span className="text-sm dark:text-gray-300">{t('deckDetail.hideKnown')}</span>
                     </label>
                     {mode === 'study' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           {t('deckDetail.autoFlip')}
                         </label>
                         <div className="flex items-center gap-2">
@@ -562,7 +617,7 @@ export default function DeckDetail() {
                             onChange={() => setAutoFlipDelay(autoFlipDelay > 0 ? 0 : 5)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">{t('deckDetail.flipAfter')}</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.flipAfter')}</span>
                           {autoFlipDelay > 0 && (
                             <input
                               type="number"
@@ -570,10 +625,10 @@ export default function DeckDetail() {
                               max={60}
                               value={autoFlipDelay}
                               onChange={(e) => setAutoFlipDelay(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
-                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                             />
                           )}
-                          {autoFlipDelay > 0 && <span className="text-sm text-gray-500">{t('deckDetail.seconds')}</span>}
+                          {autoFlipDelay > 0 && <span className="text-sm text-gray-500 dark:text-gray-400">{t('deckDetail.seconds')}</span>}
                         </div>
                       </div>
                     )}
@@ -586,7 +641,7 @@ export default function DeckDetail() {
                             onChange={() => setFillWeakMode(!fillWeakMode)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">{t('deckDetail.fillWeak')}</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.fillWeak')}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -595,20 +650,20 @@ export default function DeckDetail() {
                             onChange={() => setFillShowCharCount(!fillShowCharCount)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">{t('deckDetail.fillCharCount')}</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.fillCharCount')}</span>
                         </label>
                       </>
                     )}
                     {mode === 'trivia' && (
                       <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-gray-700">{t('deckDetail.triviaOptions')}</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('deckDetail.triviaOptions')}</label>
                         <input
                           type="number"
                           min={2}
                           max={10}
                           value={triviaOptionCount}
                           onChange={(e) => setTriviaOptionCount(Math.max(2, Math.min(10, parseInt(e.target.value) || 2)))}
-                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                          className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         />
                       </div>
                     )}
@@ -621,11 +676,11 @@ export default function DeckDetail() {
                             onChange={() => setIncludeFillCards(!includeFillCards)}
                             className="text-indigo-600"
                           />
-                          <span className="text-sm">{t('deckDetail.mixFill')}</span>
+                          <span className="text-sm dark:text-gray-300">{t('deckDetail.mixFill')}</span>
                         </label>
                         {includeFillCards && (
                           <div className="ml-6 flex items-center gap-2">
-                            <span className="text-sm text-gray-600">{t('deckDetail.fillPercentage')}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{t('deckDetail.fillPercentage')}</span>
                             <input
                               type="number"
                               min={10}
@@ -633,9 +688,9 @@ export default function DeckDetail() {
                               step={10}
                               value={fillCardPercentage}
                               onChange={(e) => setFillCardPercentage(Math.max(10, Math.min(50, parseInt(e.target.value) || 10)))}
-                              className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                              className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                             />
-                            <span className="text-sm text-gray-500">%</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
                           </div>
                         )}
                       </div>
@@ -651,25 +706,25 @@ export default function DeckDetail() {
               );
             })()
           ) : studyPhase === 'complete' ? (
-            <div className="bg-white rounded-xl shadow p-8 text-center max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-indigo-700 mb-2"><span aria-hidden="true">🎉 </span>{t('deckDetail.sessionDone')}</h3>
-              <p className="text-gray-500 mb-6">{t('deckDetail.sessionDoneDesc')}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center max-w-md mx-auto">
+              <h3 className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mb-2"><span aria-hidden="true">🎉 </span>{t('deckDetail.sessionDone')}</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('deckDetail.sessionDoneDesc')}</p>
               <div className="flex justify-center gap-10 mb-8">
                 <div>
                   <p className="text-3xl font-bold text-green-600">{liveCounts.correct}</p>
-                  <p className="text-sm text-gray-500">{t('deckDetail.sessionCorrect')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('deckDetail.sessionCorrect')}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-red-500">{liveCounts.wrong}</p>
-                  <p className="text-sm text-gray-500">{t('deckDetail.sessionWrong')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('deckDetail.sessionWrong')}</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-gray-700">
+                  <p className="text-3xl font-bold text-gray-700 dark:text-gray-200">
                     {liveCounts.correct + liveCounts.wrong > 0
                       ? Math.round((liveCounts.correct / (liveCounts.correct + liveCounts.wrong)) * 100)
                       : 0}%
                   </p>
-                  <p className="text-sm text-gray-500">{t('deckDetail.sessionAccuracy')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('deckDetail.sessionAccuracy')}</p>
                 </div>
               </div>
               <div className="flex gap-4 justify-center">
@@ -684,7 +739,7 @@ export default function DeckDetail() {
                 </button>
                 <button
                   onClick={() => handleModeChange('list')}
-                  className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition"
+                  className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                 >
                   {t('deckDetail.endSessionBtn')}
                 </button>
@@ -761,8 +816,8 @@ export default function DeckDetail() {
         {mode === 'duplicates' && (
           <div>
             {duplicateGroups === null ? (
-              <div className="bg-white rounded-xl shadow p-8 text-center">
-                <p className="text-gray-500 mb-4">{t('deckDetail.duplicatesDesc')}</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
+                <p className="text-gray-500 dark:text-gray-400 mb-4">{t('deckDetail.duplicatesDesc')}</p>
                 <button
                   onClick={loadDuplicates}
                   disabled={duplicateLoading}
@@ -772,12 +827,12 @@ export default function DeckDetail() {
                 </button>
               </div>
             ) : duplicateGroups.total_duplicates === 0 ? (
-              <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
                 {t('deckDetail.noDuplicates')}
               </div>
             ) : (
               <div>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 text-sm text-yellow-800 flex flex-wrap justify-between items-center gap-2">
+                <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 mb-4 text-sm text-yellow-800 dark:text-yellow-300 flex flex-wrap justify-between items-center gap-2">
                   <span>{t('deckDetail.duplicatesFound', { total: duplicateGroups.total_duplicates, groups: duplicateGroups.groups.length })}</span>
                   <div className="flex gap-2">
                     <button
@@ -788,7 +843,7 @@ export default function DeckDetail() {
                     </button>
                     <button
                       onClick={loadDuplicates}
-                      className="text-xs text-yellow-700 border border-yellow-300 rounded px-2 py-1 hover:bg-yellow-100 transition"
+                      className="text-xs text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-700 rounded px-2 py-1 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition"
                     >
                       {t('deckDetail.refresh')}
                     </button>
@@ -796,19 +851,19 @@ export default function DeckDetail() {
                 </div>
                 <div className="space-y-4">
                   {duplicateGroups.groups.map((group, gi) => (
-                    <div key={gi} className="bg-white rounded-xl shadow p-4">
-                      <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-2">
+                    <div key={gi} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                      <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 uppercase tracking-wide mb-2">
                         {t('deckDetail.duplicateGroup', { n: gi + 1, count: group.length })}
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {group.map((card) => (
-                          <div key={card.id} className={`rounded-lg border p-3 ${markedCardIds.has(card.id) ? 'bg-orange-50 border-orange-300' : 'bg-gray-50 border-gray-200'}`}>
-                            <p className="font-medium text-gray-800 text-sm">{card.question}</p>
-                            <p className="text-gray-500 text-xs mt-1">{card.answer}</p>
+                          <div key={card.id} className={`rounded-lg border p-3 ${markedCardIds.has(card.id) ? 'bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
+                            <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{card.question}</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{card.answer}</p>
                             <div className="flex gap-3 mt-2">
                               <button
                                 onClick={() => handleTogglePin(card.id)}
-                                className={`text-xs ${markedCardIds.has(card.id) ? 'text-orange-500 hover:text-orange-700' : 'text-gray-400 hover:text-orange-500'}`}
+                                className={`text-xs ${markedCardIds.has(card.id) ? 'text-orange-500 hover:text-orange-700' : 'text-gray-400 dark:text-gray-500 hover:text-orange-500'}`}
                                 title={markedCardIds.has(card.id) ? t('deckDetail.removePin') : t('deckDetail.pinCard')}
                               >
                                 {markedCardIds.has(card.id) ? t('deckDetail.pinnedCard') : t('deckDetail.pinCardBtn')}

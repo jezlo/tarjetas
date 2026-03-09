@@ -13,7 +13,9 @@
     "myDecks": "My Decks",
     "categories": "Categories",
     "backToDecks": "← Back to Decks",
-    "prompts": "AI Prompts"
+    "prompts": "AI Prompts",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "common": {
     "cancel": "Cancel",
@@ -289,7 +291,15 @@
     "failedSaveCard": "Failed to save card",
     "clearPinsConfirm": "Clear all pins for this deck?",
     "deleteCardConfirm": "Delete card?",
-    "deleteCardConfirm2": "Delete this card?"
+    "deleteCardConfirm2": "Delete this card?",
+    "showKnown": "⭐ Known cards",
+    "showAll": "All cards",
+    "knownFilter": "Filter:",
+    "knownCards": "Known cards",
+    "noKnownCards": "No known cards yet. Mark cards as ⭐ Known during study sessions.",
+    "unmarkKnown": "Unmark",
+    "failedUnmark": "Failed to unmark card. Please try again.",
+    "unmarkConfirm": "Unmark this card as known?"
   },
   "card": {
     "addNew": "Add New Card",
