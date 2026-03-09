@@ -5,7 +5,9 @@ import re
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Deck, Card, CardStatistic, User, DeckLike, get_or_create_default_categories
+from sqlalchemy import func
+
+from models import db, Deck, Card, CardStatistic, User, DeckLike, StudySession, get_or_create_default_categories
 from utils.csv_importer import import_cards_from_csv
 
 decks_bp = Blueprint('decks', __name__)
@@ -34,6 +36,27 @@ def create_deck():
     db.session.add(deck)
     db.session.commit()
     return jsonify(deck.to_dict()), 201
+
+
+@decks_bp.route('/most-used', methods=['GET'])
+@jwt_required()
+def get_most_used_decks():
+    user_id = int(get_jwt_identity())
+    session_counts = (
+        db.session.query(StudySession.deck_id, func.count(StudySession.id).label('session_count'))
+        .filter(StudySession.user_id == user_id)
+        .group_by(StudySession.deck_id)
+        .subquery()
+    )
+    decks = (
+        Deck.query
+        .filter_by(user_id=user_id)
+        .outerjoin(session_counts, Deck.id == session_counts.c.deck_id)
+        .order_by(func.coalesce(session_counts.c.session_count, 0).desc(), Deck.created_at.desc())
+        .limit(4)
+        .all()
+    )
+    return jsonify([d.to_dict() for d in decks]), 200
 
 
 @decks_bp.route('/public/list', methods=['GET'])

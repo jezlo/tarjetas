@@ -75,8 +75,10 @@
     "wrong": "Wrong",
     "accuracy": "Accuracy",
     "recentDecks": "Recent Decks",
+    "mostUsedDecks": "Most Used",
     "viewAll": "View all →",
     "noDecks": "No decks yet.",
+    "noUsedDecks": "No study sessions yet.",
     "createFirst": "Create your first deck",
     "loadError": "Could not load statistics."
   },
