@@ -195,7 +195,7 @@ export default function DeckDetail() {
       setShuffle(preferences.shuffle);
       setInvertCards(preferences.invert_cards);
       setHideKnown(preferences.hide_known);
-      setOnlyDifficult(preferences.only_difficult);
+      setOnlyDifficult(!!preferences.only_difficult);
       setAutoFlipDelay(preferences.auto_flip_delay);
       setFillWeakMode(preferences.fill_weak_mode);
       setFillShowCharCount(preferences.fill_show_char_count);
