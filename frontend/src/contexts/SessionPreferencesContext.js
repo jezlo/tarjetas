@@ -11,6 +11,7 @@ const DEFAULT_PREFERENCES = {
   shuffle: false,
   invert_cards: false,
   hide_known: false,
+  only_difficult: false,
   auto_flip_delay: 0,
   fill_weak_mode: false,
   fill_show_char_count: false,
