@@ -20,6 +20,96 @@ function shuffleArray(arr) {
   return a;
 }
 
+/**
+ * Selects and filters cards for a study session.
+ *
+ * Rules:
+ * - 'fill' mode restricts cards to single-word answers before any other filtering.
+ * - hideKnown removes cards marked as known (fetched fresh from the API).
+ * - onlyDifficult guarantees ALL difficult cards appear first; normal cards fill
+ *   remaining slots up to configCardCount (difficult cards are never cut off).
+ * - shuffle is applied *within* each group (difficult / normal) separately so that
+ *   difficult cards always stay at the front.
+ *
+ * Returns { selectedCards, doShuffle, freshDifficultIds }.
+ * freshDifficultIds is the Set fetched from the API when onlyDifficult is true,
+ * or null when onlyDifficult is false or the API call fails (cached data is used instead).
+ */
+async function selectAndFilterCards({
+  allCards,
+  mode,
+  hideKnown,
+  onlyDifficult,
+  shuffle,
+  configCardCount,
+  deckId,
+  cachedDifficultIds,
+}) {
+  let baseCards = [...allCards];
+
+  // Fill mode: only cards whose answer is a single word
+  if (mode === 'fill') {
+    baseCards = baseCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+  }
+
+  // Optionally exclude cards the user already knows
+  if (hideKnown) {
+    try {
+      const { data } = await api.get(`/statistics/decks/${deckId}/known`);
+      const knownIds = new Set(data.known_card_ids);
+      baseCards = baseCards.filter((c) => !knownIds.has(c.id));
+    } catch (err) {
+      console.error('Failed to fetch known cards, showing all cards:', err);
+    }
+  }
+
+  // Separate difficult cards from normal cards (keeping order within each group)
+  let difficultCount = 0;
+  let freshDifficultIds = null;
+  if (onlyDifficult) {
+    let difficultIds = cachedDifficultIds;
+    try {
+      const { data } = await api.get(`/statistics/decks/${deckId}/difficult`);
+      freshDifficultIds = new Set(data.difficult_card_ids);
+      difficultIds = freshDifficultIds;
+    } catch (err) {
+      console.error('Failed to fetch difficult cards, using cached data:', err);
+    }
+    const difficultCards = baseCards.filter((c) => difficultIds.has(c.id));
+    const normalCards = baseCards.filter((c) => !difficultIds.has(c.id));
+    difficultCount = difficultCards.length;
+    baseCards = [...difficultCards, ...normalCards];
+  }
+
+  // Select cards, always guaranteeing difficult cards are included in full
+  let selectedCards;
+  let doShuffle = shuffle;
+
+  if (onlyDifficult) {
+    const difficultPart = shuffle
+      ? shuffleArray(baseCards.slice(0, difficultCount))
+      : baseCards.slice(0, difficultCount);
+    const normalPart = shuffle
+      ? shuffleArray(baseCards.slice(difficultCount))
+      : baseCards.slice(difficultCount);
+
+    if (configCardCount === 'all') {
+      selectedCards = [...difficultPart, ...normalPart];
+    } else {
+      // Always include ALL difficult cards; fill remaining slots with normal cards
+      const remainingSlots = Math.max(0, configCardCount - difficultPart.length);
+      selectedCards = [...difficultPart, ...normalPart.slice(0, remainingSlots)];
+    }
+    doShuffle = false; // shuffle was already applied within each group above
+  } else if (configCardCount === 'all' || configCardCount >= baseCards.length) {
+    selectedCards = baseCards;
+  } else {
+    selectedCards = shuffle ? shuffleArray(baseCards).slice(0, configCardCount) : baseCards.slice(0, configCardCount);
+  }
+
+  return { selectedCards, doShuffle, freshDifficultIds };
+}
+
 export default function DeckDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
@@ -239,68 +329,38 @@ export default function DeckDetail() {
       fill_card_percentage: fillCardPercentage,
       trivia_option_count: triviaOptionCount,
     });
-    const allCards = deck.cards || [];
-    let baseCards = allCards;
-    if (mode === 'fill') {
-      baseCards = allCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+
+    const { selectedCards, doShuffle, freshDifficultIds } = await selectAndFilterCards({
+      allCards: deck.cards || [],
+      mode,
+      hideKnown,
+      onlyDifficult,
+      shuffle,
+      configCardCount,
+      deckId: id,
+      cachedDifficultIds: difficultCardIds,
+    });
+
+    if (freshDifficultIds) {
+      setDifficultCardIds(freshDifficultIds);
     }
-    if (hideKnown) {
-      try {
-        const { data } = await api.get(`/statistics/decks/${id}/known`);
-        const knownIds = new Set(data.known_card_ids);
-        baseCards = baseCards.filter((c) => !knownIds.has(c.id));
-      } catch (err) {
-        console.error('Failed to fetch known cards, showing all cards:', err);
-      }
-    }
-    let difficultCount = 0;
-    if (onlyDifficult) {
-      try {
-        const { data } = await api.get(`/statistics/decks/${id}/difficult`);
-        const freshDifficultIds = new Set(data.difficult_card_ids);
-        setDifficultCardIds(freshDifficultIds);
-        const difficultCards = baseCards.filter((c) => freshDifficultIds.has(c.id));
-        const normalCards = baseCards.filter((c) => !freshDifficultIds.has(c.id));
-        difficultCount = difficultCards.length;
-        baseCards = [...difficultCards, ...normalCards];
-      } catch (err) {
-        console.error('Failed to fetch difficult cards, using cached data:', err);
-        const difficultCards = baseCards.filter((c) => difficultCardIds.has(c.id));
-        const normalCards = baseCards.filter((c) => !difficultCardIds.has(c.id));
-        difficultCount = difficultCards.length;
-        baseCards = [...difficultCards, ...normalCards];
-      }
-    }
-    let selectedCards;
-    let shuffleForStartStudy = shuffle;
-    if (onlyDifficult && shuffle) {
-      // Shuffle within each group separately to maintain difficult cards priority
-      const difficultPart = shuffleArray(baseCards.slice(0, difficultCount));
-      const normalPart = shuffleArray(baseCards.slice(difficultCount));
-      const orderedCards = [...difficultPart, ...normalPart];
-      selectedCards = configCardCount === 'all' || configCardCount >= orderedCards.length
-        ? orderedCards
-        : orderedCards.slice(0, configCardCount);
-      shuffleForStartStudy = false; // already shuffled within groups above
-    } else if (configCardCount === 'all' || configCardCount >= baseCards.length) {
-      selectedCards = baseCards;
-    } else {
-      selectedCards = shuffleArray(baseCards).slice(0, configCardCount);
-    }
+
+    let finalCards = selectedCards;
     if (mode === 'study' && includeFillCards) {
-      const fillEligibleInSelected = selectedCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
+      const fillEligibleInSelected = finalCards.filter((c) => c.answer.trim().split(/\s+/).length === 1);
       const fillCount = Math.min(
-        Math.round(selectedCards.length * fillCardPercentage / 100),
+        Math.round(finalCards.length * fillCardPercentage / 100),
         fillEligibleInSelected.length,
       );
       if (fillCount > 0) {
         const shuffledEligible = shuffleArray(fillEligibleInSelected);
         const fillCardIds = new Set(shuffledEligible.slice(0, fillCount).map((c) => c.id));
-        selectedCards = selectedCards.map((c) => fillCardIds.has(c.id) ? { ...c, _isFill: true } : c);
+        finalCards = finalCards.map((c) => fillCardIds.has(c.id) ? { ...c, _isFill: true } : c);
       }
     }
-    startStudy(selectedCards, shuffleForStartStudy);
-    beginSession(mode, selectedCards.length);
+
+    startStudy(finalCards, doShuffle);
+    beginSession(mode, finalCards.length);
     setLiveCounts({ correct: 0, wrong: 0 });
     setStudyPhase('active');
   };
