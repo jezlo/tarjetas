@@ -28,7 +28,7 @@ function levenshtein(a, b) {
 
 const MAX_LEVENSHTEIN_DISTANCE = 2;
 
-export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode, showCharCount }) {
+export default function FillViewer({ cards, index, onNext, onPrev, onResult, weakMode, showCharCount, onMark, markedCardIds }) {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -67,6 +67,15 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
     if (onResult) onResult(isCorrect);
     onNext();
   };
+
+  const handleMark = async () => {
+    try {
+      await api.post(`/statistics/cards/${card.id}/mark`);
+      if (onMark) onMark(card.id);
+    } catch (_) {}
+  };
+
+  const isMarked = markedCardIds && markedCardIds.has(card.id);
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -140,6 +149,18 @@ export default function FillViewer({ cards, index, onNext, onPrev, onResult, wea
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 transition"
         >
           {t('viewer.prev')}
+        </button>
+        <button
+          onClick={handleMark}
+          aria-label={isMarked ? t('viewer.unpinCard') : t('viewer.pinCard')}
+          title={isMarked ? t('viewer.unpinCard') : t('viewer.pinCard')}
+          className={`px-4 py-2 font-semibold rounded-lg border transition ${
+            isMarked
+              ? 'bg-orange-200 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 hover:bg-orange-300 dark:hover:bg-orange-800'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+          }`}
+        >
+          {isMarked ? t('viewer.pinned') : t('viewer.pin')}
         </button>
       </div>
     </div>

@@ -306,6 +306,8 @@
     "knownCards": "Known cards",
     "noKnownCards": "No known cards yet. Mark cards as ⭐ Known during study sessions.",
     "noDifficultCards": "No difficult cards yet. Cards with the most errors will appear here.",
+    "showPinned": "📌 Pinned cards",
+    "noPinnedCards": "No pinned cards yet. Pin cards during study sessions to find them here.",
     "unmarkKnown": "Unmark",
     "failedUnmark": "Failed to unmark card. Please try again.",
     "unmarkConfirm": "Unmark this card as known?",
