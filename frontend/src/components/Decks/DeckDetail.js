@@ -65,6 +65,8 @@ export default function DeckDetail() {
   const sessionCountsRef = useRef({ correct: 0, wrong: 0 });
   const sessionModeRef = useRef('study');
   const deckIdRef = useRef(null);
+  const evaluatedCardIdsRef = useRef(new Set());
+  const totalCardsInSessionRef = useRef(0);
 
   const load = useCallback(() =>
     api.get(`/decks/${id}`).then(({ data }) => {
@@ -122,16 +124,20 @@ export default function DeckDetail() {
     setStudyIndex(0);
   }, []);
 
-  const beginSession = (sessionMode) => {
+  const beginSession = (sessionMode, cardCount) => {
     sessionStartRef.current = new Date().toISOString();
     sessionCountsRef.current = { correct: 0, wrong: 0 };
     sessionModeRef.current = sessionMode || 'study';
+    evaluatedCardIdsRef.current = new Set();
+    totalCardsInSessionRef.current = cardCount || 0;
   };
 
   const saveSession = async (deckId) => {
     if (!sessionStartRef.current) return;
     const started = sessionStartRef.current;
     const counts = { ...sessionCountsRef.current };
+    const cardsInSession = totalCardsInSessionRef.current;
+    const cardsReviewed = evaluatedCardIdsRef.current.size;
     sessionStartRef.current = null;
     sessionCountsRef.current = { correct: 0, wrong: 0 };
     try {
@@ -139,6 +145,8 @@ export default function DeckDetail() {
         deck_id: deckId,
         correct_count: counts.correct,
         wrong_count: counts.wrong,
+        total_cards_in_session: cardsInSession,
+        cards_reviewed: cardsReviewed,
         session_type: sessionModeRef.current,
         started_at: started,
         ended_at: new Date().toISOString(),
@@ -152,10 +160,14 @@ export default function DeckDetail() {
       if (sessionStartRef.current && deckIdRef.current) {
         const started = sessionStartRef.current;
         const counts = { ...sessionCountsRef.current };
+        const cardsInSession = totalCardsInSessionRef.current;
+        const cardsReviewed = evaluatedCardIdsRef.current.size;
         api.post('/sessions', {
           deck_id: deckIdRef.current,
           correct_count: counts.correct,
           wrong_count: counts.wrong,
+          total_cards_in_session: cardsInSession,
+          cards_reviewed: cardsReviewed,
           session_type: sessionModeRef.current,
           started_at: started,
           ended_at: new Date().toISOString(),
@@ -288,17 +300,21 @@ export default function DeckDetail() {
       }
     }
     startStudy(selectedCards, shuffleForStartStudy);
-    beginSession(mode);
+    beginSession(mode, selectedCards.length);
     setLiveCounts({ correct: 0, wrong: 0 });
     setStudyPhase('active');
   };
 
-  const handleResult = (correct) => {
-    sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1;
-    setLiveCounts((prev) => ({
-      ...prev,
-      [correct ? 'correct' : 'wrong']: prev[correct ? 'correct' : 'wrong'] + 1,
-    }));
+  const handleResult = (correct, cardId) => {
+    const alreadyEvaluated = cardId !== undefined && cardId !== null && evaluatedCardIdsRef.current.has(cardId);
+    if (!alreadyEvaluated) {
+      if (cardId !== undefined && cardId !== null) evaluatedCardIdsRef.current.add(cardId);
+      sessionCountsRef.current[correct ? 'correct' : 'wrong'] += 1;
+      setLiveCounts((prev) => ({
+        ...prev,
+        [correct ? 'correct' : 'wrong']: prev[correct ? 'correct' : 'wrong'] + 1,
+      }));
+    }
     if (studyIndex === studyCards.length - 1) {
       saveSession(deck.id);
       setStudyPhase('complete');
@@ -776,7 +792,10 @@ export default function DeckDetail() {
           ) : studyPhase === 'complete' ? (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center max-w-md mx-auto">
               <h3 className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mb-2"><span aria-hidden="true">🎉 </span>{t('deckDetail.sessionDone')}</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('deckDetail.sessionDoneDesc')}</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-2">{t('deckDetail.sessionDoneDesc')}</p>
+              <p className="text-sm text-indigo-500 dark:text-indigo-400 mb-6">
+                {t('deckDetail.sessionAddedReviewed', { reviewed: liveCounts.correct + liveCounts.wrong, total: studyCards.length })}
+              </p>
               <div className="flex justify-center gap-10 mb-8">
                 <div>
                   <p className="text-3xl font-bold text-green-600">{liveCounts.correct}</p>
@@ -836,7 +855,7 @@ export default function DeckDetail() {
                   index={studyIndex}
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                  onResult={handleResult}
+                  onResult={(correct) => handleResult(correct, studyCards[studyIndex]?.id)}
                   invertCards={invertCards}
                   autoFlipDelay={autoFlipDelay > 0 ? autoFlipDelay : undefined}
                   onMark={handleCardMark}
@@ -848,7 +867,7 @@ export default function DeckDetail() {
                   index={studyIndex}
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                  onResult={handleResult}
+                  onResult={(correct) => handleResult(correct, studyCards[studyIndex]?.id)}
                   invertCards={invertCards}
                 />
               ) : mode === 'fill' ? (
@@ -857,7 +876,7 @@ export default function DeckDetail() {
                   index={studyIndex}
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                  onResult={handleResult}
+                  onResult={(correct) => handleResult(correct, studyCards[studyIndex]?.id)}
                   weakMode={fillWeakMode}
                   showCharCount={fillShowCharCount}
                 />
@@ -867,7 +886,7 @@ export default function DeckDetail() {
                   index={studyIndex}
                   onNext={() => setStudyIndex((i) => Math.min(i + 1, studyCards.length - 1))}
                   onPrev={() => setStudyIndex((i) => Math.max(i - 1, 0))}
-                  onResult={handleResult}
+                  onResult={(correct) => handleResult(correct, studyCards[studyIndex]?.id)}
                   invertCards={invertCards}
                   optionCount={triviaOptionCount}
                   allCards={deck.cards}

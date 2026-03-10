@@ -111,7 +111,8 @@
       "trivia": "Trivia",
       "questionnaire": "Cuestionario",
       "fill": "Rellenar"
-    }
+    },
+    "cardsAddedReviewed": "{reviewed} revisadas de {total} agregadas"
   },
   "decks": {
     "myDecks": "Mis mazos",
@@ -308,7 +309,8 @@
     "unmarkKnown": "Desmarcar",
     "failedUnmark": "Error al desmarcar la tarjeta. Inténtalo de nuevo.",
     "unmarkConfirm": "¿Desmarcar esta tarjeta como conocida?",
-    "onlyDifficult": "🔥 Reforzar tarjetas difíciles"
+    "onlyDifficult": "🔥 Reforzar tarjetas difíciles",
+    "sessionAddedReviewed": "{reviewed} revisadas de {total} agregadas"
   },
   "card": {
     "addNew": "Añadir nueva tarjeta",

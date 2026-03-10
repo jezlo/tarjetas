@@ -193,7 +193,11 @@ export default function Statistics() {
                   <div className="flex gap-4 mt-3 text-sm">
                     <span className="text-green-600 font-medium">{t('stats.correctCount', { n: s.correct_count })}</span>
                     <span className="text-red-500 font-medium">{t('stats.wrongCount', { n: s.wrong_count })}</span>
-                    <span className="text-gray-400 dark:text-gray-500">{t('stats.total', { n: total })}</span>
+                    {s.total_cards_in_session > 0 ? (
+                      <span className="text-gray-400 dark:text-gray-500">{t('stats.cardsAddedReviewed', { reviewed: s.cards_reviewed, total: s.total_cards_in_session })}</span>
+                    ) : (
+                      <span className="text-gray-400 dark:text-gray-500">{t('stats.total', { n: total })}</span>
+                    )}
                   </div>
                 </div>
               );

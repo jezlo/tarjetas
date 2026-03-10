@@ -46,6 +46,8 @@ def create_session():
         session_type=session_type,
         started_at=datetime.fromisoformat(started_at.replace('Z', '+00:00')) if started_at else datetime.utcnow(),
         ended_at=datetime.fromisoformat(ended_at.replace('Z', '+00:00')) if ended_at else None,
+        total_cards_in_session=int(data.get('total_cards_in_session', 0)),
+        cards_reviewed=int(data.get('cards_reviewed', 0)),
     )
     db.session.add(session)
     db.session.commit()

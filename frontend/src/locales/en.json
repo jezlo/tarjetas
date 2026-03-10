@@ -111,7 +111,8 @@
       "trivia": "Trivia",
       "questionnaire": "Questionnaire",
       "fill": "Fill"
-    }
+    },
+    "cardsAddedReviewed": "{reviewed} reviewed of {total} added"
   },
   "decks": {
     "myDecks": "My Decks",
@@ -308,7 +309,8 @@
     "unmarkKnown": "Unmark",
     "failedUnmark": "Failed to unmark card. Please try again.",
     "unmarkConfirm": "Unmark this card as known?",
-    "onlyDifficult": "🔥 Reinforce difficult cards"
+    "onlyDifficult": "🔥 Reinforce difficult cards",
+    "sessionAddedReviewed": "{reviewed} reviewed of {total} added"
   },
   "card": {
     "addNew": "Add New Card",
