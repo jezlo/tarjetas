@@ -160,6 +160,8 @@ class StudySession(db.Model):
     session_type = db.Column(db.String(20), nullable=False, default='study')
     started_at = db.Column(db.DateTime, default=datetime.utcnow)
     ended_at = db.Column(db.DateTime, nullable=True)
+    total_cards_in_session = db.Column(db.Integer, default=0)
+    cards_reviewed = db.Column(db.Integer, default=0)
 
     deck = db.relationship('Deck')
 
@@ -174,6 +176,8 @@ class StudySession(db.Model):
             'session_type': self.session_type,
             'started_at': self.started_at.isoformat() + 'Z',
             'ended_at': (self.ended_at.isoformat() + 'Z') if self.ended_at else None,
+            'total_cards_in_session': self.total_cards_in_session,
+            'cards_reviewed': self.cards_reviewed,
         }
 
 

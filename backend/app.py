@@ -120,6 +120,14 @@ def _migrate_db(db):
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE study_sessions ADD COLUMN session_type VARCHAR(20) NOT NULL DEFAULT 'study'"))
                 conn.commit()
+        if 'total_cards_in_session' not in session_columns:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE study_sessions ADD COLUMN total_cards_in_session INTEGER NOT NULL DEFAULT 0'))
+                conn.commit()
+        if 'cards_reviewed' not in session_columns:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE study_sessions ADD COLUMN cards_reviewed INTEGER NOT NULL DEFAULT 0'))
+                conn.commit()
     if 'app_settings' in inspector.get_table_names():
         app_settings_columns = [col['name'] for col in inspector.get_columns('app_settings')]
         if 'timezone' not in app_settings_columns:
