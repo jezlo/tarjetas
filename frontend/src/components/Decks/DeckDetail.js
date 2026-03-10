@@ -241,6 +241,7 @@ export default function DeckDetail() {
         console.error('Failed to fetch known cards, showing all cards:', err);
       }
     }
+    let difficultCount = 0;
     if (onlyDifficult) {
       try {
         const { data } = await api.get(`/statistics/decks/${id}/difficult`);
@@ -248,16 +249,28 @@ export default function DeckDetail() {
         setDifficultCardIds(freshDifficultIds);
         const difficultCards = baseCards.filter((c) => freshDifficultIds.has(c.id));
         const normalCards = baseCards.filter((c) => !freshDifficultIds.has(c.id));
+        difficultCount = difficultCards.length;
         baseCards = [...difficultCards, ...normalCards];
       } catch (err) {
         console.error('Failed to fetch difficult cards, using cached data:', err);
         const difficultCards = baseCards.filter((c) => difficultCardIds.has(c.id));
         const normalCards = baseCards.filter((c) => !difficultCardIds.has(c.id));
+        difficultCount = difficultCards.length;
         baseCards = [...difficultCards, ...normalCards];
       }
     }
     let selectedCards;
-    if (configCardCount === 'all' || configCardCount >= baseCards.length) {
+    let shuffleForStartStudy = shuffle;
+    if (onlyDifficult && shuffle) {
+      // Shuffle within each group separately to maintain difficult cards priority
+      const difficultPart = shuffleArray(baseCards.slice(0, difficultCount));
+      const normalPart = shuffleArray(baseCards.slice(difficultCount));
+      const orderedCards = [...difficultPart, ...normalPart];
+      selectedCards = configCardCount === 'all' || configCardCount >= orderedCards.length
+        ? orderedCards
+        : orderedCards.slice(0, configCardCount);
+      shuffleForStartStudy = false; // already shuffled within groups above
+    } else if (configCardCount === 'all' || configCardCount >= baseCards.length) {
       selectedCards = baseCards;
     } else {
       selectedCards = shuffleArray(baseCards).slice(0, configCardCount);
@@ -274,7 +287,7 @@ export default function DeckDetail() {
         selectedCards = selectedCards.map((c) => fillCardIds.has(c.id) ? { ...c, _isFill: true } : c);
       }
     }
-    startStudy(selectedCards, shuffle);
+    startStudy(selectedCards, shuffleForStartStudy);
     beginSession(mode);
     setLiveCounts({ correct: 0, wrong: 0 });
     setStudyPhase('active');

@@ -87,6 +87,7 @@ def record_result(card_id):
         stat.wrong_count += 1
     if known:
         stat.is_known = True
+        stat.is_difficult = False
     update_difficulty_status(stat)
     stat.last_reviewed = datetime.utcnow()
     db.session.commit()
