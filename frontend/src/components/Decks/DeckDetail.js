@@ -141,7 +141,7 @@ export default function DeckDetail() {
 
   // Known cards
   const [knownCardIds, setKnownCardIds] = useState(new Set());
-  const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known' | 'difficult'
+  const [showKnownFilter, setShowKnownFilter] = useState('all'); // 'all' | 'known' | 'difficult' | 'pinned'
 
   // Difficult cards
   const [difficultCardIds, setDifficultCardIds] = useState(new Set());
@@ -507,7 +507,7 @@ export default function DeckDetail() {
                 </button>
               </div>
             )}
-            {(knownCardIds.size > 0 || difficultCardIds.size > 0) && (
+            {(knownCardIds.size > 0 || difficultCardIds.size > 0 || markedCardIds.size > 0) && (
               <div className="flex items-center gap-2 mb-4 text-sm flex-wrap">
                 <span className="text-gray-500 dark:text-gray-400">{t('deckDetail.knownFilter')}</span>
                 <button
@@ -532,6 +532,14 @@ export default function DeckDetail() {
                     {t('deckDetail.showDifficult')} ({difficultCardIds.size})
                   </button>
                 )}
+                {markedCardIds.size > 0 && (
+                  <button
+                    onClick={() => setShowKnownFilter('pinned')}
+                    className={`px-3 py-1 rounded-lg border transition ${showKnownFilter === 'pinned' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-gray-700'}`}
+                  >
+                    {t('deckDetail.showPinned')} ({markedCardIds.size})
+                  </button>
+                )}
               </div>
             )}
             {cards.length === 0 ? (
@@ -546,11 +554,16 @@ export default function DeckDetail() {
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
                 {t('deckDetail.noDifficultCards')}
               </div>
+            ) : showKnownFilter === 'pinned' && markedCardIds.size === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-400 dark:text-gray-500">
+                {t('deckDetail.noPinnedCards')}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {cards.filter((card) => {
                   if (showKnownFilter === 'known') return knownCardIds.has(card.id);
                   if (showKnownFilter === 'difficult') return difficultCardIds.has(card.id);
+                  if (showKnownFilter === 'pinned') return markedCardIds.has(card.id);
                   return true;
                 }).map((card) => (
                   <div key={card.id} className={`rounded-xl shadow p-4 ${markedCardIds.has(card.id) ? 'bg-orange-50 dark:bg-orange-950 border-2 border-orange-300 dark:border-orange-700' : 'bg-white dark:bg-gray-800'}`}>
@@ -941,6 +954,8 @@ export default function DeckDetail() {
                   onResult={(correct) => handleResult(correct, studyCards[studyIndex]?.id)}
                   weakMode={fillWeakMode}
                   showCharCount={fillShowCharCount}
+                  onMark={handleCardMark}
+                  markedCardIds={markedCardIds}
                 />
               ) : (
                 <TriviaViewer
@@ -1009,6 +1024,9 @@ export default function DeckDetail() {
                           <div key={card.id} className={`rounded-lg border p-3 ${markedCardIds.has(card.id) ? 'bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
                             <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{card.question}</p>
                             <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{card.answer}</p>
+                            {card.context && (
+                              <p className="text-blue-600 dark:text-blue-400 text-xs mt-1 italic">💡 {card.context}</p>
+                            )}
                             <div className="flex gap-3 mt-2">
                               <button
                                 onClick={() => handleTogglePin(card.id)}
