@@ -241,6 +241,8 @@ export default function DeckDetail() {
         started_at: started,
         ended_at: new Date().toISOString(),
       });
+      loadDifficultCards();
+      loadKnownCards();
     } catch (_) {}
   };
 
