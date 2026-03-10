@@ -45,9 +45,9 @@ def import_cards_from_csv(stream, deck_id):
     for row in reader:
         # Normalize keys to lower-case
         normalised = {k.lower(): v for k, v in row.items()}
-        question = normalised.get('question', '').strip()
-        answer = normalised.get('answer', '').strip()
-        context = normalised.get('context', '').strip() or None
+        question = normalised.get('question', '').strip().strip('"')
+        answer = normalised.get('answer', '').strip().strip('"')
+        context = normalised.get('context', '').strip().strip('"') or None
         if question and answer and question.lower() not in existing_questions:
             db.session.add(Card(deck_id=deck_id, question=question, answer=answer, context=context))
             existing_questions.add(question.lower())
