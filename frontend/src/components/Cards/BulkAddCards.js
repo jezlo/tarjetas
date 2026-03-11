@@ -9,26 +9,37 @@ export default function BulkAddCards({ deckId, onSaved }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const splitByComa = (line) => {
+    const parts = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+        current += char;
+      } else if (char === ',' && !inQuotes) {
+        parts.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    parts.push(current);
+    return parts;
+  };
+
   const parseCards = (raw) => {
     return raw
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
       .map((line) => {
-        const firstComma = line.indexOf(',');
-        if (firstComma === -1) return null;
-        const question = line.slice(0, firstComma).trim().replace(/^"|"$/g, '');
-        const rest = line.slice(firstComma + 1);
-        const secondComma = rest.indexOf(',');
-        let answer;
-        let context;
-        if (secondComma === -1) {
-          answer = rest.trim().replace(/^"|"$/g, '');
-          context = undefined;
-        } else {
-          answer = rest.slice(0, secondComma).trim().replace(/^"|"$/g, '');
-          context = rest.slice(secondComma + 1).trim().replace(/^"|"$/g, '');
-        }
+        const parts = splitByComa(line);
+        if (parts.length < 2) return null;
+        const question = parts[0].trim().replace(/^"|"$/g, '');
+        const answer = parts[1].trim().replace(/^"|"$/g, '');
+        const context = parts.length > 2 ? parts[2].trim().replace(/^"|"$/g, '') : undefined;
         return question && answer ? { question, answer, ...(context ? { context } : {}) } : null;
       })
       .filter(Boolean);
