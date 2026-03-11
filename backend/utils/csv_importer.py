@@ -4,6 +4,11 @@ import io
 from models import db, Card
 
 
+def normalize_card_text(text):
+    """Strip surrounding whitespace and enclosing double-quotes from a card field."""
+    return text.strip().strip('"')
+
+
 def import_cards_from_csv(stream, deck_id):
     """Read a CSV file stream and bulk-insert cards into the given deck.
 
@@ -45,9 +50,9 @@ def import_cards_from_csv(stream, deck_id):
     for row in reader:
         # Normalize keys to lower-case
         normalised = {k.lower(): v for k, v in row.items()}
-        question = normalised.get('question', '').strip().strip('"')
-        answer = normalised.get('answer', '').strip().strip('"')
-        context = normalised.get('context', '').strip().strip('"') or None
+        question = normalize_card_text(normalised.get('question', ''))
+        answer = normalize_card_text(normalised.get('answer', ''))
+        context = normalize_card_text(normalised.get('context', '')) or None
         if question and answer and question.lower() not in existing_questions:
             db.session.add(Card(deck_id=deck_id, question=question, answer=answer, context=context))
             existing_questions.add(question.lower())

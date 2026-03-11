@@ -17,17 +17,17 @@ export default function BulkAddCards({ deckId, onSaved }) {
       .map((line) => {
         const firstComma = line.indexOf(',');
         if (firstComma === -1) return null;
-        const question = line.slice(0, firstComma).trim();
+        const question = line.slice(0, firstComma).trim().replace(/^"|"$/g, '');
         const rest = line.slice(firstComma + 1);
         const secondComma = rest.indexOf(',');
         let answer;
         let context;
         if (secondComma === -1) {
-          answer = rest.trim();
+          answer = rest.trim().replace(/^"|"$/g, '');
           context = undefined;
         } else {
-          answer = rest.slice(0, secondComma).trim();
-          context = rest.slice(secondComma + 1).trim();
+          answer = rest.slice(0, secondComma).trim().replace(/^"|"$/g, '');
+          context = rest.slice(secondComma + 1).trim().replace(/^"|"$/g, '');
         }
         return question && answer ? { question, answer, ...(context ? { context } : {}) } : null;
       })
@@ -61,11 +61,11 @@ export default function BulkAddCards({ deckId, onSaved }) {
   const parsedCards = parseCards(text);
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 max-w-2xl mx-auto">
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">{t('bulk.title')}</h3>
-      <p className="text-sm text-gray-500 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 max-w-2xl mx-auto">
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{t('bulk.title')}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
         {t('bulk.desc')}{' '}
-        <code className="bg-gray-100 px-1 rounded">{t('bulk.format')}</code>
+        <code className="bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-1 rounded">{t('bulk.format')}</code>
         {' '}— {t('bulk.contextOptional', { context: 'context' })}
       </p>
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
@@ -76,10 +76,10 @@ export default function BulkAddCards({ deckId, onSaved }) {
           onChange={(e) => setText(e.target.value)}
           rows={12}
           placeholder={"What is the capital of France?, Paris, Largest city in France\nWhat is 2+2?, 4\nWho wrote Hamlet?, Shakespeare, Written around 1600"}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-300"
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 dark:text-gray-500">
             {t('bulk.detected', { n: parsedCards.length })}
           </span>
           <button

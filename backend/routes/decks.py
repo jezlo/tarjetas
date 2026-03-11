@@ -8,7 +8,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
 from models import db, Deck, Card, CardStatistic, User, DeckLike, StudySession, get_or_create_default_categories
-from utils.csv_importer import import_cards_from_csv
+from utils.csv_importer import import_cards_from_csv, normalize_card_text
 
 decks_bp = Blueprint('decks', __name__)
 
@@ -194,11 +194,11 @@ def create_card(deck_id):
     user_id = int(get_jwt_identity())
     deck = Deck.query.filter_by(id=deck_id, user_id=user_id).first_or_404()
     data = request.get_json()
-    question = data.get('question', '').strip()
-    answer = data.get('answer', '').strip()
+    question = normalize_card_text(data.get('question', ''))
+    answer = normalize_card_text(data.get('answer', ''))
     if not question or not answer:
         return jsonify({'message': 'question and answer are required'}), 400
-    context = data.get('context', '').strip() or None
+    context = normalize_card_text(data.get('context', '')) or None
 
     card = Card(deck_id=deck.id, question=question, answer=answer, context=context)
     db.session.add(card)
